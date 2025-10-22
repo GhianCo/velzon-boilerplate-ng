@@ -1,0 +1,51 @@
+import { Component, OnInit } from '@angular/core';
+
+import {clientLogoModel} from './review.module';
+import { ClientLogo } from './data';
+import {SlickCarouselModule} from "ngx-slick-carousel";
+
+
+@Component({
+  selector: 'app-review',
+  templateUrl: './review.component.html',
+  styleUrls: ['./review.component.scss'],
+  imports: [
+    SlickCarouselModule
+  ],
+  standalone: true
+})
+
+/**
+ * Review Component
+ */
+export class ReviewComponent implements OnInit {
+
+  ClientLogo!: clientLogoModel[];
+
+  constructor() { }
+
+  ngOnInit(): void {
+    /**
+     * fetches data
+     */
+     this._fetchData();
+  }
+
+   /**
+ * User grid data fetches
+ */
+    private _fetchData() {
+      this.ClientLogo = ClientLogo;
+    }
+
+  /**
+   * Swiper Responsive setting
+   */
+  public review= {
+    initialSlide: 0,
+    slidesPerView: 1,
+    pagination: true,
+    navigation: true
+  };
+
+}
