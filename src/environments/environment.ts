@@ -14,7 +14,16 @@ export const environment = {
     messagingSenderId: '',
     appId: '',
     measurementId: ''
-  }
+  },
+  // -------------------------------\\
+  api: 'http://localhost/dipafarapi',
+  apiRest: 'api/',
+  publicRest: 'public/',
+  endpoints: {
+    auth: {
+      signIn: 'auth/sign-in',
+    }
+  },
 };
 
 /*

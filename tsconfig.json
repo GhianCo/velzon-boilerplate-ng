@@ -23,12 +23,12 @@
       "dom"
     ],
     "paths": {
+      "@sothy/*": ["@sothy/*"],
+      "@velzon/*": ["@velzon/*"],
       "@environments/*": ["environments/*"],
       "@assets/*": ["assets/*"],
       "@shared/*": ["app/shared/*"],
-      "@sharedModules/*": ["app/shared-modules/*"],
       "@app/*": ["app/*"],
-      "@appCore/*": ["app/core/*"]
     },
     "skipLibCheck": true
   },

@@ -1,0 +1,77 @@
+import {DecimalPipe, NgClass} from '@angular/common';
+import { Component, OnInit } from '@angular/core';
+import { Observable } from 'rxjs';
+
+import { jobgrid } from '@velzon/core/data';
+import { PaginationService } from '../../../../../services/pagination.service';
+import {FormsModule} from "@angular/forms";
+import {FlatpickrModule} from "angularx-flatpickr";
+import {NgbDropdown, NgbPagination} from "@ng-bootstrap/ng-bootstrap";
+import {BreadcrumbsComponent} from "../../../../../components/breadcrumbs/breadcrumbs.component";
+
+@Component({
+  selector: 'app-grid',
+  templateUrl: './grid.component.html',
+  styleUrls: ['./grid.component.scss'],
+  imports: [
+    FormsModule,
+    FlatpickrModule,
+    NgbDropdown,
+    NgClass,
+    NgbPagination,
+    BreadcrumbsComponent
+  ],
+  standalone: true
+})
+export class GridComponent implements OnInit {
+
+  // bread crumb items
+  breadCrumbItems!: Array<{}>;
+  jobgrids: any;
+  alljobgrids: any;
+  searchTerm: any;
+  searchResults: any;
+  date: any;
+
+  constructor(public service: PaginationService) {
+  }
+
+  ngOnInit(): void {
+    /**
+ * BreadCrumb
+ */
+    this.breadCrumbItems = [
+      { label: 'Jobs' },
+      { label: 'Job Grid Lists', active: true }
+    ];
+
+    // Fetch Data
+    setTimeout(() => {
+      this.jobgrids = jobgrid;
+      this.alljobgrids = jobgrid;
+      document.getElementById('elmLoader')?.classList.add('d-none')
+    }, 1200)
+
+  }
+
+   // Pagination
+   changePage() {
+    this.jobgrids = this.service.changePage(this.alljobgrids)
+  }
+
+
+  // Search Data
+  performSearch(): void {
+    this.searchResults = this.alljobgrids.filter((item: any) => {
+      return (
+        item.title.toLowerCase().includes(this.searchTerm.toLowerCase()) ||
+        item.companyname.toLowerCase().includes(this.searchTerm.toLowerCase()) ||
+        item.location.toLowerCase().includes(this.searchTerm.toLowerCase()) ||
+        item.content.toLowerCase().includes(this.searchTerm.toLowerCase()) ||
+        item.date.toLowerCase().includes(this.searchTerm.toLowerCase())
+      );
+    });
+    this.jobgrids = this.service.changePage(this.searchResults)
+  }
+
+}

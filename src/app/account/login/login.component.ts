@@ -4,8 +4,8 @@ import {ActivatedRoute, Router, RouterLink} from '@angular/router';
 
 // Login Auth
 import { environment } from '../../../environments/environment';
-import { AuthenticationService } from '../../core/services/auth.service';
-import { AuthfakeauthenticationService } from '../../core/services/authfake.service';
+import { AuthenticationService } from '../../../@velzon/services/auth.service';
+import { AuthfakeauthenticationService } from '../../../@velzon/services/authfake.service';
 import { first } from 'rxjs/operators';
 import { ToastService } from './toast-service';
 import {ToastsContainer} from "@app/account/login/toasts-container.component";

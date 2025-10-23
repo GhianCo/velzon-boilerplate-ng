@@ -3,8 +3,8 @@ import {ReactiveFormsModule, UntypedFormBuilder, UntypedFormGroup, Validators} f
 
 // Register Auth
 import { environment } from '../../../environments/environment';
-import { AuthenticationService } from '../../core/services/auth.service';
-import { UserProfileService } from '../../core/services/user.service';
+import { AuthenticationService } from '../../../@velzon/services/auth.service';
+import { UserProfileService } from '../../../@velzon/services/user.service';
 import {Router, RouterLink} from '@angular/router';
 import { first } from 'rxjs/operators';
 import {NgClass} from "@angular/common";
