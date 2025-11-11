@@ -32,6 +32,7 @@
     "@fullcalendar/list": "^6.1.14",
     "@fullcalendar/multimonth": "^6.1.14",
     "@fullcalendar/timegrid": "^6.1.14",
+    "@handsontable/angular-wrapper": "^16.1.1",
     "@lordicon/element": "^1.6.0",
     "@ng-bootstrap/ng-bootstrap": "19.0.1",
     "@ng-select/ng-select": "^20.4.1",
@@ -58,6 +59,7 @@
     "firebase": "^10.12.2",
     "flatpickr": "^4.6.13",
     "fuzzy-search": "^3.2.1",
+    "handsontable": "^16.1.1",
     "intersection-observer": "^0.12.2",
     "jasmine-core": "^5.1.2",
     "jquery": "^3.7.1",
@@ -91,7 +93,8 @@
     "slick-carousel": "^1.8.1",
     "sweetalert2": "^11.12.0",
     "tslib": "^2.6.3",
-    "zone.js": "^0.15.1"
+    "zone.js": "^0.15.1",
+    "date-fns": "^4.1.0"
   },
   "devDependencies": {
     "@angular/build": "^20.3.6",

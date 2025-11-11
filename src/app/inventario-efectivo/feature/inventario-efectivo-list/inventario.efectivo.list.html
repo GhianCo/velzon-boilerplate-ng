@@ -1,212 +1,150 @@
 <!-- Start Breadcrumbs -->
 <app-breadcrumbs title="Inventarios de efectivo" [breadcrumbItems]="breadCrumbItems"></app-breadcrumbs>
 <!-- End Breadcrumbs -->
+@if (inventarioEfectivoStore.vm(); as vm) {
+  <div class="row">
+    <div class="col-xl-12 col-lg-12">
+      <div>
+        <div class="card">
+          <div class="card-header border-0">
 
-<div class="row">
-  <div class="col-xl-12 col-lg-12">
-    <div>
-      <div class="card">
-        <div class="card-header border-0">
-
-          <div class="row g-4 align-items-center">
-            <div class="col-sm-3">
-              <div class="btn-group" role="group" ngbDropdown>
-                <button id="btnGroupDrop1" type="button"
-                        class="btn btn-info dropdown-toggle arrow-none" data-bs-toggle="dropdown"
-                        aria-expanded="false" ngbDropdownToggle>
-                  <i class="ri-settings-5-fill align-bottom me-1"></i>
-                  Operaciones
-                  <i class="mdi mdi-chevron-down"></i>
-                </button>
-                <ul class="dropdown-menu" aria-labelledby="btnGroupDrop1" ngbDropdownMenu>
-                  <li><a class="dropdown-item" href="javascript:void(0);">Nuevo inventario</a></li>
-                  <li><hr class="dropdown-divider"></li>
-                  <li>
-                    <a class="dropdown-item" href="javascript:void(0);">
-                      <i class="ri-refresh-line align-bottom me-1"></i> Actualizar
-                    </a>
-                  </li>
-                </ul>
-              </div>
-            </div>
-            <div class="col-sm-auto ms-auto">
-              <div class="hstack gap-2">
-                <button type="button" class="btn btn-info" data-bs-toggle="offcanvas"
-                        href="javascript:void(0);" (click)="openEnd(filtetcontent)"><i
-                  class="ri-filter-3-line align-bottom me-1"></i> Filtros
-                </button>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <div class="card-body">
-          <div class="row align-items-center">
-            <div class="col">
-              <div class="mt-3">
-                <div class="table-card gridjs-border-none">
-                  <div class="table-responsive">
-                    <table class="table align-middle custom-datatable" id="datatableexample">
-                      <thead>
-                      <tr class="bg-light text-muted">
-                        <th class="sort">#</th>
-                        <th scope="col" class="sort" (click)="onSort('image')">
-                          Product
-                        </th>
-                        <th scope="col" class="sort" (click)="onSort('stock')">
-                          Stock
-                        </th>
-                        <th scope="col" class="sort" (click)="onSort('price')">
-                          Price
-                        </th>
-                        <th scope="col" class="sort" (click)="onSort('orders')">
-                          Orders
-                        </th>
-                        <th scope="col" class="sort" (click)="onSort('rating')">
-                          Rating
-                        </th>
-                        <th scope="col" class="sort" (click)="onSort('publishedDate')">
-                          Published
-                        </th>
-                        <th class="sort">Action</th>
-                      </tr>
-                      </thead>
-                      <tbody>
-                        @for (data of products; track $index) {
-                          <tr id="p_{{data._id}}">
-                            <td>
-                              <input class="form-check-input" type="checkbox" name="checkAll" value="{{data._id}}"
-                                     (change)="onCheckboxChange($event)">
-                            </td>
-                            <td>
-                                  <span>
-                                    <div class="d-flex align-items-center">
-                                      <div class="flex-shrink-0 me-3">
-                                        <div class="avatar-sm bg-light rounded p-1">
-                                          <img src="{{url}}/images/products/{{data.image}}" alt=""
-                                               class="img-fluid d-block">
-                                        </div>
-                                      </div>
-                                      <div class="flex-grow-1">
-                                        <h5 class="fs-14 mb-1">
-                                          <a routerLink="/ecommerce/product-detail/1"
-                                             class="text-body">{{ data.name }}</a>
-                                        </h5>
-                                        <p class="text-muted mb-0">Category :
-                                          <span class="fw-medium">{{ data.category }}</span>
-                                        </p>
-                                      </div>
-                                    </div>
-                                  </span>
-                            </td>
-                            <td>
-                              <ngb-highlight [result]="data.stock" [term]="searchTerm"></ngb-highlight>
-                            </td>
-                            <td>$
-                              <ngb-highlight [result]="data.price" [term]="searchTerm"></ngb-highlight>
-                            </td>
-                            <td>
-                              <ngb-highlight [result]="data.orders" [term]="searchTerm"></ngb-highlight>
-                            </td>
-                            <td><span class="badge bg-light text-body fs-12 fw-medium"><i
-                              class="mdi mdi-star text-warning me-1"></i>{{ data.rating }}</span></td>
-                            <td><span>{{ data.publishedDate | date :'longDate' }}<small
-                              class="text-muted ms-1">{{ data.time }}</small></span></td>
-                            <td>
-                                  <span>
-                                    <div class="dropdown" ngbDropdown>
-                                      <button class="btn btn-soft-secondary btn-sm dropdown arrow-none" type="button"
-                                              data-bs-toggle="dropdown" aria-expanded="false" ngbDropdownToggle>
-                                        <i class="ri-more-fill"></i>
-                                      </button>
-                                      <ul class="dropdown-menu dropdown-menu-end" ngbDropdownMenu>
-                                        <li>
-                                          <a class="dropdown-item" (click)="godetail($index)"><i
-                                            class="ri-eye-fill align-bottom me-2 text-muted"></i> View </a>
-                                        </li>
-                                        <li>
-                                          <a class="dropdown-item" routerLink="/ecommerce/add-product"><i
-                                            class="ri-pencil-fill align-bottom me-2 text-muted"></i> Edit</a>
-                                        </li>
-                                        <li class="dropdown-divider"></li>
-                                        <li>
-                                          <a class="dropdown-item" href="javascript:void(0);" data-bs-toggle="modal"
-                                             data-bs-target="#removeItemModal" (click)="confirm(content,data._id)"><i
-                                            class="ri-delete-bin-fill align-bottom me-2 text-muted"></i> Delete</a>
-                                        </li>
-                                      </ul>
-                                    </div>
-                                  </span>
-                            </td>
-                          </tr>
-                        }
-                      </tbody>
-                    </table>
-                  </div>
-                  <div class="px-3 ">
-                    <div class="row justify-content-md-between align-items-md-center g-0 pagination">
-                      <div class="col-sm-12 col-md-5">
-                        <div class="dataTables_info mb-2" role="status" aria-live="polite">
-                          Showing
-                          {{ service.startIndex }} to
-                          {{ service.endIndex }} of {{ allproduct?.length }}
-                          entries
-                        </div>
-                      </div>
-                      <!-- Pagination -->
-                      <div class="col-sm-12 col-md-5">
-                        <div class="text-md-right float-md-end pagination-rounded gridjs-pagination mb-3">
-                          <ngb-pagination [collectionSize]="allproduct?.length" [(page)]="service.page"
-                                          [pageSize]="service.pageSize" (pageChange)="changePage()">
-                          </ngb-pagination>
-                        </div>
-                      </div>
-                      <!-- End Pagination -->
-                    </div>
-                  </div>
+            <div class="row g-4 align-items-center">
+              <div class="col-sm-3">
+                <div class="btn-group" role="group" ngbDropdown>
+                  <button id="btnGroupDrop1" type="button"
+                          class="btn btn-info dropdown-toggle arrow-none" data-bs-toggle="dropdown"
+                          aria-expanded="false" ngbDropdownToggle>
+                    <i class="ri-settings-5-fill align-bottom me-1"></i>
+                    Operaciones
+                    <i class="mdi mdi-chevron-down"></i>
+                  </button>
+                  <ul class="dropdown-menu" aria-labelledby="btnGroupDrop1" ngbDropdownMenu>
+                    <li><a class="dropdown-item" href="javascript:void(0);">Nuevo inventario</a></li>
+                    <li>
+                      <hr class="dropdown-divider">
+                    </li>
+                    <li>
+                      <a class="dropdown-item" (click)="inventarioEfectivoStore.loadAllInvetarioEfectivoStore()">
+                        <i class="ri-refresh-line align-bottom me-1"></i> Actualizar
+                      </a>
+                    </li>
+                  </ul>
                 </div>
               </div>
-              <div class="tab-pane alltable d-none" role="tabpanel">
-                <div class="py-4 text-center">
-                  <div>
-                    <!--lord-icon src="https://cdn.lordicon.com/msoeawqm.json" trigger="loop" colors="primary:#405189,secondary:#0ab39c" style="width:72px;height:72px">
-                    </lord-icon-->
-                  </div>
-                  <div class="mt-4">
-                    <h5>Sorry! No Result Found</h5>
-                  </div>
-                </div>
-              </div>
-            </div>
-            <div class="col-auto">
-              <div id="selection-element">
-                <div class="my-n1 d-flex align-items-center text-muted">
-                  Select
-                  <div id="select-content" class="text-body fw-semibold px-1">1</div>
-                  Result
-                  <button type="button" class="btn btn-link link-danger p-0 ms-3" data-bs-toggle="modal"
-                          data-bs-target="#removeItemModal" (click)="confirm(content,'')">Remove
+              <div class="col-sm-auto ms-auto">
+                <div class="hstack gap-2">
+                  <button type="button" class="btn btn-info" data-bs-toggle="offcanvas"
+                          href="javascript:void(0);" (click)="openEnd(filtetcontent)"><i
+                    class="ri-filter-3-line align-bottom me-1"></i> Filtros
                   </button>
                 </div>
               </div>
-
-            </div>
-
-            <div id="elmLoader">
-              <div class="spinner-border text-primary avatar-sm" role="status">
-                <span class="visually-hidden">Loading...</span>
-              </div>
             </div>
           </div>
 
+          <div class="card-body">
+            <div class="my-3">
+              <div class="table-card gridjs-border-none">
+                <div class="table-responsive">
+                  <table class="table align-middle custom-datatable" id="datatableexample">
+                    <thead>
+                    <tr class="bg-light text-muted">
+                      @for (header of vm.inventarioEfectivoData?.header; track $index) {
+                        <th scope="col">
+                          {{ header.alias }}
+                        </th>
+                      }
+                      <th class="text-center">Acciones</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                      @for (inventarioEfectivo of vm.inventarioEfectivoData?.body; track $index) {
+                        <tr>
+                          <td>{{ inventarioEfectivo.fecha }}</td>
+                          <td>
+                            <div class="d-flex align-items-center">
+                              <div class="flex-grow-1">
+                                <h5 class="fs-14 mb-1">{{ inventarioEfectivo.nomape_gerente }}</h5>
+                              </div>
+                            </div>
+                          </td>
+                          <td>
+                            <div class="d-flex align-items-center">
+                              <div class="flex-grow-1">
+                                <h5 class="fs-14 mb-1">{{ inventarioEfectivo.nomape_created }}</h5>
+                              </div>
+                            </div>
+                          </td>
+                          <td>{{ inventarioEfectivo.total }}</td>
+                          <td>{{ inventarioEfectivo.diferencia }}</td>
+                          <td>{{ inventarioEfectivo.suma_diaria }}</td>
+                          <td>{{ inventarioEfectivo.sala }}</td>
+                          <td>{{ inventarioEfectivo.turno }}</td>
+                          <td class="text-center">
+                            <div class="dropdown" ngbDropdown>
+                              <button class="btn btn-soft-secondary btn-sm dropdown arrow-none" type="button"
+                                      data-bs-toggle="dropdown" aria-expanded="false" ngbDropdownToggle>
+                                <i class="ri-more-fill"></i>
+                              </button>
+                              <ul class="dropdown-menu dropdown-menu-end" ngbDropdownMenu>
+                                <li>
+                                  <a class="dropdown-item" (click)="godetail($index)"><i
+                                    class="ri-eye-fill align-bottom me-2 text-muted"></i> View </a>
+                                </li>
+                                <li>
+                                  <a class="dropdown-item" routerLink="/ecommerce/add-product"><i
+                                    class="ri-pencil-fill align-bottom me-2 text-muted"></i> Edit</a>
+                                </li>
+                                <li class="dropdown-divider"></li>
+                                <li>
+                                  <a class="dropdown-item" href="javascript:void(0);" data-bs-toggle="modal"
+                                     data-bs-target="#removeItemModal"><i
+                                    class="ri-delete-bin-fill align-bottom me-2 text-muted"></i> Delete</a>
+                                </li>
+                              </ul>
+                            </div>
+                          </td>
+                        </tr>
+                      }
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+            <div class="px-3 ">
+              <div class="row justify-content-md-between align-items-md-center g-0 pagination">
+                <div class="col-sm-12 col-md-5">
+                  <div class="dataTables_info mb-2" id="tickets-table_info" role="status" aria-live="polite">
+                    Mostrando
+                    {{ vm.inventarioEfectivoPagination?.currentPage }} a
+                    {{ vm.inventarioEfectivoPagination?.totalPages }}
+                    de {{ vm.inventarioEfectivoPagination?.totalRows }}
+                    registros
+                  </div>
+                </div>
+                <!-- Pagination -->
+                <div class="col-sm-12 col-md-5">
+                  <div class="text-md-right float-md-end pagination-rounded gridjs-pagination mb-3">
+                    <ngb-pagination [collectionSize]="vm.inventarioEfectivoPagination?.totalRows"
+                                    [pageSize]="vm.inventarioEfectivoPagination?.perPage"
+                                    (pageChange)="changePage($event)">
+                    </ngb-pagination>
+                  </div>
+                </div>
+                <!-- End Pagination -->
+              </div>
+            </div>
+
+          </div>
         </div>
+        <!-- end card -->
       </div>
-      <!-- end card -->
     </div>
+    <!-- end col -->
   </div>
-  <!-- end col -->
-</div>
-<!-- end row -->
+  <!-- end row -->
+}
+
 
 <!-- removeItemModal -->
 <ng-template #content let-modal>

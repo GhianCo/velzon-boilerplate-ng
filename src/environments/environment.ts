@@ -16,7 +16,7 @@ export const environment = {
     measurementId: ''
   },
   // -------------------------------\\
-  api: 'http://localhost/dipafarapi',
+  api: 'http://localhost/cash-control-back',
   apiRest: 'api/',
   publicRest: 'public/',
   endpoints: {

@@ -3,6 +3,9 @@ import {InventarioEfectivoPage} from "./inventario.efectivo.page";
 import {
   InventarioEfectivoList
 } from "@app/inventario-efectivo/feature/inventario-efectivo-list/inventario.efectivo.list";
+import {
+  InventarioEfectivoListResolver
+} from "@app/inventario-efectivo/feature/inventario-efectivo-list/inventario.efectivo.list.resolver";
 
 export default [
   {
@@ -12,6 +15,9 @@ export default [
       {
         path: '',
         component: InventarioEfectivoList,
+        resolve: {
+          data: InventarioEfectivoListResolver,
+        },
       }
     ]
   }

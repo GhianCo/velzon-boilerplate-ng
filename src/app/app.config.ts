@@ -38,6 +38,20 @@ import {FeatherModule} from "angular-feather";
 import {allIcons} from 'angular-feather/icons';
 import {NgxEchartsModule} from "ngx-echarts";
 import {HttpService, httpServiceCreator} from "@sothy/services/http.service";
+import {
+  HOT_GLOBAL_CONFIG,
+  HotGlobalConfig,
+  NON_COMMERCIAL_LICENSE,
+} from "@handsontable/angular-wrapper";
+import { registerLanguageDictionary, deDE } from 'handsontable/i18n';
+registerLanguageDictionary(deDE);
+
+const globalHotConfig: HotGlobalConfig = {
+  license: NON_COMMERCIAL_LICENSE,
+  layoutDirection: "ltr",
+  language: deDE.languageCode,
+  themeName: "ht-theme-main",
+};
 
 export function createTranslateLoader(http: HttpClient): any {
   return new TranslateHttpLoader(http, 'assets/i18n/', '.json');
@@ -57,6 +71,7 @@ export const appConfig: ApplicationConfig = {
       withPreloading(PreloadAllModules),
       withInMemoryScrolling({scrollPositionRestoration: 'enabled'})
     ),
+    {provide: HOT_GLOBAL_CONFIG, useValue: globalHotConfig},
     provideHttpClient(),
     // Interceptores HTTP
     {provide: 'HTTP_INTERCEPTORS', useClass: JwtInterceptor, multi: true},
