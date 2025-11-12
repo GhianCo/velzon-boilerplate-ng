@@ -20,6 +20,9 @@ export type IState = {
 
   valoresSummary: any,
   chartSummary: any,
+
+  saveInventarioEfectivoLoading: boolean,
+  saveInventarioEfectivoError: any,
 }
 
 const initialState: IState = {
@@ -42,21 +45,22 @@ const initialState: IState = {
     diferencia: 0,
     totalLocal: 0,
     totalConvertido: 0,
-    suma_diaria_efectivo: 0
+    suma_diaria_efectivo: 0,
+    tipocambio: 0
   },
   chartSummary: {
     series: [],
     labels: [],
     chart: {
       type: "donut",
-      height: 230,
+      height: 100,
     },
     plotOptions: {
       pie: {
         offsetX: 0,
         offsetY: 0,
         donut: {
-          size: "90%",
+          size: "70%",
           labels: {
             show: false,
           }
@@ -74,6 +78,9 @@ const initialState: IState = {
       width: 0
     },
   },
+
+  saveInventarioEfectivoLoading: false,
+  saveInventarioEfectivoError: null,
 };
 
 @Injectable({providedIn: 'root'})
@@ -92,11 +99,16 @@ export class InventarioEfectivoStore extends SignalStore<IState> {
     'valoresWithDetailsError',
 
     'valoresSummary',
-    'chartSummary'
+    'chartSummary',
+
+    'saveInventarioEfectivoLoading',
+    'saveInventarioEfectivoError'
   ]);
 
   constructor(
     private _inventarioEfectivoRemoteReq: InventarioEfectivoRemoteReq,
+    private _activatedRoute: ActivatedRoute,
+    private _router: Router,
   ) {
     super();
     this.initialize(initialState);
@@ -136,6 +148,31 @@ export class InventarioEfectivoStore extends SignalStore<IState> {
       catchError((error) => {
         return of(this.patch({
           valoresWithDetailsError: error
+        }));
+      }),
+    ).subscribe();
+  };
+
+  public async saveInventarioEfectivoWithDetils() {
+    this.patch({saveInventarioEfectivoLoading: true, saveInventarioEfectivoError: null});
+    const state = this.vm();
+    const inventario = {
+      total: state.valoresSummary.totalConvertido,
+      diferencia: state.valoresSummary.diferencia,
+      suma_diaria: state.valoresSummary.suma_diaria_efectivo,
+      tipocambio: state.valoresSummary.tipocambio,
+      detalle: state.valoresWithDetailsData
+    };
+    this._inventarioEfectivoRemoteReq.requestSaveInventario(inventario).pipe(
+      tap(async ({data, pagination}) => {
+        this._router.navigate(['./'], { relativeTo: this._activatedRoute });
+      }),
+      finalize(async () => {
+        this.patch({saveInventarioEfectivoLoading: false});
+      }),
+      catchError((error) => {
+        return of(this.patch({
+          saveInventarioEfectivoError: error
         }));
       }),
     ).subscribe();

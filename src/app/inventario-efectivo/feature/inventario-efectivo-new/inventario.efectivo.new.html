@@ -67,16 +67,18 @@
           <div class="d-flex">
             <h5 class="card-title flex-grow-1 mb-0"><i class="mdi mdi-chart-arc align-middle me-1 text-muted"></i> Resumen de inventario</h5>
             <div class="flex-shrink-0">
-              <button type="button" class="btn btn-success btn-sm">
+              <button type="button" class="btn btn-success btn-sm" (click)="saveInventario()" [disabled]="vm.saveInventarioEfectivoLoading">
                 <i class="ri-save-fill align-middle"></i> Guardar inventario
               </button>
             </div>
           </div>
         </div>
         <div class="card-body">
-          <apx-chart class="apex-charts" dir="ltr" [series]="vm.chartSummary?.series" [labels]="vm.chartSummary?.labels"
-                     [chart]="vm.chartSummary?.chart" [plotOptions]="vm.chartSummary?.plotOptions" [dataLabels]="vm.chartSummary?.dataLabels"
-                     [legend]="vm.chartSummary?.legend" [stroke]="vm.chartSummary?.stroke" [colors]="vm.chartSummary?.colors" dir="ltr"></apx-chart>
+          @if(vm.valoresSummary.totalConvertido > 0){
+            <apx-chart class="apex-charts" dir="ltr" [series]="vm.chartSummary?.series" [labels]="vm.chartSummary?.labels"
+                       [chart]="vm.chartSummary?.chart" [plotOptions]="vm.chartSummary?.plotOptions" [dataLabels]="vm.chartSummary?.dataLabels"
+                       [legend]="vm.chartSummary?.legend" [stroke]="vm.chartSummary?.stroke" [colors]="vm.chartSummary?.colors" dir="ltr"></apx-chart>
+          }
           <div class="mt-3">
             <div class="d-flex justify-content-center align-items-center mb-4">
               <h2 class="me-3 ff-secondary mb-0">S/. {{vm.valoresSummary?.totalConvertido?.toFixed(2) || '0.00'}}</h2>
@@ -126,7 +128,9 @@
               <h6 class="mb-0 text-success">Suma diaria de efectivo</h6>
             </div>
             <div class="mt-2 pt-2">
-              <button type="button" class="btn btn-success w-100"><i class="ri-save-fill align-middle"></i> Guardar inventario</button>
+              <button type="button" class="btn btn-success w-100" (click)="saveInventario()" [disabled]="vm.saveInventarioEfectivoLoading">
+                <i class="ri-save-fill align-middle"></i> Guardar inventario
+              </button>
             </div>
           </div>
 

@@ -35,5 +35,8 @@ export class InventarioEfectivoRemoteReq {
   requestGetValoresWithDetails(): Observable<IResponse> {
     return this.http.get(this.REMOTE_API_URI + 'valor/withDetails')
   }
+  requestSaveInventario(inventarioWithDetails: any): Observable<IResponse> {
+    return this.http.post(this.REMOTE_API_URI + 'inventario/saveWithDetails', inventarioWithDetails)
+  }
 
 }

@@ -12,6 +12,7 @@ import {RouterLink} from "@angular/router";
 import {InventarioEfectivoStore} from "@app/inventario-efectivo/data-access/inventario.efectivo.store";
 import {FormsModule} from "@angular/forms";
 import {ChartComponent} from "ng-apexcharts";
+import Swal from "sweetalert2";
 
 @Component({
     selector: 'app-inventario-efectivo-new',
@@ -52,6 +53,23 @@ export class InventarioEfectivoNew implements OnInit {
             {label: 'Inventario efectivo'},
             {label: 'Registrar', active: true}
         ];
+    }
+
+    saveInventario() {
+        Swal.fire({
+            title: 'Todos los datos son correctos?',
+            text: 'He revisado que los datos sean los correctos!',
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#3cd188',
+            cancelButtonColor: 'rgb(243, 78, 78)',
+            confirmButtonText: 'Si, guardar inventario!',
+            cancelButtonText: 'No, cerrar'
+        }).then(result => {
+            if (result.value) {
+                this.inventarioEfectivoStore.saveInventarioEfectivoWithDetils();
+            }
+        });
     }
 
     /**
