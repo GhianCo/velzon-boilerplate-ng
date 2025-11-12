@@ -39,8 +39,10 @@ const initialState: IState = {
   valoresWithDetailsError: null,
 
   valoresSummary: {
+    diferencia: 0,
     totalLocal: 0,
     totalConvertido: 0,
+    suma_diaria_efectivo: 0
   },
   chartSummary: {
     series: [],
@@ -219,12 +221,14 @@ export class InventarioEfectivoStore extends SignalStore<IState> {
           ? ((valor.acumuladoConvertido || 0) / totalConvertido) * 100
           : 0;
 
-      return { ...valor, porcentaje };
+      return {...valor, porcentaje};
     });
 
     const valoresSummary = {
+      ...state.valoresSummary,
       totalLocal,
       totalConvertido,
+      suma_diaria_efectivo: totalConvertido + state.valoresSummary.diferencia
     };
 
     const chartSummary = {
@@ -233,7 +237,16 @@ export class InventarioEfectivoStore extends SignalStore<IState> {
       labels: valores.map((v: any) => v.name || 'Sin nombre'),
     };
 
-    this.patch({ valoresWithDetailsData: valoresConPorcentaje, valoresSummary, chartSummary });
+    this.patch({valoresWithDetailsData: valoresConPorcentaje, valoresSummary, chartSummary});
+  }
+
+  public onDiferenciaChange(diff: any) {
+    const state = this.vm();
+    const valoresSummary = {
+      ...state.valoresSummary,
+      suma_diaria_efectivo: state.valoresSummary.totalConvertido + diff
+    };
+    this.patch({valoresSummary});
   }
 
   public changePagination(pageNumber: number) {
