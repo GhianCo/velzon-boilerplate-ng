@@ -2,7 +2,6 @@ import { Component, OnInit } from '@angular/core';
 import {TopbarComponent} from "@velzon/layouts/topbar/topbar.component";
 import {HorizontalTopbarComponent} from "@velzon/layouts/horizontal-topbar/horizontal-topbar.component";
 import {RouterOutlet} from "@angular/router";
-import {FooterComponent} from "@velzon/layouts/footer/footer.component";
 
 @Component({
   selector: 'app-horizontal',
@@ -12,7 +11,6 @@ import {FooterComponent} from "@velzon/layouts/footer/footer.component";
     TopbarComponent,
     HorizontalTopbarComponent,
     RouterOutlet,
-    FooterComponent,
   ],
   standalone: true
 })

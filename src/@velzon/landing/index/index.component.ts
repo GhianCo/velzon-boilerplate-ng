@@ -1,5 +1,4 @@
 import { Component, OnInit } from '@angular/core';
-import {FooterComponent} from "@velzon/layouts/footer/footer.component";
 import {ClientLogoComponent} from "../../components/landing/index/client-logo/client-logo.component";
 import {ServicesComponent} from "../../components/landing/index/services/services.component";
 import {CollectionComponent} from "../../components/landing/index/collection/collection.component";
@@ -22,7 +21,6 @@ import {ScrollspyDirective} from "../../directives/scrollspy.directive";
   templateUrl: './index.component.html',
   styleUrls: ['./index.component.scss'],
   imports: [
-    FooterComponent,
     ClientLogoComponent,
     ServicesComponent,
     CollectionComponent,

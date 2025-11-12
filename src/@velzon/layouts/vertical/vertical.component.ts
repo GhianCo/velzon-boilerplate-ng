@@ -6,7 +6,6 @@ import { Store } from '@ngrx/store';
 import { getSidebarSize } from '@velzon/store/layouts/layout-selector';
 import {TopbarComponent} from "@velzon/layouts/topbar/topbar.component";
 import {SidebarComponent} from "@velzon/layouts/sidebar/sidebar.component";
-import {FooterComponent} from "@velzon/layouts/footer/footer.component";
 
 @Component({
   selector: 'app-vertical',
@@ -16,7 +15,6 @@ import {FooterComponent} from "@velzon/layouts/footer/footer.component";
     TopbarComponent,
     SidebarComponent,
     RouterOutlet,
-    FooterComponent
   ],
   standalone: true
 })

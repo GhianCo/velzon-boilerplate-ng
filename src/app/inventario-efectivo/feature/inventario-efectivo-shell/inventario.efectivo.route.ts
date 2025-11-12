@@ -6,6 +6,10 @@ import {
 import {
   InventarioEfectivoListResolver
 } from "@app/inventario-efectivo/feature/inventario-efectivo-list/inventario.efectivo.list.resolver";
+import {InventarioEfectivoNew} from "@app/inventario-efectivo/feature/inventario-efectivo-new/inventario.efectivo.new";
+import {
+  InventarioEfectivoNewResolver
+} from "@app/inventario-efectivo/feature/inventario-efectivo-new/inventario.efectivo.new.resolver";
 
 export default [
   {
@@ -18,7 +22,14 @@ export default [
         resolve: {
           data: InventarioEfectivoListResolver,
         },
-      }
+      },
+      {
+        path: "nuevo",
+        component: InventarioEfectivoNew,
+        resolve: {
+          data: InventarioEfectivoNewResolver,
+        },
+      },
     ]
   }
 ] as Routes;

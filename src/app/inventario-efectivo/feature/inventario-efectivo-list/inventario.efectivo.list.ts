@@ -188,8 +188,8 @@ export class InventarioEfectivoList {
      * BreadCrumb
      */
     this.breadCrumbItems = [
-      {label: 'Inventario'},
-      {label: 'Efectivo', active: true}
+      {label: 'Inventario efectivo'},
+      {label: 'Lista', active: true}
     ];
     /**
      * fetches data

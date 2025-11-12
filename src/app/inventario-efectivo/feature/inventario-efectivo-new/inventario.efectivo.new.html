@@ -1,0 +1,176 @@
+<!-- Start Breadcrumbs -->
+<app-breadcrumbs title="Nuevo inventario" [breadcrumbItems]="breadCrumbItems"></app-breadcrumbs>
+<!-- End Breadcrumbs -->
+@if (inventarioEfectivoStore.vm(); as vm) {
+  <div class="row">
+    <div class="col-xl-9">
+      <div class="live-preview">
+        <div ngbAccordion activeIds="static-1">
+          @for (valorDetail of vm.valoresWithDetailsData; track $index) {
+            <div ngbAccordionItem [collapsed]="false" >
+              <div ngbAccordionHeader class="accordion-header border-0 bg-transparent">
+                <button ngbAccordionButton>
+                  <div class="d-flex justify-content-between align-items-center w-100">
+                    <span><i class="ri-check-line me-2"></i>{{ valorDetail.name }}</span>
+                    <span class="fw-bold text-success me-2">S/. {{ valorDetail.acumuladoConvertido?.toFixed(2) || '0.00' }}</span>
+                  </div>
+                </button>
+              </div>
+              <div ngbAccordionCollapse>
+                <div ngbAccordionBody>
+                  <ng-template>
+                    @if(valorDetail.codigo == 'USD') {
+                      <div class="row gy-4 mb-4">
+                        <div class="col-xxl-3 col-md-6">
+                          <div>
+                            <label class="form-label">Tipo de cambio</label>
+                            <input type="number" class="form-control" min="1" [(ngModel)]="valorDetail.current_tc">
+                          </div>
+                        </div><!--end col-->
+                        <!--end col-->
+                      </div><!--end row-->
+                    }
+                    <div class="d-flex flex-wrap gap-4">
+                      @for (denominacion of valorDetail.denominaciones; track $index) {
+                        <div>
+                          <h5 class="fs-13 fw-medium">{{ denominacion.descripcion }}</h5>
+                          <div class="input-step d-flex align-items-center justify-content-between mb-2">
+                            <button type="button" class="minus" (click)="inventarioEfectivoStore.decrementDenominacionEfectivo(denominacion)">–</button>
+                            <input type="number" class="product-quantity" min="0" [(ngModel)]="denominacion.cantidad" (ngModelChange)="inventarioEfectivoStore.onCantidadChange(denominacion, $event)">
+                            <button type="button" class="plus" (click)="inventarioEfectivoStore.incrementDenominacionEfectivo(denominacion)">+</button>
+                          </div>
+                          <span class="text-success fw-semibold">{{valorDetail.simbolo}} {{ denominacion.importeLocal?.toFixed(2) || '0.00' }}</span>
+                        </div>
+                      }
+                    </div>
+                    @if (valorDetail.codigo == 'USD'){
+                      <div class="p-3 bg-warning-subtle mt-2">
+                        <div class="float-end ms-2">
+                          <h6 class="text-warning mb-0">{{ valorDetail.simbolo}}: <span class="text-body">{{ valorDetail.acumuladoLocal?.toFixed(2) || '0.00' }}</span></h6>
+                        </div>
+                        <h6 class="mb-0 text-warning">Total {{valorDetail.codigo}}</h6>
+                      </div>
+                    }
+                  </ng-template>
+                </div>
+              </div>
+            </div>
+          }
+        </div>
+      </div>
+      <!--end card-->
+    </div>
+    <!--end col-->
+    <div class="col-xl-3">
+      <div class="card">
+        <div class="card-header">
+          <div class="d-flex">
+            <h5 class="card-title flex-grow-1 mb-0"><i
+              class="mdi mdi-truck-fast-outline align-middle me-1 text-muted"></i> Resumen de inventario</h5>
+          </div>
+        </div>
+        <div class="card-body">
+          <apx-chart class="apex-charts" dir="ltr" [series]="vm.chartSummary?.series" [labels]="vm.chartSummary?.labels"
+                     [chart]="vm.chartSummary?.chart" [plotOptions]="vm.chartSummary?.plotOptions" [dataLabels]="vm.chartSummary?.dataLabels"
+                     [legend]="vm.chartSummary?.legend" [stroke]="vm.chartSummary?.stroke" [colors]="vm.chartSummary?.colors" dir="ltr"></apx-chart>
+          <div class="mt-3">
+            <div class="d-flex justify-content-center align-items-center mb-4">
+              <h2 class="me-3 ff-secondary mb-0">S/. {{vm.valoresSummary?.totalConvertido?.toFixed(2) || '0.00'}}</h2>
+              <div>
+                <p class="text-muted mb-0">Total inventario</p>
+                <p class="text-success fw-medium mb-0">
+                                <span class="badge bg-success-subtle p-1 rounded-circle"><i
+                                  class="ri-arrow-right-up-line"></i></span> +3 New
+                </p>
+              </div>
+            </div>
+
+            @for (valorDetail of vm.valoresWithDetailsData; track $index) {
+              <div class="d-flex justify-content-between border-bottom border-bottom-dashed py-2">
+                <p class="fw-medium mb-0">
+                  <i class="ri-number-{{$index + 1}} text-primary align-middle me-2"></i> {{ valorDetail.name }}</p>
+                <div>
+                  <span class="text-muted pe-5">S/. {{valorDetail.acumuladoConvertido?.toFixed(2) || '0.00'}}</span>
+                  <span class="text-success fw-medium fs-12">{{ valorDetail.porcentaje?.toFixed(0) || '0.00'}}%</span>
+                </div>
+              </div><!-- end -->
+            }
+          </div>
+        </div><!-- end cardbody -->
+      </div>
+      <!--end card-->
+
+      <div class="card">
+        <div class="card-header">
+          <div class="d-flex">
+            <h5 class="card-title flex-grow-1 mb-0">Customer Details</h5>
+            <div class="flex-shrink-0">
+              <a href="javascript:void(0);" routerLink="/pages/profile" class="link-secondary">View
+                Profile</a>
+            </div>
+          </div>
+        </div>
+        <div class="card-body">
+          <ul class="list-unstyled mb-0 vstack gap-3">
+            <li>
+              <div class="d-flex align-items-center">
+                <div class="flex-shrink-0">
+                  <img src="assets/images/users/avatar-3.jpg" alt="" class="avatar-sm rounded">
+                </div>
+                <div class="flex-grow-1 ms-3">
+                  <h6 class="fs-14 mb-1">Joseph Parkers</h6>
+                  <p class="text-muted mb-0">Customer</p>
+                </div>
+              </div>
+            </li>
+            <li><i class="ri-mail-line me-2 align-middle text-muted fs-16"></i>josephparker&#64;gmail.com</li>
+            <li><i class="ri-phone-line me-2 align-middle text-muted fs-16"></i>+(256) 245451 441</li>
+          </ul>
+        </div>
+      </div>
+      <!--end card-->
+    </div>
+    <!--end col-->
+  </div>
+  <!--end row-->
+}
+
+<ng-template #content role="document" let-modal>
+  <div class="modal-header">
+    <h5 class="modal-title" id="addAddressModalLabel">Address</h5>
+    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"
+            (click)="modal.dismiss('Cross click')"></button>
+  </div>
+  <div class="modal-body">
+    <div>
+      <div class="mb-3">
+        <label for="addaddress-Name" class="form-label">Name</label>
+        <input type="text" class="form-control" id="addaddress-Name" placeholder="Enter Name">
+      </div>
+
+      <div class="mb-3">
+        <label for="addaddress-textarea" class="form-label">Address</label>
+        <textarea class="form-control" id="addaddress-textarea" placeholder="Enter Address" rows="2"></textarea>
+      </div>
+
+      <div class="mb-3">
+        <label for="addaddress-Name" class="form-label">Phone</label>
+        <input type="text" class="form-control" id="addaddress-Name" placeholder="Enter Phone No.">
+      </div>
+
+      <div class="mb-3">
+        <label for="state" class="form-label">Address Type</label>
+        <select class="form-select" id="state" data-plugin="choices">
+          <option value="homeAddress">Home (7am to 10pm)</option>
+          <option value="officeAddress">Office (11am to 7pm)</option>
+        </select>
+      </div>
+    </div>
+  </div>
+  <div class="modal-footer">
+    <button type="button" class="btn btn-light" data-bs-dismiss="modal"
+            (click)="modal.close('Close click')">Close</button>
+    <button type="button" class="btn btn-success" data-bs-dismiss="modal"
+            (click)="modal.dismiss('Cross click')">Save</button>
+  </div>
+</ng-template>

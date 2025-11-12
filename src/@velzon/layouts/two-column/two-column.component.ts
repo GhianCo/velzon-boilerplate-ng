@@ -4,7 +4,6 @@ import {TopbarComponent} from "@velzon/layouts/topbar/topbar.component";
 import {SidebarComponent} from "@velzon/layouts/sidebar/sidebar.component";
 import {TwoColumnSidebarComponent} from "@velzon/layouts/two-column-sidebar/two-column-sidebar.component";
 import {RouterOutlet} from "@angular/router";
-import {FooterComponent} from "@velzon/layouts/footer/footer.component";
 
 @Component({
   selector: 'app-two-column',
@@ -15,7 +14,6 @@ import {FooterComponent} from "@velzon/layouts/footer/footer.component";
     SidebarComponent,
     TwoColumnSidebarComponent,
     RouterOutlet,
-    FooterComponent,
   ],
   standalone: true
 })

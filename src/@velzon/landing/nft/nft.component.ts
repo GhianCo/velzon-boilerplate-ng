@@ -9,7 +9,6 @@ import {FeaturesComponent} from "@velzon/components/landing/nft/features/feature
 import {CategoriesComponent} from "@velzon/components/landing/nft/categories/categories.component";
 import {DiscoverComponent} from "@velzon/components/landing/nft/discover/discover.component";
 import {TopCreatorComponent} from "@velzon/components/landing/nft/top-creator/top-creator.component";
-import {FooterComponent} from "@velzon/layouts/footer/footer.component";
 
 @Component({
   selector: 'app-nft',
@@ -26,7 +25,6 @@ import {FooterComponent} from "@velzon/layouts/footer/footer.component";
     CategoriesComponent,
     DiscoverComponent,
     TopCreatorComponent,
-    FooterComponent
   ],
   standalone: true
 })
