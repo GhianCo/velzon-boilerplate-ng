@@ -8,7 +8,6 @@ import {
     NgbModal
 } from '@ng-bootstrap/ng-bootstrap';
 import {BreadcrumbsComponent} from "@velzon/components/breadcrumbs/breadcrumbs.component";
-import {RouterLink} from "@angular/router";
 import {InventarioEfectivoStore} from "@app/inventario-efectivo/data-access/inventario.efectivo.store";
 import {FormsModule} from "@angular/forms";
 import {ChartComponent} from "ng-apexcharts";
@@ -19,7 +18,6 @@ import Swal from "sweetalert2";
     templateUrl: './inventario.efectivo.new.html',
     imports: [
         BreadcrumbsComponent,
-        RouterLink,
         NgbAccordionDirective,
         NgbAccordionItem,
         NgbAccordionHeader,
