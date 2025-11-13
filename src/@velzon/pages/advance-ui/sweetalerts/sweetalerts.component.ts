@@ -254,7 +254,6 @@ export class SweetalertsComponent implements OnInit {
         width: 600,
         padding: 100,
         confirmButtonColor: '#364574',
-        background: 'rgb(224, 225, 243) url(assets/images/chat-bg-pattern.png)',
       });
     }
 

@@ -261,7 +261,6 @@ if (document.getElementById("custom-padding-width-alert"))
             padding: 100,
             confirmButtonClass: 'btn btn-primary w-xs',
             buttonsStyling: false,
-            background: '#fff url(assets/images/chat-bg-pattern.png)'
         })
     });
 

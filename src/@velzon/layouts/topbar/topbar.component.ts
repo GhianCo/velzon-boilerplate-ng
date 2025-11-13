@@ -1,12 +1,10 @@
 import { Component, OnInit, EventEmitter, Output, Inject, ViewChild, TemplateRef, DOCUMENT } from '@angular/core';
-import {NgClass} from '@angular/common';
 import { EventService } from '../../services/event.service';
 
 //Logout
-import { environment } from '@environments/environment';
 import { AuthenticationService } from '../../services/auth.service';
 import { AuthfakeauthenticationService } from '../../services/authfake.service';
-import {Router, RouterLink} from '@angular/router';
+import {Router} from '@angular/router';
 import { TokenStorageService } from '../../services/token-storage.service';
 
 // Language
@@ -19,11 +17,6 @@ import { cartData } from './data';
 import {
   NgbDropdown, NgbDropdownMenu, NgbDropdownToggle,
   NgbModal,
-  NgbNav,
-  NgbNavContent,
-  NgbNavItem,
-  NgbNavLink,
-  NgbNavOutlet
 } from '@ng-bootstrap/ng-bootstrap';
 import {SimplebarAngularModule} from "simplebar-angular";
 import {FormsModule} from "@angular/forms";
@@ -35,14 +28,7 @@ import {FormsModule} from "@angular/forms";
   imports: [
     SimplebarAngularModule,
     NgbDropdown,
-    NgbNav,
-    NgbNavItem,
     FormsModule,
-    NgClass,
-    NgbNavLink,
-    NgbNavContent,
-    NgbNavOutlet,
-    RouterLink,
     NgbDropdownMenu,
     NgbDropdownToggle
   ],
@@ -82,7 +68,7 @@ export class TopbarComponent implements OnInit {
     const val = this.listLang.filter(x => x.lang === this.cookieValue);
     this.countryName = val.map(element => element.text);
     if (val.length === 0) {
-      if (this.flagvalue === undefined) { this.valueset = 'assets/images/flags/us.svg'; }
+      if (this.flagvalue === undefined) { this.valueset = ''; }
     } else {
       this.flagvalue = val.map(element => element.flag);
     }

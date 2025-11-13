@@ -50,7 +50,6 @@ $border-style-mixing: double, dashed, groove, outset, ridge, dotted, inset;
 
 // Background pattern
 .bg-pattern {
-    background: url("../../images/modal-bg.png") $modal-content-bg;
 }
 
 // Fixed minimum width
@@ -119,7 +118,7 @@ $value in $theme-colors {
     }
 }
 
-// Search 
+// Search
 .search-box {
     position: relative;
 
@@ -163,7 +162,7 @@ $value in $theme-colors {
     z-index: 1000;
 }
 
-// 
+//
 code {
     user-select: all;
 }
@@ -235,7 +234,7 @@ code {
     white-space: normal;
 }
 
-// Favorite button 
+// Favorite button
 .favourite-btn {
     border-color: transparent;
 

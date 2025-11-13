@@ -552,7 +552,7 @@ if (barchartColors) {
         dataLabels: {
             enabled: false,
             textAnchor: 'top',
-        },  
+        },
         yaxis: {
             labels: {
                 show: false,
@@ -648,7 +648,7 @@ function loadCharts() {
                 name: "United States",
                 coords: [37.0902, 95.7129],
                 style: {
-                    image: "assets/images/flags/us.svg",
+                    image: "",
                 }
             },
             {
@@ -682,7 +682,7 @@ function loadCharts() {
             ],
             markerStyle: {
                 initial: {
-                
+
                     fill: vectorMapWorldMarkersColors[1],
                 },
                 selected: {

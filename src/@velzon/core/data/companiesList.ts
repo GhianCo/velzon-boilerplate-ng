@@ -2,7 +2,7 @@
 const companieslist = [
     {
         id: "1",
-        image_src: "assets/images/companies/img-3.png",
+        image_src: "",
         name: "Martin's Solutions",
         industry_type: "IT Department",
         vacancy: "97",
@@ -15,7 +15,7 @@ const companieslist = [
         since: "1995"
     }, {
         id: "2",
-        image_src: "assets/images/companies/img-4.png",
+        image_src: "",
         name: "Syntyce Solutions",
         industry_type: "Health Services",
         vacancy: "31",
@@ -28,7 +28,7 @@ const companieslist = [
         since: "2001"
     }, {
         id: "3",
-        image_src: "assets/images/companies/img-1.png",
+        image_src: "",
         name: "Moetic Fashion",
         industry_type: "Textiles: Clothing, Footwear",
         vacancy: "641",
@@ -41,7 +41,7 @@ const companieslist = [
         since: "2000"
     }, {
         id: "4",
-        image_src: "assets/images/companies/img-5.png",
+        image_src: "",
         name: "Meta4Systems",
         industry_type: "Computer Industry",
         vacancy: "322",
@@ -54,7 +54,7 @@ const companieslist = [
         since: "2019"
     }, {
         id: "5",
-        image_src: "assets/images/companies/img-1.png",
+        image_src: "",
         name: "Kent's",
         industry_type: "IT Department",
         vacancy: "10",
@@ -67,7 +67,7 @@ const companieslist = [
         since: "2018"
     }, {
         id: "6",
-        image_src: "assets/images/companies/img-7.png",
+        image_src: "",
         name: "Micro Design",
         industry_type: "Financial Services",
         vacancy: "140",
@@ -80,7 +80,7 @@ const companieslist = [
         since: "2016"
     }, {
         id: "7",
-        image_src: "assets/images/companies/img-6.png",
+        image_src: "",
         name: "Zoetic Fashion",
         industry_type: "Textiles: Clothing, Footwear",
         vacancy: "21",
