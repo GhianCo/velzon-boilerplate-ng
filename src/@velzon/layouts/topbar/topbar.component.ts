@@ -11,9 +11,7 @@ import { TokenStorageService } from '../../services/token-storage.service';
 import { CookieService } from 'ngx-cookie-service';
 import { LanguageService } from '../../services/language.service';
 import { TranslateService } from '@ngx-translate/core';
-import { allNotification, messages } from './data'
 import { CartModel } from './topbar.model';
-import { cartData } from './data';
 import {
   NgbDropdown, NgbDropdownMenu, NgbDropdownToggle,
   NgbModal,
@@ -35,7 +33,6 @@ import {FormsModule} from "@angular/forms";
   standalone: true
 })
 export class TopbarComponent implements OnInit {
-  messages: any
   element: any;
   mode: string | undefined;
   @Output() mobileMenuButtonClicked = new EventEmitter();
@@ -65,24 +62,6 @@ export class TopbarComponent implements OnInit {
 
     // Cookies wise Language set
     this.cookieValue = this._cookiesService.get('lang');
-    const val = this.listLang.filter(x => x.lang === this.cookieValue);
-    this.countryName = val.map(element => element.text);
-    if (val.length === 0) {
-      if (this.flagvalue === undefined) { this.valueset = ''; }
-    } else {
-      this.flagvalue = val.map(element => element.flag);
-    }
-
-    // Fetch Data
-    this.allnotifications = allNotification;
-
-    this.messages = messages;
-    this.cartData = cartData;
-    this.cart_length = this.cartData.length;
-    this.cartData.forEach((item) => {
-      var item_price = item.quantity * item.price
-      this.total += item_price
-    });
   }
 
   /**
@@ -158,20 +137,6 @@ export class TopbarComponent implements OnInit {
         break;
     }
   }
-
-  /***
-   * Language Listing
-   */
-  listLang = [
-    { text: 'English', flag: 'assets/images/flags/us.svg', lang: 'en' },
-    { text: 'Española', flag: 'assets/images/flags/spain.svg', lang: 'es' },
-    { text: 'Deutsche', flag: 'assets/images/flags/germany.svg', lang: 'de' },
-    { text: 'Italiana', flag: 'assets/images/flags/italy.svg', lang: 'it' },
-    { text: 'русский', flag: 'assets/images/flags/russia.svg', lang: 'ru' },
-    { text: '中国人', flag: 'assets/images/flags/china.svg', lang: 'ch' },
-    { text: 'français', flag: 'assets/images/flags/french.svg', lang: 'fr' },
-    { text: 'Arabic', flag: 'assets/images/flags/ar.svg', lang: 'ar' },
-  ];
 
   /***
    * Language Value Set
@@ -284,17 +249,7 @@ export class TopbarComponent implements OnInit {
       }
       this.checkedValGet = checkedVal;
     } else {
-      var checkedVal: any[] = [];
-      for (var i = 0; i < this.messages.length; i++) {
-        if (this.messages[i].state == true) {
-          result = this.messages[i].id;
-          checkedVal.push(result);
-        }
-      }
-      console.log(checkedVal)
-      this.checkedValGet = checkedVal;
     }
-    checkedVal.length > 0 ? (document.getElementById("notification-actions") as HTMLElement).style.display = 'block' : (document.getElementById("notification-actions") as HTMLElement).style.display = 'none';
   }
 
   notificationDelete() {
@@ -303,14 +258,6 @@ export class TopbarComponent implements OnInit {
         for (var j = 0; j < this.allnotifications.length; j++) {
           if (this.allnotifications[j].id == this.checkedValGet[i]) {
             this.allnotifications.splice(j, 1)
-          }
-        }
-      }
-    } else {
-      for (var i = 0; i < this.checkedValGet.length; i++) {
-        for (var j = 0; j < this.messages.length; j++) {
-          if (this.messages[j].id == this.checkedValGet[i]) {
-            this.messages.splice(j, 1)
           }
         }
       }
