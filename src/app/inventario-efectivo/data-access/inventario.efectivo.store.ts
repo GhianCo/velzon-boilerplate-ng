@@ -136,6 +136,7 @@ export class InventarioEfectivoStore extends SignalStore<IState> {
 
   public async loadValoresWithDetails() {
     this.patch({valoresWithDetailsLoading: true, valoresWithDetailsError: null});
+    this.initialize(initialState);
     this._inventarioEfectivoRemoteReq.requestGetValoresWithDetails().pipe(
       tap(async ({data, pagination}) => {
         this.patch({
