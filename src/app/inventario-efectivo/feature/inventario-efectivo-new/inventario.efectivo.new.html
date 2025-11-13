@@ -67,7 +67,7 @@
           <div class="d-flex">
             <h5 class="card-title flex-grow-1 mb-0"><i class="mdi mdi-chart-arc align-middle me-1 text-muted"></i> Resumen de inventario</h5>
             <div class="flex-shrink-0">
-              <button type="button" class="btn btn-success btn-sm" (click)="saveInventario()" [disabled]="vm.saveInventarioEfectivoLoading">
+              <button type="button" class="btn btn-success btn-sm" (click)="saveInventario()" [disabled]="vm.saveInventarioEfectivoLoading || vm.valoresSummary?.totalConvertido < 1">
                 <i class="ri-save-fill align-middle"></i> Guardar inventario
               </button>
             </div>
@@ -128,7 +128,7 @@
               <h6 class="mb-0 text-success">Suma diaria de efectivo</h6>
             </div>
             <div class="mt-2 pt-2">
-              <button type="button" class="btn btn-success w-100" (click)="saveInventario()" [disabled]="vm.saveInventarioEfectivoLoading">
+              <button type="button" class="btn btn-success w-100" (click)="saveInventario()" [disabled]="vm.saveInventarioEfectivoLoading || vm.valoresSummary?.totalConvertido < 1">
                 <i class="ri-save-fill align-middle"></i> Guardar inventario
               </button>
             </div>
