@@ -1,25 +1,23 @@
-import { Component, OnInit } from '@angular/core';
-import {ReactiveFormsModule, UntypedFormBuilder, UntypedFormGroup, Validators} from '@angular/forms';
-import {ActivatedRoute, Router, RouterLink} from '@angular/router';
+import {Component, inject, OnInit} from '@angular/core';
+import {FormsModule, ReactiveFormsModule, UntypedFormBuilder, UntypedFormGroup, Validators} from '@angular/forms';
+import {RouterLink} from '@angular/router';
 
 // Login Auth
-import { environment } from '../../../environments/environment';
-import { AuthenticationService } from '../../../@velzon/services/auth.service';
-import { AuthfakeauthenticationService } from '../../../@velzon/services/authfake.service';
-import { first } from 'rxjs/operators';
-import { ToastService } from './toast-service';
-import {ToastsContainer} from "@app/account/login/toasts-container.component";
 import {NgClass} from "@angular/common";
+import {NgbCarousel, NgbSlide} from "@ng-bootstrap/ng-bootstrap";
+import {AuthLoginStore} from "@app/account/data-access/auth.login.store";
 
 @Component({
   selector: 'app-login',
   templateUrl: './login.component.html',
   styleUrls: ['./login.component.scss'],
   imports: [
-    ToastsContainer,
     NgClass,
     ReactiveFormsModule,
-    RouterLink
+    RouterLink,
+    NgbCarousel,
+    NgbSlide,
+    FormsModule
   ],
   standalone: true
 })
@@ -35,33 +33,23 @@ export class LoginComponent implements OnInit {
   fieldTextType!: boolean;
   error = '';
   returnUrl!: string;
-
-  toast!: false;
-
   // set the current year
   year: number = new Date().getFullYear();
+  // Carousel navigation arrow show
+  showNavigationArrows: any;
+  public authLoginStore = inject(AuthLoginStore);
 
-  constructor(private formBuilder: UntypedFormBuilder,private authenticationService: AuthenticationService,private router: Router,
-    private authFackservice: AuthfakeauthenticationService,private route: ActivatedRoute,public toastService: ToastService) {
-      // redirect to home if already logged in
-      if (this.authenticationService.currentUserValue) {
-        this.router.navigate(['/']);
-      }
-     }
+  constructor(private formBuilder: UntypedFormBuilder) { }
 
   ngOnInit(): void {
-    if(sessionStorage.getItem('currentUser')) {
-      this.router.navigate(['/']);
-    }
     /**
      * Form Validatyion
      */
-     this.loginForm = this.formBuilder.group({
-      email: ['admin@themesbrand.com', [Validators.required, Validators.email]],
-      password: ['123456', [Validators.required]],
+    this.loginForm = this.formBuilder.group({
+      sala_id: [1, [Validators.required]],
+      user: ['', [Validators.required]],
+      pass: ['', Validators.required],
     });
-    // get return url from route parameters or default to '/'
-    // this.returnUrl = this.route.snapshot.queryParams['returnUrl'] || '/';
   }
 
   // convenience getter for easy access to form fields
@@ -70,48 +58,20 @@ export class LoginComponent implements OnInit {
   /**
    * Form submit
    */
-   onSubmit() {
+  onSubmit() {
     this.submitted = true;
 
-    // Login Api
-    this.authenticationService.login(this.f['email'].value, this.f['password'].value).subscribe((data:any) => {
-      if(data.status == 'success'){
-        sessionStorage.setItem('toast', 'true');
-        sessionStorage.setItem('currentUser', JSON.stringify(data.data));
-        sessionStorage.setItem('token', data.token);
-        this.router.navigate(['/']);
-      } else {
-        this.toastService.show(data.data, { classname: 'bg-danger text-white', delay: 15000 });
-      }
-    });
-
     // stop here if form is invalid
-    // if (this.loginForm.invalid) {
-    //   return;
-    // } else {
-    //   if (environment.defaultauth === 'firebase') {
-    //     this.authenticationService.login(this.f['email'].value, this.f['password'].value).then((res: any) => {
-    //       this.router.navigate(['/']);
-    //     })
-    //       .catch(error => {
-    //         this.error = error ? error : '';
-    //       });
-    //   } else {
-    //     this.authFackservice.login(this.f['email'].value, this.f['password'].value).pipe(first()).subscribe(data => {
-    //           this.router.navigate(['/']);
-    //         },
-    //         error => {
-    //           this.error = error ? error : '';
-    //         });
-    //   }
-    // }
+    if (this.loginForm.invalid) {
+      return;
+    }
+    this.authLoginStore.loadLogin(this.loginForm.value);
   }
 
   /**
    * Password Hide/Show
    */
-   toggleFieldTextType() {
+  toggleFieldTextType() {
     this.fieldTextType = !this.fieldTextType;
   }
-
 }

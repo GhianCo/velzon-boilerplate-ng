@@ -2,7 +2,6 @@ import { Component, OnInit, EventEmitter, Output, Inject, ViewChild, TemplateRef
 import { EventService } from '../../services/event.service';
 
 //Logout
-import { AuthenticationService } from '../../services/auth.service';
 import { AuthfakeauthenticationService } from '../../services/authfake.service';
 import {Router} from '@angular/router';
 import { TokenStorageService } from '../../services/token-storage.service';
@@ -18,6 +17,7 @@ import {
 } from '@ng-bootstrap/ng-bootstrap';
 import {SimplebarAngularModule} from "simplebar-angular";
 import {FormsModule} from "@angular/forms";
+import {AuthService} from "@sothy/services/auth.service";
 
 @Component({
   selector: 'app-topbar',
@@ -53,7 +53,7 @@ export class TopbarComponent implements OnInit {
   notifyId: any;
 
   constructor(@Inject(DOCUMENT) private document: any, private eventService: EventService, public languageService: LanguageService, private modalService: NgbModal,
-    public _cookiesService: CookieService, public translate: TranslateService, private authService: AuthenticationService, private authFackservice: AuthfakeauthenticationService,
+    public _cookiesService: CookieService, public translate: TranslateService, private authService: AuthService, private authFackservice: AuthfakeauthenticationService,
     private router: Router, private TokenStorageService: TokenStorageService) { }
 
   ngOnInit(): void {
@@ -152,7 +152,7 @@ export class TopbarComponent implements OnInit {
    * Logout the user
    */
   logout() {
-    this.authService.logout();
+    this.authService.signOut();
     this.router.navigate(['/auth/login']);
   }
 

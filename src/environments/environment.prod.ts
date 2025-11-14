@@ -12,7 +12,7 @@ export const environment = {
     measurementId: ''
   },
   // -------------------------------\\
-  api: 'http://localhost/dipafarapi',
+  api: 'http://localhost/cash-control-back',
   apiRest: 'api/',
   publicRest: 'public/',
   endpoints: {
@@ -20,4 +20,5 @@ export const environment = {
       signIn: 'auth/sign-in',
     }
   },
+  apiLiquidaciones: 'http://10.45.1.171/control-activos-masaris',
 };

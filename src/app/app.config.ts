@@ -7,7 +7,6 @@ import {
   withPreloading
 } from "@angular/router";
 import {HttpClient, provideHttpClient, withInterceptorsFromDi} from "@angular/common/http";
-import {JwtInterceptor} from "@velzon/core/helpers/jwt.interceptor";
 import {ErrorInterceptor} from "@velzon/core/helpers/error.interceptor";
 import {FakeBackendInterceptor} from "@velzon/core/helpers/fake-backend";
 import {NgPipesModule} from "ngx-pipes";
@@ -18,7 +17,6 @@ import {rootReducer} from "@velzon/store";
 import {StoreDevtoolsModule} from "@ngrx/store-devtools";
 import {environment} from "@environments/environment";
 import {EffectsModule} from "@ngrx/effects";
-import {AuthenticationEffects} from "@velzon/store/Authentication/authentication.effects";
 import {EcommerceEffects} from "@velzon/store/Ecommerce/ecommerce_effect";
 import {ProjectEffects} from "@velzon/store/Project/project_effect";
 import {TaskEffects} from "@velzon/store/Task/task_effect";
@@ -44,6 +42,9 @@ import {
   NON_COMMERCIAL_LICENSE,
 } from "@handsontable/angular-wrapper";
 import { registerLanguageDictionary, deDE } from 'handsontable/i18n';
+import {liquidacionesAPiCreator, LiquidacionesApiService} from "@sothy/services/liquidaciones.api.service";
+import {workersAPiCreator, WorkersApiService} from "@sothy/services/workers.api.service";
+import {AlertService, alertServiceFactory} from "@sothy/services/alert.service";
 registerLanguageDictionary(deDE);
 
 const globalHotConfig: HotGlobalConfig = {
@@ -74,14 +75,12 @@ export const appConfig: ApplicationConfig = {
     {provide: HOT_GLOBAL_CONFIG, useValue: globalHotConfig},
     provideHttpClient(),
     // Interceptores HTTP
-    {provide: 'HTTP_INTERCEPTORS', useClass: JwtInterceptor, multi: true},
     {provide: 'HTTP_INTERCEPTORS', useClass: ErrorInterceptor, multi: true},
     {provide: 'HTTP_INTERCEPTORS', useClass: FakeBackendInterceptor, multi: true},
-    {
-      provide: HttpService,
-      useFactory: httpServiceCreator,
-      deps: [HttpClient]
-    },
+    {provide: HttpService,useFactory: httpServiceCreator,deps: [HttpClient]},
+    {provide: LiquidacionesApiService, useFactory: liquidacionesAPiCreator, deps: [HttpClient]},
+    {provide: WorkersApiService, useFactory: workersAPiCreator, deps: [HttpClient]},
+    {provide: AlertService, useFactory: alertServiceFactory, deps: []},
     importProvidersFrom(
       BrowserAnimationsModule,
       NgPipesModule,
@@ -99,7 +98,6 @@ export const appConfig: ApplicationConfig = {
         logOnly: environment.production,
       }),
       EffectsModule.forRoot([
-        AuthenticationEffects,
         EcommerceEffects,
         ProjectEffects,
         TaskEffects,
