@@ -5,7 +5,7 @@
   <div class="row">
     <div class="col-xl-9">
       <div class="live-preview">
-        <div ngbAccordion activeIds="static-1">
+        <div ngbAccordion>
           @for (valorDetail of vm.valoresWithDetailsData; track $index) {
             <div ngbAccordionItem [collapsed]="false" >
               <div ngbAccordionHeader class="accordion-header border-0 bg-transparent">
@@ -24,24 +24,77 @@
                         <div class="col-xxl-3 col-md-6">
                           <div>
                             <label class="form-label">Tipo de cambio</label>
-                            <input type="number" class="form-control" min="1" [(ngModel)]="valorDetail.current_tc">
+                            <input type="number" class="form-control" min="1"
+                                   [(ngModel)]="valorDetail.current_tc"
+                                   (ngModelChange)="onTipoCambioChange(valorDetail, $event)">
                           </div>
                         </div><!--end col-->
                         <!--end col-->
                       </div><!--end row-->
                     }
-                    <div class="d-flex flex-wrap gap-4">
-                      @for (denominacion of valorDetail.denominaciones; track $index) {
-                        <div>
-                          <h5 class="fs-13 fw-medium">{{ denominacion.descripcion }}</h5>
-                          <div class="input-step d-flex align-items-center justify-content-between mb-2">
-                            <button type="button" class="minus" (click)="inventarioEfectivoStore.decrementDenominacionEfectivo(denominacion)">–</button>
-                            <input type="number" class="product-quantity" min="0" [(ngModel)]="denominacion.cantidad" (ngModelChange)="inventarioEfectivoStore.onCantidadChange(denominacion, $event)">
-                            <button type="button" class="plus" (click)="inventarioEfectivoStore.incrementDenominacionEfectivo(denominacion)">+</button>
-                          </div>
-                          <span class="text-success fw-semibold">{{valorDetail.simbolo}} {{ denominacion.importeLocal?.toFixed(2) || '0.00' }}</span>
-                        </div>
-                      }
+                    <!-- Tabla de distribución por cajas -->
+                    <div class="table-responsive">
+                      <table class="table table-bordered">
+                        <thead>
+                          <tr>
+                            <th class="text-start">Denominación</th>
+                            @for (caja of vm.cajasData; track $index) {
+                              <th>{{caja.caja_nombre}}</th>
+                            }
+                            <th class="text-center" style="min-width: 120px;">
+                              <strong>Total</strong>
+                            </th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          @for (denominacion of valorDetail.denominaciones; track $index) {
+                            <tr>
+                              <!-- Denominación -->
+                              <td class="align-middle">
+                                <div class="d-flex align-items-center">
+                                  <span class="fw-medium">{{ denominacion.descripcion }}</span>
+                                </div>
+                              </td>
+
+                              @for (caja of vm.cajasData; track $index) {
+                                <td>
+                                  <div class="input-group input-group-sm">
+                                    <button class="btn btn-outline-primary btn-sm" type="button"
+                                            (click)="decrementCantidadByCaja(denominacion, caja.caja_nombre)">
+                                      <i class="ri-subtract-line"></i>
+                                    </button>
+                                    <input type="number" class="form-control text-center" min="0"
+                                           [(ngModel)]="getCajas(denominacion).boveda"
+                                           (ngModelChange)="onCantidadCajaChange(denominacion, caja.caja_nombre, $event)"
+                                           style="max-width: 60px;">
+                                    <button class="btn btn-outline-primary btn-sm" type="button"
+                                            (click)="incrementCantidadByCaja(denominacion, caja.caja_nombre)">
+                                      <i class="ri-add-line"></i>
+                                    </button>
+                                  </div>
+                                </td>
+                              }
+                              <!-- Importe -->
+                              <td class="text-center">
+                                <span class="fw-bold">
+                                  {{ valorDetail.simbolo }} {{ denominacion.importeLocal?.toFixed(2) || '0.00' }}
+                                </span>
+                              </td>
+                            </tr>
+                          }
+                        </tbody>
+                        <!-- Fila de totales -->
+                        <tfoot>
+                          <tr>
+                            <th class="text-end" colspan="5">Total de {{valorDetail.name}}:</th>
+                            <th class="text-center">
+                              <span class="fw-bold">
+                                {{ valorDetail.simbolo }} {{ valorDetail.acumuladoLocal?.toFixed(2) || '0.00' }}
+                              </span>
+                            </th>
+                          </tr>
+                        </tfoot>
+                      </table>
                     </div>
                     @if (valorDetail.codigo == 'USD'){
                       <div class="p-3 bg-warning-subtle mt-2">
@@ -75,7 +128,7 @@
         </div>
         <div class="card-body">
           @if(vm.valoresSummary.totalConvertido > 0){
-            <apx-chart class="apex-charts" dir="ltr" [series]="vm.chartSummary?.series" [labels]="vm.chartSummary?.labels"
+            <apx-chart class="apex-charts" [series]="vm.chartSummary?.series" [labels]="vm.chartSummary?.labels"
                        [chart]="vm.chartSummary?.chart" [plotOptions]="vm.chartSummary?.plotOptions" [dataLabels]="vm.chartSummary?.dataLabels"
                        [legend]="vm.chartSummary?.legend" [stroke]="vm.chartSummary?.stroke" [colors]="vm.chartSummary?.colors" dir="ltr"></apx-chart>
           }
@@ -143,7 +196,7 @@
   <!--end row-->
 }
 
-<ng-template #content role="document" let-modal>
+<ng-template #addressModal role="document" let-modal>
   <div class="modal-header">
     <h5 class="modal-title" id="addAddressModalLabel">Address</h5>
     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"
@@ -162,8 +215,8 @@
       </div>
 
       <div class="mb-3">
-        <label for="addaddress-Name" class="form-label">Phone</label>
-        <input type="text" class="form-control" id="addaddress-Name" placeholder="Enter Phone No.">
+        <label for="addaddress-Phone" class="form-label">Phone</label>
+        <input type="text" class="form-control" id="addaddress-Phone" placeholder="Enter Phone No.">
       </div>
 
       <div class="mb-3">

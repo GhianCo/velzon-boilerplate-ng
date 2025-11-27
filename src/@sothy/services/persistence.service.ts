@@ -7,8 +7,188 @@ export interface PersistenceOptions {
 
 @Injectable({providedIn: 'root'})
 export class PersistenceService {
-    localStorePrefix = 'dipafar_st_';
-    cookiePrefix = 'dipafar_ck_';
+    localStorePrefix = 'cash_control_st_';
+    cookiePrefix = 'cash_control_ck_';
+
+    // Cache para el token decodificado
+    private _decodedToken: any = null;
+    private _tokenExpiry: number = 0;
+
+    // ...existing code...
+
+    /**
+     * Decodifica un token JWT sin verificación de firma
+     * @param token - El token JWT a decodificar
+     * @returns El payload decodificado o null si el token es inválido
+     */
+    private decodeJWT(token: string): any {
+        try {
+            const parts = token.split('.');
+            if (parts.length !== 3) {
+                throw new Error('Token JWT inválido');
+            }
+
+            const payload = parts[1];
+            // Agregar padding si es necesario
+            const paddedPayload = payload + '='.repeat((4 - payload.length % 4) % 4);
+            const decodedPayload = atob(paddedPayload.replace(/-/g, '+').replace(/_/g, '/'));
+
+            return JSON.parse(decodedPayload);
+        } catch (error) {
+            if (isDevMode()) {
+                console.error('Error decodificando token JWT:', error);
+            }
+            return null;
+        }
+    }
+
+    /**
+     * Obtiene el token decodificado del localStorage con cache
+     * @param forceRefresh - Fuerza la actualización del cache
+     * @returns El payload del token decodificado o null
+     */
+    getDecodedToken(forceRefresh: boolean = false): any {
+        const now = Date.now();
+
+        // Si hay cache válido y no se fuerza refresh, retornar cache
+        if (!forceRefresh && this._decodedToken && now < this._tokenExpiry) {
+            return this._decodedToken;
+        }
+
+        try {
+            const token = this.get('token');
+
+            if (!token) {
+                this._decodedToken = null;
+                this._tokenExpiry = 0;
+                return null;
+            }
+
+            const decoded = this.decodeJWT(token);
+
+            if (!decoded) {
+                this._decodedToken = null;
+                this._tokenExpiry = 0;
+                return null;
+            }
+
+            // Cache por 5 minutos o hasta que expire el token
+            const tokenExp = (decoded.exp || 0) * 1000; // exp está en segundos, convertir a ms
+            const cacheExpiry = Math.min(now + (5 * 60 * 1000), tokenExp); // 5 minutos o exp del token
+
+            this._decodedToken = decoded;
+            this._tokenExpiry = cacheExpiry;
+
+            return decoded;
+        } catch (error) {
+            if (isDevMode()) {
+                console.error('Error obteniendo token decodificado:', error);
+            }
+            this._decodedToken = null;
+            this._tokenExpiry = 0;
+            return null;
+        }
+    }
+
+    /**
+     * Obtiene una propiedad específica del token
+     * @param property - La propiedad a obtener (ej: 'sala_id', 'sub', 'email')
+     * @param defaultValue - Valor por defecto si la propiedad no existe
+     * @returns El valor de la propiedad o el valor por defecto
+     */
+    getTokenProperty<T = any>(property: string, defaultValue: T | null = null): T | null {
+        const decoded = this.getDecodedToken();
+        return decoded && decoded.hasOwnProperty(property) ? decoded[property] : defaultValue;
+    }
+
+    /**
+     * Obtiene múltiples propiedades del token
+     * @param properties - Array de propiedades a obtener
+     * @returns Objeto con las propiedades encontradas
+     */
+    getTokenProperties(properties: string[]): { [key: string]: any } {
+        const decoded = this.getDecodedToken();
+        const result: { [key: string]: any } = {};
+
+        if (!decoded) {
+            return result;
+        }
+
+        properties.forEach(prop => {
+            if (decoded.hasOwnProperty(prop)) {
+                result[prop] = decoded[prop];
+            }
+        });
+
+        return result;
+    }
+
+    /**
+     * Verifica si el token existe y es válido
+     * @returns true si el token es válido, false en caso contrario
+     */
+    isTokenValid(): boolean {
+        const decoded = this.getDecodedToken();
+
+        if (!decoded || !decoded.exp) {
+            return false;
+        }
+
+        const now = Math.floor(Date.now() / 1000);
+        return decoded.exp > now;
+    }
+
+    /**
+     * Obtiene información completa del usuario desde el token
+     * @returns Objeto con información del usuario o null
+     */
+    getUserInfo(): any {
+        const decoded = this.getDecodedToken();
+
+        if (!decoded) {
+            return null;
+        }
+
+        // Propiedades comunes en tokens JWT
+        const commonProps = ['sub', 'email', 'name', 'given_name', 'family_name', 'picture', 'sala_id', 'role', 'permissions'];
+        return this.getTokenProperties(commonProps);
+    }
+
+    /**
+     * Limpia el cache del token (útil al hacer logout)
+     */
+    clearTokenCache(): void {
+        this._decodedToken = null;
+        this._tokenExpiry = 0;
+    }
+
+    /**
+     * Métodos de conveniencia para propiedades comunes
+     */
+
+    getSalaId() {
+        return this.getTokenProperty('sala_id');
+    }
+
+    getUserId() {
+        return this.getTokenProperty('sub');
+    }
+
+    getUserEmail() {
+        return this.getTokenProperty('email');
+    }
+
+    getUserName() {
+        return this.getTokenProperty('name');
+    }
+
+    getUserRole() {
+        return this.getTokenProperty('role');
+    }
+
+    getUserPermissions(){
+        return this.getTokenProperty('permissions', []);
+    }
 
     private setPersistenceValue(key: string, value: unknown, options?: PersistenceOptions) {
         if (undefined !== value) {
@@ -71,7 +251,14 @@ export class PersistenceService {
 
     remove(key: string | string[], options?: PersistenceOptions) {
         try {
-            for (let keys = isArray(key) ? key : [key], i = 0, len = keys.length; i < len; i++) {
+            const keys = isArray(key) ? key : [key];
+
+            for (let i = 0, len = keys.length; i < len; i++) {
+                // Si se está removiendo el token, limpiar cache
+                if (keys[i] === 'token') {
+                    this.clearTokenCache();
+                }
+
                 if (options && options.session) {
                     sessionStorage.removeItem(this.localStorePrefix + keys[i]);
                 } else {

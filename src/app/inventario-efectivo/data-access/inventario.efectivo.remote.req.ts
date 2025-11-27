@@ -5,6 +5,7 @@ import {Observable} from "rxjs";
 import {InventarioEfectivoMapper} from "@app/inventario-efectivo/data-access/mappers/inventario.efectivo.mapper";
 import {IResponse} from "@sothy/interfaces/IResponse";
 import {HttpService} from "@sothy/services/http.service";
+import {ControlActivosApiService} from "@sothy/services/control.activos.api.service";
 
 @Injectable({
   providedIn: 'root'
@@ -17,6 +18,7 @@ export class InventarioEfectivoRemoteReq {
 
   constructor(
     private http: HttpService,
+    private _controlActivosApiService: ControlActivosApiService,
   ) {
   }
 
@@ -35,8 +37,13 @@ export class InventarioEfectivoRemoteReq {
   requestGetValoresWithDetails(): Observable<IResponse> {
     return this.http.get(this.REMOTE_API_URI + 'valor/withDetails')
   }
+
   requestSaveInventario(inventarioWithDetails: any): Observable<IResponse> {
     return this.http.post(this.REMOTE_API_URI + 'inventario/saveWithDetails', inventarioWithDetails)
+  }
+
+  requestAllCajasBySala(sala_id: number): Observable<IResponse> {
+    return this._controlActivosApiService.get(this.REMOTE_API_URI + 'caja?sala='+sala_id)
   }
 
 }

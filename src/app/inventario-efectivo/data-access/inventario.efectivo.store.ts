@@ -5,6 +5,7 @@ import {InventarioEfectivoRemoteReq} from "@app/inventario-efectivo/data-access/
 import {catchError, finalize, tap} from "rxjs/operators";
 import {Observable, of} from "rxjs";
 import {PARAM} from "@shared/constants/app.const";
+import {PersistenceService} from "@sothy/services/persistence.service";
 
 export type IState = {
   inventarioEfectivoLoading: boolean,
@@ -23,6 +24,10 @@ export type IState = {
 
   saveInventarioEfectivoLoading: boolean,
   saveInventarioEfectivoError: any,
+
+  cajasLoading: boolean,
+  cajasData: any,
+  cajasError: any,
 }
 
 const initialState: IState = {
@@ -40,6 +45,10 @@ const initialState: IState = {
   valoresWithDetailsLoading: false,
   valoresWithDetailsData: null,
   valoresWithDetailsError: null,
+
+  cajasLoading: false,
+  cajasData: null,
+  cajasError: null,
 
   valoresSummary: {
     diferencia: 0,
@@ -98,6 +107,10 @@ export class InventarioEfectivoStore extends SignalStore<IState> {
     'valoresWithDetailsData',
     'valoresWithDetailsError',
 
+    'cajasLoading',
+    'cajasData',
+    'cajasError',
+
     'valoresSummary',
     'chartSummary',
 
@@ -109,6 +122,7 @@ export class InventarioEfectivoStore extends SignalStore<IState> {
     private _inventarioEfectivoRemoteReq: InventarioEfectivoRemoteReq,
     private _activatedRoute: ActivatedRoute,
     private _router: Router,
+    private _persistenceService: PersistenceService,
   ) {
     super();
     this.initialize(initialState);
@@ -129,6 +143,25 @@ export class InventarioEfectivoStore extends SignalStore<IState> {
       catchError((error) => {
         return of(this.patch({
           inventarioEfectivoError: error
+        }));
+      }),
+    ).subscribe();
+  };
+
+  public async loadCajas() {
+    this.patch({cajasLoading: true, cajasError: null});
+    this._inventarioEfectivoRemoteReq.requestAllCajasBySala(this._persistenceService.getSalaId()).pipe(
+      tap(async ({data, pagination}) => {
+        this.patch({
+          cajasData: data,
+        })
+      }),
+      finalize(async () => {
+        this.patch({cajasLoading: false});
+      }),
+      catchError((error) => {
+        return of(this.patch({
+          cajasError: error
         }));
       }),
     ).subscribe();
@@ -166,7 +199,7 @@ export class InventarioEfectivoStore extends SignalStore<IState> {
     };
     this._inventarioEfectivoRemoteReq.requestSaveInventario(inventario).pipe(
       tap(async ({data, pagination}) => {
-        this._router.navigate(['./'], { relativeTo: this._activatedRoute });
+        this._router.navigate(['./'], {relativeTo: this._activatedRoute});
       }),
       finalize(async () => {
         this.patch({saveInventarioEfectivoLoading: false});

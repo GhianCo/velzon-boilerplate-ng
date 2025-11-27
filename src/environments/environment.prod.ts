@@ -20,5 +20,5 @@ export const environment = {
       signIn: 'auth/sign-in',
     }
   },
-  apiLiquidaciones: 'http://10.45.1.171/control-activos-masaris',
+  apiControlActivos: 'http://10.45.1.171/control-activos-masaris',
 };
