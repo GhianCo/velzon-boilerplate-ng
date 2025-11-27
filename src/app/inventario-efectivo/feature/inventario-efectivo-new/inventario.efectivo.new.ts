@@ -163,24 +163,107 @@ export class InventarioEfectivoNew implements OnInit {
         const vm = this.inventarioEfectivoStore.vm();
         if (!vm?.valoresWithDetailsData) return;
 
-        // Buscar el valorDetail que contiene esta denominación
-        const valorDetail = vm.valoresWithDetailsData.find((vd: any) =>
-            vd.denominaciones && vd.denominaciones.includes(denominacionChanged)
-        );
+        // Buscar el valorDetail que contiene esta denominación de forma más robusta
+        let valorDetailFound: any = null;
 
-        if (valorDetail && valorDetail.denominaciones) {
+        for (const valorDetail of vm.valoresWithDetailsData) {
+            if (valorDetail.denominaciones && valorDetail.denominaciones.length > 0) {
+                // Buscar si esta denominación específica está en este valorDetail
+                const found = valorDetail.denominaciones.find((denom: any) => denom === denominacionChanged);
+                if (found) {
+                    valorDetailFound = valorDetail;
+                    break;
+                }
+            }
+        }
+
+        if (valorDetailFound && valorDetailFound.denominaciones) {
             // Calcular el acumuladoLocal sumando todos los importeLocal de las denominaciones
-            valorDetail.acumuladoLocal = valorDetail.denominaciones.reduce((total: number, denominacion: any) => {
-                return total + (denominacion.importeLocal || 0);
-            }, 0);
+            let totalAcumulado = 0;
+
+            valorDetailFound.denominaciones.forEach((denominacion: any) => {
+                if (denominacion.importeLocal && !isNaN(denominacion.importeLocal)) {
+                    totalAcumulado += denominacion.importeLocal;
+                }
+            });
+
+            valorDetailFound.acumuladoLocal = totalAcumulado;
 
             // También calcular el acumuladoConvertido (para el resumen)
-            const tipoCambio = valorDetail.current_tc || 1;
-            valorDetail.acumuladoConvertido = valorDetail.acumuladoLocal * tipoCambio;
+            const tipoCambio = valorDetailFound.current_tc || 1;
+            valorDetailFound.acumuladoConvertido = valorDetailFound.acumuladoLocal * tipoCambio;
 
-            // Actualizar totales generales del store si existe el método
-            // this.inventarioEfectivoStore.updateTotalesGenerales();
+            console.log(`Actualizados totales para ${valorDetailFound.name}:`, {
+                acumuladoLocal: valorDetailFound.acumuladoLocal,
+                acumuladoConvertido: valorDetailFound.acumuladoConvertido,
+                denominaciones: valorDetailFound.denominaciones.map((d: any) => ({
+                    descripcion: d.descripcion,
+                    importeLocal: d.importeLocal,
+                    cantidadTotal: d.cantidadTotal
+                }))
+            });
+
+            // Recalcular totales generales del store
+            this.updateTotalesGenerales();
+        } else {
+            console.error('No se encontró el valorDetail para la denominación:', denominacionChanged);
         }
+    }
+
+    // Método para manejar cambios en la diferencia
+    onDiferenciaChange(nuevaDiferencia: number) {
+        const vm = this.inventarioEfectivoStore.vm();
+        if (vm?.valoresSummary) {
+            vm.valoresSummary.diferencia = nuevaDiferencia || 0;
+
+            // Recalcular suma diaria de efectivo
+            const totalConvertido = vm.valoresSummary.totalConvertido || 0;
+            vm.valoresSummary.suma_diaria_efectivo = totalConvertido + vm.valoresSummary.diferencia;
+
+            console.log('Diferencia actualizada:', {
+                diferencia: vm.valoresSummary.diferencia,
+                totalConvertido: totalConvertido,
+                suma_diaria_efectivo: vm.valoresSummary.suma_diaria_efectivo
+            });
+        }
+    }
+
+    // Nuevo método para actualizar totales generales
+    updateTotalesGenerales() {
+        const vm = this.inventarioEfectivoStore.vm();
+        if (!vm?.valoresWithDetailsData) return;
+
+        // Calcular el total convertido general
+        let totalConvertido = 0;
+
+        vm.valoresWithDetailsData.forEach((valorDetail: any) => {
+            if (valorDetail.acumuladoConvertido && !isNaN(valorDetail.acumuladoConvertido)) {
+                totalConvertido += valorDetail.acumuladoConvertido;
+            }
+        });
+
+        // Actualizar el summary
+        if (vm.valoresSummary) {
+            vm.valoresSummary.totalConvertido = totalConvertido;
+
+            // Calcular porcentajes
+            vm.valoresWithDetailsData.forEach((valorDetail: any) => {
+                if (totalConvertido > 0) {
+                    valorDetail.porcentaje = (valorDetail.acumuladoConvertido / totalConvertido) * 100;
+                } else {
+                    valorDetail.porcentaje = 0;
+                }
+            });
+
+            // Calcular suma diaria de efectivo (total + diferencia)
+            const diferencia = vm.valoresSummary.diferencia || 0;
+            vm.valoresSummary.suma_diaria_efectivo = totalConvertido + diferencia;
+        }
+
+        console.log('Totales generales actualizados:', {
+            totalConvertido: totalConvertido,
+            suma_diaria_efectivo: vm.valoresSummary?.suma_diaria_efectivo
+        });
     }
 
     // Método para manejar cambios en el tipo de cambio
@@ -190,8 +273,8 @@ export class InventarioEfectivoNew implements OnInit {
         // Recalcular el acumuladoConvertido
         valorDetail.acumuladoConvertido = (valorDetail.acumuladoLocal || 0) * nuevoTipoCambio;
 
-        // Actualizar totales generales si es necesario
-        // this.inventarioEfectivoStore.updateTotalesGenerales();
+        // Actualizar totales generales
+        this.updateTotalesGenerales();
     }
 
     getTotalByCaja(valorDetail: any, cajaNombre: string): number {
