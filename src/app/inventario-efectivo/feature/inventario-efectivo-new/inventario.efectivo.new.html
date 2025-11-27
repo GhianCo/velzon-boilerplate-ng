@@ -64,7 +64,7 @@
                                       <i class="ri-subtract-line"></i>
                                     </button>
                                     <input type="number" class="form-control text-center" min="0"
-                                           [(ngModel)]="getCajas(denominacion).boveda"
+                                           [(ngModel)]="getCajas(denominacion)[caja.caja_nombre]"
                                            (ngModelChange)="onCantidadCajaChange(denominacion, caja.caja_nombre, $event)"
                                            style="max-width: 60px;">
                                     <button class="btn btn-outline-primary btn-sm" type="button"
@@ -86,7 +86,7 @@
                         <!-- Fila de totales -->
                         <tfoot>
                           <tr>
-                            <th class="text-end" colspan="5">Total de {{valorDetail.name}}:</th>
+                            <th class="text-end" [attr.colspan]="vm.cajasData.length + 1">Total de {{valorDetail.name}}:</th>
                             <th class="text-center">
                               <span class="fw-bold">
                                 {{ valorDetail.simbolo }} {{ valorDetail.acumuladoLocal?.toFixed(2) || '0.00' }}

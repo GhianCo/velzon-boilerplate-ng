@@ -119,29 +119,37 @@ export class InventarioEfectivoNew implements OnInit {
     // Inicializar el objeto cajas si no existe
     initializeCajas(denominacion: any) {
         if (!denominacion.cajas) {
-            denominacion.cajas = {
-                boveda: 0,
-                caja01: 0,
-                caja02: 0,
-                caja03: 0
-            };
+            denominacion.cajas = {};
         }
-        // Asegurar que todas las propiedades existan
-        if (denominacion.cajas.boveda === undefined) denominacion.cajas.boveda = 0;
-        if (denominacion.cajas.caja01 === undefined) denominacion.cajas.caja01 = 0;
-        if (denominacion.cajas.caja02 === undefined) denominacion.cajas.caja02 = 0;
-        if (denominacion.cajas.caja03 === undefined) denominacion.cajas.caja03 = 0;
+
+        // Obtener cajas dinámicas desde el store
+        const vm = this.inventarioEfectivoStore.vm();
+        if (vm?.cajasData) {
+            vm.cajasData.forEach((caja: any) => {
+                const cajaNombre = caja.caja_nombre;
+                if (denominacion.cajas[cajaNombre] === undefined) {
+                    denominacion.cajas[cajaNombre] = 0;
+                }
+            });
+        }
     }
 
     updateTotales(denominacion: any) {
         // Asegurar que las cajas estén inicializadas
         const cajas = this.getCajas(denominacion);
 
-        // Calcular total de cantidad por denominación
-        denominacion.cantidadTotal = (cajas.boveda || 0) +
-                                    (cajas.caja01 || 0) +
-                                    (cajas.caja02 || 0) +
-                                    (cajas.caja03 || 0);
+        // Calcular total de cantidad por denominación dinámicamente
+        const vm = this.inventarioEfectivoStore.vm();
+        let cantidadTotal = 0;
+
+        if (vm?.cajasData) {
+            vm.cajasData.forEach((caja: any) => {
+                const cajaNombre = caja.caja_nombre;
+                cantidadTotal += (cajas[cajaNombre] || 0);
+            });
+        }
+
+        denominacion.cantidadTotal = cantidadTotal;
 
         // Calcular importe local
         denominacion.importeLocal = denominacion.cantidadTotal * (denominacion.valor || 0);
@@ -186,12 +194,21 @@ export class InventarioEfectivoNew implements OnInit {
         // this.inventarioEfectivoStore.updateTotalesGenerales();
     }
 
-    getTotalByCaja(valorDetail: any, caja: string): number {
+    getTotalByCaja(valorDetail: any, cajaNombre: string): number {
         if (!valorDetail.denominaciones) return 0;
 
         return valorDetail.denominaciones.reduce((total: number, denominacion: any) => {
             const cajas = this.getCajas(denominacion);
-            return total + (cajas[caja] || 0);
+            return total + (cajas[cajaNombre] || 0);
+        }, 0);
+    }
+
+    // Nuevo método para obtener la cantidad total de todas las cajas de una categoría
+    getCantidadTotalGeneral(valorDetail: any): number {
+        if (!valorDetail.denominaciones) return 0;
+
+        return valorDetail.denominaciones.reduce((total: number, denominacion: any) => {
+            return total + (denominacion.cantidadTotal || 0);
         }, 0);
     }
 
