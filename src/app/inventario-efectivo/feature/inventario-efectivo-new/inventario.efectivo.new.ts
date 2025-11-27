@@ -75,6 +75,9 @@ export class InventarioEfectivoNew implements OnInit {
                     });
                 }
             });
+
+            // Asegurar que el chart se inicialice después de cargar los datos
+            this.updateTotalesGenerales();
         }
     }
 
@@ -258,11 +261,25 @@ export class InventarioEfectivoNew implements OnInit {
             // Calcular suma diaria de efectivo (total + diferencia)
             const diferencia = vm.valoresSummary.diferencia || 0;
             vm.valoresSummary.suma_diaria_efectivo = totalConvertido + diferencia;
+
+            // ✅ MEJORADO: Actualizar chartSummary solo con valores > 0
+            const valoresConDatos = vm.valoresWithDetailsData.filter((v: any) =>
+                v.acumuladoConvertido && v.acumuladoConvertido > 0
+            );
+
+            vm.chartSummary = {
+                ...vm.chartSummary,
+                series: valoresConDatos.map((v: any) => v.acumuladoConvertido),
+                labels: valoresConDatos.map((v: any) => v.name || 'Sin nombre')
+            };
         }
 
         console.log('Totales generales actualizados:', {
             totalConvertido: totalConvertido,
-            suma_diaria_efectivo: vm.valoresSummary?.suma_diaria_efectivo
+            suma_diaria_efectivo: vm.valoresSummary?.suma_diaria_efectivo,
+            chartSeries: vm.chartSummary?.series,
+            chartLabels: vm.chartSummary?.labels,
+            valoresConDatos: vm.valoresWithDetailsData?.filter((v: any) => v.acumuladoConvertido > 0).length
         });
     }
 

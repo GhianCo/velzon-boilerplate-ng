@@ -127,7 +127,7 @@
           </div>
         </div>
         <div class="card-body">
-          @if(vm.valoresSummary.totalConvertido > 0){
+          @if(vm.valoresSummary?.totalConvertido > 0 && vm.chartSummary?.series?.length > 0){
             <apx-chart class="apex-charts" [series]="vm.chartSummary?.series" [labels]="vm.chartSummary?.labels"
                        [chart]="vm.chartSummary?.chart" [plotOptions]="vm.chartSummary?.plotOptions" [dataLabels]="vm.chartSummary?.dataLabels"
                        [legend]="vm.chartSummary?.legend" [stroke]="vm.chartSummary?.stroke" [colors]="vm.chartSummary?.colors" dir="ltr"></apx-chart>
