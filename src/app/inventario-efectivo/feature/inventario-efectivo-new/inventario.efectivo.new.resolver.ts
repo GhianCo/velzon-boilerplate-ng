@@ -3,6 +3,7 @@ import {InventarioEfectivoStore} from "@app/inventario-efectivo/data-access/inve
 
 export const InventarioEfectivoNewResolver = () => {
   const inventarioEfectivoStore = inject(InventarioEfectivoStore);
+  inventarioEfectivoStore.loadTurnos();
   inventarioEfectivoStore.loadCajas();
   return inventarioEfectivoStore.loadValoresWithDetails()
 }

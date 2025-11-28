@@ -172,6 +172,7 @@ export class InventarioEfectivoStore extends SignalStore<IState> {
       }),
       catchError((error) => {
         return of(this.patch({
+          cajasLoading: false,
           cajasError: error
         }));
       }),
@@ -332,31 +333,28 @@ export class InventarioEfectivoStore extends SignalStore<IState> {
   }
 
   public actualizarTurnos(turnos: any[]) {
-    this.patch({ turnosData: turnos });
+    this.patch({turnosData: turnos});
   }
 
-  public loadTurnos(sala_id: number): Observable<any> {
-    this.patch({ turnosLoading: true });
+  public async loadTurnos() {
+    this.patch({turnosLoading: true});
 
-    return this._inventarioEfectivoRemoteReq.requestGetTurnos(sala_id).pipe(
-      tap((response: any) => {
+    this._inventarioEfectivoRemoteReq.requestGetTurnos(this._persistenceService.getSalaId()).pipe(
+      tap(async ({data}) => {
         this.patch({
-          turnosData: response?.data,
-          turnosLoading: false,
-          turnosError: null
+          turnosData: data,
         });
       }),
       finalize(() => {
-        this.patch({ turnosLoading: false });
+        this.patch({turnosLoading: false});
       }),
       catchError((error) => {
-        this.patch({
+        return of(this.patch({
           turnosLoading: false,
           turnosError: error
-        });
-        return of(null);
+        }));
       })
-    );
+    ).subscribe();
   }
 
   public changePagination(pageNumber: number) {
