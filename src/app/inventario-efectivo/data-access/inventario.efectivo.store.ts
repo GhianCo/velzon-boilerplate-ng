@@ -28,6 +28,10 @@ export type IState = {
   cajasLoading: boolean,
   cajasData: any,
   cajasError: any,
+
+  turnosLoading: boolean,
+  turnosData: any,
+  turnosError: any,
 }
 
 const initialState: IState = {
@@ -49,6 +53,10 @@ const initialState: IState = {
   cajasLoading: false,
   cajasData: null,
   cajasError: null,
+
+  turnosLoading: false,
+  turnosData: [],
+  turnosError: null,
 
   valoresSummary: {
     diferencia: 0,
@@ -110,6 +118,9 @@ export class InventarioEfectivoStore extends SignalStore<IState> {
     'cajasLoading',
     'cajasData',
     'cajasError',
+    'turnosLoading',
+    'turnosData',
+    'turnosError',
 
     'valoresSummary',
     'chartSummary',
@@ -318,6 +329,34 @@ export class InventarioEfectivoStore extends SignalStore<IState> {
       suma_diaria_efectivo: state.valoresSummary.totalConvertido + diff
     };
     this.patch({valoresSummary});
+  }
+
+  public actualizarTurnos(turnos: any[]) {
+    this.patch({ turnosData: turnos });
+  }
+
+  public loadTurnos(sala_id: number): Observable<any> {
+    this.patch({ turnosLoading: true });
+
+    return this._inventarioEfectivoRemoteReq.requestGetTurnos(sala_id).pipe(
+      tap((response: any) => {
+        this.patch({
+          turnosData: response?.data,
+          turnosLoading: false,
+          turnosError: null
+        });
+      }),
+      finalize(() => {
+        this.patch({ turnosLoading: false });
+      }),
+      catchError((error) => {
+        this.patch({
+          turnosLoading: false,
+          turnosError: error
+        });
+        return of(null);
+      })
+    );
   }
 
   public changePagination(pageNumber: number) {

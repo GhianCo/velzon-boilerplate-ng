@@ -46,4 +46,8 @@ export class InventarioEfectivoRemoteReq {
     return this._controlActivosApiService.get(this.REMOTE_API_URI + 'caja?sala='+sala_id)
   }
 
+  requestGetTurnos(sala_id: number): Observable<IResponse> {
+    return this._controlActivosApiService.get(this.REMOTE_API_URI + 'turno?sala='+sala_id)
+  }
+
 }

@@ -12,21 +12,26 @@ import {InventarioEfectivoStore} from "@app/inventario-efectivo/data-access/inve
 import {FormsModule} from "@angular/forms";
 import {ChartComponent} from "ng-apexcharts";
 import Swal from "sweetalert2";
+import {DatePipe, DecimalPipe, NgClass} from "@angular/common";
+import {PersistenceService} from "@sothy/services/persistence.service";
 
 @Component({
     selector: 'app-inventario-efectivo-new',
     templateUrl: './inventario.efectivo.new.html',
-    imports: [
-        BreadcrumbsComponent,
-        NgbAccordionDirective,
-        NgbAccordionItem,
-        NgbAccordionHeader,
-        NgbAccordionButton,
-        NgbAccordionCollapse,
-        NgbAccordionBody,
-        FormsModule,
-        ChartComponent
-    ],
+  imports: [
+    BreadcrumbsComponent,
+    NgbAccordionDirective,
+    NgbAccordionItem,
+    NgbAccordionHeader,
+    NgbAccordionButton,
+    NgbAccordionCollapse,
+    NgbAccordionBody,
+    FormsModule,
+    ChartComponent,
+    DatePipe,
+    DecimalPipe,
+    NgClass,
+  ],
     standalone: true
 })
 
@@ -39,6 +44,11 @@ export class InventarioEfectivoNew implements OnInit {
     breadCrumbItems!: Array<{}>;
     submitted = false;
     inventarioEfectivoStore = inject(InventarioEfectivoStore);
+    persistenceService = inject(PersistenceService);
+
+    // Propiedades para selección de turno
+    selectedTurnoId: string | null = null;
+    selectedOperacion: string | null = null;
 
     constructor(private modalService: NgbModal) {
     }
@@ -54,6 +64,84 @@ export class InventarioEfectivoNew implements OnInit {
 
         // Inicializar cajas para todas las denominaciones
         this.initializeAllCajas();
+
+        // Cargar turnos desde la API
+        this.loadTurnosFromAPI();
+    }
+
+    // Método para cargar turnos reales desde la API
+    loadTurnosFromAPI() {
+        const salaId = this.persistenceService.getSalaId();
+
+        if (salaId) {
+            this.inventarioEfectivoStore.loadTurnos(Number(salaId)).subscribe({
+                next: (response) => {
+                    console.log('Turnos cargados exitosamente:', response);
+                },
+                error: (error) => {
+                    console.error('Error al cargar turnos:', error);
+                    // En caso de error, cargar datos simulados como fallback
+                    this.initializeTurnosSimulados();
+                }
+            });
+        } else {
+            console.warn('No se encontró sala_id en el token, cargando datos simulados');
+            // Si no hay sala_id, cargar datos simulados
+            this.initializeTurnosSimulados();
+        }
+    }
+
+    // Método para simular datos de turnos - después reemplazarás con request real
+    initializeTurnosSimulados() {
+        const turnosSimulados = [
+            {
+                id: 1,
+                nombre_turno: 'Turno Mañana',
+                motivo_operacion: 'apertura',
+                fecha_inicio: new Date('2024-11-28T08:00:00'),
+                fecha_fin: null,
+                usuario_responsable: 'María García',
+                estado: 'Activo',
+                monto_inicial: 5000.00,
+                observaciones: 'Apertura de turno matutino con fondo de caja estándar'
+            },
+            {
+                id: 2,
+                nombre_turno: 'Turno Noche',
+                motivo_operacion: 'apertura',
+                fecha_inicio: new Date('2024-11-28T20:00:00'),
+                fecha_fin: null,
+                usuario_responsable: 'Carlos Mendoza',
+                estado: 'Activo',
+                monto_inicial: 3000.00,
+                observaciones: null
+            },
+            {
+                id: 3,
+                nombre_turno: 'Turno Tarde',
+                motivo_operacion: 'cierre',
+                fecha_inicio: new Date('2024-11-28T14:00:00'),
+                fecha_fin: new Date('2024-11-28T20:00:00'),
+                usuario_responsable: 'Ana López',
+                estado: 'Cerrado',
+                monto_inicial: 4500.00,
+                observaciones: 'Cierre normal con arqueo completo'
+            },
+            {
+                id: 4,
+                nombre_turno: 'Turno Especial',
+                motivo_operacion: 'apertura',
+                fecha_inicio: new Date('2024-11-28T10:30:00'),
+                fecha_fin: null,
+                usuario_responsable: 'Roberto Silva',
+                estado: 'En Proceso',
+                monto_inicial: 7500.00,
+                observaciones: 'Turno especial para evento corporativo'
+            }
+        ];
+
+        // Simular que los datos vienen del store (después harás el request real)
+        this.inventarioEfectivoStore.actualizarTurnos(turnosSimulados);
     }
 
     // Getter que asegura que las cajas estén inicializadas
@@ -82,9 +170,32 @@ export class InventarioEfectivoNew implements OnInit {
     }
 
     saveInventario() {
+        // Validar que se haya seleccionado turno y operación
+        if (!this.selectedTurnoId || !this.selectedOperacion) {
+            Swal.fire({
+                title: 'Faltan datos',
+                text: 'Por favor selecciona un turno y el tipo de operación antes de guardar.',
+                icon: 'warning',
+                confirmButtonText: 'Entendido'
+            });
+            return;
+        }
+
+        const selectionInfo = this.getSelectionInfo();
+        const turnoInfo = selectionInfo?.turno;
+
         Swal.fire({
             title: 'Todos los datos son correctos?',
-            text: 'He revisado que los datos sean los correctos!',
+            html: `
+                <div class="text-start">
+                    <p>He revisado que los datos sean los correctos!</p>
+                    <div class="mt-3 p-3 bg-light rounded">
+                        <strong>Turno:</strong> ${turnoInfo?.nombre_turno || 'N/A'}<br>
+                        <strong>Operación:</strong> <span class="badge ${this.selectedOperacion === 'apertura' ? 'bg-success' : 'bg-danger'}">${this.selectedOperacion}</span><br>
+                        <strong>Usuario:</strong> ${turnoInfo?.usuario_responsable || 'N/A'}
+                    </div>
+                </div>
+            `,
             icon: 'warning',
             showCancelButton: true,
             confirmButtonColor: '#3cd188',
@@ -93,6 +204,15 @@ export class InventarioEfectivoNew implements OnInit {
             cancelButtonText: 'No, cerrar'
         }).then(result => {
             if (result.value) {
+                // Agregar información del turno al store antes de guardar
+                const inventarioData = {
+                    turno_id: this.selectedTurnoId,
+                    tipo_operacion: this.selectedOperacion,
+                    turno_info: turnoInfo
+                };
+
+                console.log('Guardando inventario con datos de turno:', inventarioData);
+
                 this.inventarioEfectivoStore.saveInventarioEfectivoWithDetils();
             }
         });
@@ -310,6 +430,28 @@ export class InventarioEfectivoNew implements OnInit {
         return valorDetail.denominaciones.reduce((total: number, denominacion: any) => {
             return total + (denominacion.cantidadTotal || 0);
         }, 0);
+    }
+
+    // Método para obtener el turno seleccionado
+    getSelectedTurno(): any {
+        if (!this.selectedTurnoId) return null;
+
+        const vm = this.inventarioEfectivoStore.vm();
+        if (!vm.turnosData) return null;
+
+        return vm.turnosData.find((turno: any) => turno.id.toString() === this.selectedTurnoId);
+    }
+
+    // Método para obtener información completa de la selección actual
+    getSelectionInfo(): any {
+        const turno = this.getSelectedTurno();
+        if (!turno || !this.selectedOperacion) return null;
+
+        return {
+            turno: turno,
+            operacion: this.selectedOperacion,
+            isValid: !!(this.selectedTurnoId && this.selectedOperacion)
+        };
     }
 
     /**

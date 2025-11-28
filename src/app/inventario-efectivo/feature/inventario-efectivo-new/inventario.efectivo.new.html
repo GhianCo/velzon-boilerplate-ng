@@ -7,19 +7,20 @@
       <div class="live-preview">
         <div ngbAccordion>
           @for (valorDetail of vm.valoresWithDetailsData; track $index) {
-            <div ngbAccordionItem [collapsed]="false" >
+            <div ngbAccordionItem [collapsed]="false">
               <div ngbAccordionHeader class="accordion-header border-0 bg-transparent">
                 <button ngbAccordionButton>
                   <div class="d-flex justify-content-between align-items-center w-100">
                     <span><i class="ri-check-line me-2"></i>{{ valorDetail.name }}</span>
-                    <span class="fw-bold text-success me-2">S/. {{ valorDetail.acumuladoConvertido?.toFixed(2) || '0.00' }}</span>
+                    <span
+                      class="fw-bold text-success me-2">S/. {{ valorDetail.acumuladoConvertido?.toFixed(2) || '0.00' }}</span>
                   </div>
                 </button>
               </div>
               <div ngbAccordionCollapse>
                 <div ngbAccordionBody>
                   <ng-template>
-                    @if(valorDetail.codigo == 'USD') {
+                    @if (valorDetail.codigo == 'USD') {
                       <div class="row gy-4 mb-4">
                         <div class="col-xxl-3 col-md-6">
                           <div>
@@ -36,15 +37,15 @@
                     <div class="table-responsive">
                       <table class="table table-bordered">
                         <thead>
-                          <tr>
-                            <th class="text-start">Denominación</th>
-                            @for (caja of vm.cajasData; track $index) {
-                              <th>{{caja.caja_nombre}}</th>
-                            }
-                            <th class="text-center" style="min-width: 120px;">
-                              <strong>Total</strong>
-                            </th>
-                          </tr>
+                        <tr>
+                          <th class="text-start">Denominación</th>
+                          @for (caja of vm.cajasData; track $index) {
+                            <th>{{ caja.caja_nombre }}</th>
+                          }
+                          <th class="text-center" style="min-width: 120px;">
+                            <strong>Total</strong>
+                          </th>
+                        </tr>
                         </thead>
                         <tbody>
                           @for (denominacion of valorDetail.denominaciones; track $index) {
@@ -85,23 +86,26 @@
                         </tbody>
                         <!-- Fila de totales -->
                         <tfoot>
-                          <tr>
-                            <th class="text-end" [attr.colspan]="vm.cajasData.length + 1">Total de {{valorDetail.name}}:</th>
-                            <th class="text-center">
+                        <tr>
+                          <th class="text-end" [attr.colspan]="vm.cajasData.length + 1">Total de {{ valorDetail.name }}
+                            :
+                          </th>
+                          <th class="text-center">
                               <span class="fw-bold">
                                 {{ valorDetail.simbolo }} {{ valorDetail.acumuladoLocal?.toFixed(2) || '0.00' }}
                               </span>
-                            </th>
-                          </tr>
+                          </th>
+                        </tr>
                         </tfoot>
                       </table>
                     </div>
-                    @if (valorDetail.codigo == 'USD'){
+                    @if (valorDetail.codigo == 'USD') {
                       <div class="p-3 bg-warning-subtle mt-2">
                         <div class="float-end ms-2">
-                          <h6 class="text-warning mb-0">{{ valorDetail.simbolo}}: <span class="text-body">{{ valorDetail.acumuladoLocal?.toFixed(2) || '0.00' }}</span></h6>
+                          <h6 class="text-warning mb-0">{{ valorDetail.simbolo }}: <span
+                            class="text-body">{{ valorDetail.acumuladoLocal?.toFixed(2) || '0.00' }}</span></h6>
                         </div>
-                        <h6 class="mb-0 text-warning">Total {{valorDetail.codigo}}</h6>
+                        <h6 class="mb-0 text-warning">Total {{ valorDetail.codigo }}</h6>
                       </div>
                     }
                   </ng-template>
@@ -118,23 +122,29 @@
       <div class="card">
         <div class="card-header">
           <div class="d-flex">
-            <h5 class="card-title flex-grow-1 mb-0"><i class="mdi mdi-chart-arc align-middle me-1 text-muted"></i> Resumen de inventario</h5>
+            <h5 class="card-title flex-grow-1 mb-0"><i class="mdi mdi-chart-arc align-middle me-1 text-muted"></i>
+              Resumen de inventario</h5>
             <div class="flex-shrink-0">
-              <button type="button" class="btn btn-success btn-sm" (click)="saveInventario()" [disabled]="vm.saveInventarioEfectivoLoading || vm.valoresSummary?.totalConvertido < 1">
+              <button type="button" class="btn btn-success btn-sm" (click)="saveInventario()"
+                      [disabled]="vm.saveInventarioEfectivoLoading || vm.valoresSummary?.totalConvertido < 1 || !selectedTurnoId || !selectedOperacion">
                 <i class="ri-save-fill align-middle"></i> Guardar inventario
               </button>
             </div>
           </div>
         </div>
         <div class="card-body">
-          @if(vm.valoresSummary?.totalConvertido > 0 && vm.chartSummary?.series?.length > 0){
+          @if (vm.valoresSummary?.totalConvertido > 0 && vm.chartSummary?.series?.length > 0) {
             <apx-chart class="apex-charts" [series]="vm.chartSummary?.series" [labels]="vm.chartSummary?.labels"
-                       [chart]="vm.chartSummary?.chart" [plotOptions]="vm.chartSummary?.plotOptions" [dataLabels]="vm.chartSummary?.dataLabels"
-                       [legend]="vm.chartSummary?.legend" [stroke]="vm.chartSummary?.stroke" [colors]="vm.chartSummary?.colors" dir="ltr"></apx-chart>
+                       [chart]="vm.chartSummary?.chart" [plotOptions]="vm.chartSummary?.plotOptions"
+                       [dataLabels]="vm.chartSummary?.dataLabels"
+                       [legend]="vm.chartSummary?.legend" [stroke]="vm.chartSummary?.stroke"
+                       [colors]="vm.chartSummary?.colors" dir="ltr"></apx-chart>
           }
+
+          <!-- Sección de Resumen Total -->
           <div class="mt-3">
             <div class="d-flex justify-content-center align-items-center mb-4">
-              <h2 class="me-3 ff-secondary mb-0">S/. {{vm.valoresSummary?.totalConvertido?.toFixed(2) || '0.00'}}</h2>
+              <h2 class="me-3 ff-secondary mb-0">S/. {{ vm.valoresSummary?.totalConvertido?.toFixed(2) || '0.00' }}</h2>
               <div>
                 <p class="text-muted mb-0">Total este inventario</p>
               </div>
@@ -145,10 +155,98 @@
                 <p class="fw-medium mb-0">
                   <i class="ri-number-{{$index + 1}} text-primary align-middle me-2"></i> {{ valorDetail.name }}</p>
                 <div>
-                  <span class="text-muted pe-5">S/. {{valorDetail.acumuladoConvertido?.toFixed(2) || '0.00'}}</span>
-                  <span class="text-success fw-medium fs-12">{{ valorDetail.porcentaje?.toFixed(0) || '0.00'}}%</span>
+                  <span class="text-muted pe-5">S/. {{ valorDetail.acumuladoConvertido?.toFixed(2) || '0.00' }}</span>
+                  <span class="text-success fw-medium fs-12">{{ valorDetail.porcentaje?.toFixed(0) || '0.00' }}%</span>
                 </div>
               </div><!-- end -->
+            }
+          </div>
+
+          <!-- Nueva Sección de Turnos -->
+          <div class="mt-4 pt-3 border-top">
+            <div class="d-flex align-items-center mb-3">
+              <h6 class="card-title mb-0">
+                <i class="ri-time-line align-middle me-1 text-muted"></i> Seleccionar Turno
+              </h6>
+            </div>
+
+            <!-- Selectores de Turno -->
+            <div class="row g-3">
+              <div class="col-6">
+                <label class="form-label fw-medium">Turno:</label>
+                <select class="form-select form-select-sm" [(ngModel)]="selectedTurnoId">
+                  @for (turno of vm.turnosData; track turno.turno_id) {
+                    <option [value]="turno.turno_id">{{ turno.turno_nombre }}</option>
+                  }
+                </select>
+              </div>
+
+              <div class="col-6">
+                <label class="form-label fw-medium">Tipo de operación:</label>
+                <select class="form-select form-select-sm" [(ngModel)]="selectedOperacion">
+                  <option value="apertura">
+                    <i class="ri-play-circle-line me-1"></i> Abrir
+                  </option>
+                  <option value="cierre">
+                    <i class="ri-stop-circle-line me-1"></i> Cerrar
+                  </option>
+                </select>
+              </div>
+            </div>
+
+            <!-- Información del turno seleccionado -->
+            @if (selectedTurnoId && getSelectedTurno()) {
+              <div class="mt-3 p-3 border rounded bg-light">
+                <div class="d-flex align-items-center mb-2">
+                  <span class="badge me-2"
+                        [ngClass]="selectedOperacion === 'apertura' ? 'bg-success' : selectedOperacion === 'cierre' ? 'bg-danger' : 'bg-secondary'">
+                    @if (selectedOperacion === 'apertura') {
+                      <i class="ri-play-circle-line me-1"></i>Apertura
+                    } @else if (selectedOperacion === 'cierre') {
+                      <i class="ri-stop-circle-line me-1"></i>Cierre
+                    } @else {
+                      <i class="ri-time-line me-1"></i>Sin operación
+                    }
+                  </span>
+                  <small class="text-muted">{{ getSelectedTurno().fecha_inicio | date:'dd/MM/yyyy HH:mm' }}</small>
+                </div>
+
+                <div class="row">
+                  <div class="col-12">
+                    <p class="mb-1 fw-medium">{{ getSelectedTurno().nombre_turno }}</p>
+                    <small class="text-muted">
+                      <i class="ri-user-line me-1"></i>{{ getSelectedTurno().usuario_responsable }}
+                    </small>
+                  </div>
+                  <div class="col-12 mt-2">
+                    <div class="d-flex justify-content-between align-items-center">
+                      <small class="text-muted">Estado:</small>
+                      <span class="badge bg-info-subtle text-info">{{ getSelectedTurno().estado }}</span>
+                    </div>
+                    @if (getSelectedTurno().monto_inicial) {
+                      <div class="d-flex justify-content-between align-items-center mt-1">
+                        <small class="text-muted">Monto inicial:</small>
+                        <span
+                          class="fw-bold text-primary">S/. {{ getSelectedTurno().monto_inicial | number:'1.2-2' }}</span>
+                      </div>
+                    }
+                  </div>
+                </div>
+
+                @if (getSelectedTurno().observaciones) {
+                  <div class="mt-2 p-2 bg-white rounded">
+                    <small class="text-muted fst-italic">{{ getSelectedTurno().observaciones }}</small>
+                  </div>
+                }
+              </div>
+            } @else if (!vm.turnosData || vm.turnosData.length === 0) {
+              <div class="text-center py-3">
+                <div class="text-muted">
+                  <i class="ri-time-line display-6"></i>
+                  <p class="mt-2 mb-0">No hay turnos disponibles</p>
+                  <small>Los turnos aparecerán aquí cuando estén disponibles</small>
+                </div>
+              </div>
             }
           </div>
         </div><!-- end cardbody -->
@@ -170,18 +268,21 @@
             <div>
               <div class="input-group mb-3">
                 <label class="input-group-text">Diferencia</label>
-                <input type="number" class="form-control" placeholder="0.00"  [(ngModel)]="vm.valoresSummary.diferencia" (ngModelChange)="onDiferenciaChange($event)">
+                <input type="number" class="form-control" placeholder="0.00" [(ngModel)]="vm.valoresSummary.diferencia"
+                       (ngModelChange)="onDiferenciaChange($event)">
                 <label class="input-group-text">S/.</label>
               </div>
             </div>
             <div class="p-3 bg-success-subtle">
               <div class="float-end ms-2">
-                <h6 class="text-success mb-0">S/. <span class="text-body">{{ vm.valoresSummary.suma_diaria_efectivo?.toFixed(2) || '0.00' }}</span></h6>
+                <h6 class="text-success mb-0">S/. <span
+                  class="text-body">{{ vm.valoresSummary.suma_diaria_efectivo?.toFixed(2) || '0.00' }}</span></h6>
               </div>
               <h6 class="mb-0 text-success">Suma diaria de efectivo</h6>
             </div>
             <div class="mt-2 pt-2">
-              <button type="button" class="btn btn-success w-100" (click)="saveInventario()" [disabled]="vm.saveInventarioEfectivoLoading || vm.valoresSummary?.totalConvertido < 1">
+              <button type="button" class="btn btn-success w-100" (click)="saveInventario()"
+                      [disabled]="vm.saveInventarioEfectivoLoading || vm.valoresSummary?.totalConvertido < 1 || !selectedTurnoId || !selectedOperacion">
                 <i class="ri-save-fill align-middle"></i> Guardar inventario
               </button>
             </div>
@@ -230,8 +331,10 @@
   </div>
   <div class="modal-footer">
     <button type="button" class="btn btn-light" data-bs-dismiss="modal"
-            (click)="modal.close('Close click')">Close</button>
+            (click)="modal.close('Close click')">Close
+    </button>
     <button type="button" class="btn btn-success" data-bs-dismiss="modal"
-            (click)="modal.dismiss('Cross click')">Save</button>
+            (click)="modal.dismiss('Cross click')">Save
+    </button>
   </div>
 </ng-template>
