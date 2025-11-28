@@ -38,6 +38,10 @@ export class InventarioEfectivoRemoteReq {
     return this.http.get(this.REMOTE_API_URI + 'valor/withDetails')
   }
 
+  requestGetCatMovWithDetails(): Observable<IResponse> {
+    return this.http.get(this.REMOTE_API_URI + 'sumdiacatmovimiento/withDetails')
+  }
+
   requestSaveInventario(inventarioWithDetails: any): Observable<IResponse> {
     return this.http.post(this.REMOTE_API_URI + 'inventario/saveWithDetails', inventarioWithDetails)
   }

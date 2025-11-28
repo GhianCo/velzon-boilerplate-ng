@@ -5,5 +5,7 @@ export const InventarioEfectivoNewResolver = () => {
   const inventarioEfectivoStore = inject(InventarioEfectivoStore);
   inventarioEfectivoStore.loadTurnos();
   inventarioEfectivoStore.loadCajas();
-  return inventarioEfectivoStore.loadValoresWithDetails()
+  inventarioEfectivoStore.loadCatMovWithDetails();
+  inventarioEfectivoStore.loadValoresWithDetails();
+  return true;
 }

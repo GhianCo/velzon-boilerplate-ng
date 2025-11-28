@@ -19,6 +19,10 @@ export type IState = {
   valoresWithDetailsData: any,
   valoresWithDetailsError: any,
 
+  catMovWithDetailsLoading: boolean,
+  catMovWithDetailsData: any,
+  catMovWithDetailsError: any,
+
   valoresSummary: any,
   chartSummary: any,
 
@@ -49,6 +53,10 @@ const initialState: IState = {
   valoresWithDetailsLoading: false,
   valoresWithDetailsData: null,
   valoresWithDetailsError: null,
+
+  catMovWithDetailsLoading: false,
+  catMovWithDetailsData: null,
+  catMovWithDetailsError: null,
 
   cajasLoading: false,
   cajasData: null,
@@ -114,6 +122,10 @@ export class InventarioEfectivoStore extends SignalStore<IState> {
     'valoresWithDetailsLoading',
     'valoresWithDetailsData',
     'valoresWithDetailsError',
+
+    'catMovWithDetailsLoading',
+    'catMovWithDetailsData',
+    'catMovWithDetailsError',
 
     'cajasLoading',
     'cajasData',
@@ -194,6 +206,26 @@ export class InventarioEfectivoStore extends SignalStore<IState> {
       catchError((error) => {
         return of(this.patch({
           valoresWithDetailsError: error
+        }));
+      }),
+    ).subscribe();
+  };
+
+  public async loadCatMovWithDetails() {
+    this.patch({catMovWithDetailsLoading: true, catMovWithDetailsError: null});
+    this.initialize(initialState);
+    this._inventarioEfectivoRemoteReq.requestGetCatMovWithDetails().pipe(
+      tap(async ({data, pagination}) => {
+        this.patch({
+          catMovWithDetailsData: data,
+        })
+      }),
+      finalize(async () => {
+        this.patch({catMovWithDetailsLoading: false});
+      }),
+      catchError((error) => {
+        return of(this.patch({
+          catMovWithDetailsError: error
         }));
       }),
     ).subscribe();

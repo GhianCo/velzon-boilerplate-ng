@@ -4,117 +4,230 @@
 @if (inventarioEfectivoStore.vm(); as vm) {
   <div class="row">
     <div class="col-xl-9">
-      <div class="live-preview">
-        <div ngbAccordion>
-          @for (valorDetail of vm.valoresWithDetailsData; track $index) {
-            <div ngbAccordionItem [collapsed]="false">
-              <div ngbAccordionHeader class="accordion-header border-0 bg-transparent">
-                <button ngbAccordionButton>
-                  <div class="d-flex justify-content-between align-items-center w-100">
-                    <span><i class="ri-check-line me-2"></i>{{ valorDetail.name }}</span>
-                    <span
-                      class="fw-bold text-success me-2">S/. {{ valorDetail.acumuladoConvertido?.toFixed(2) || '0.00' }}</span>
-                  </div>
-                </button>
-              </div>
-              <div ngbAccordionCollapse>
-                <div ngbAccordionBody>
-                  <ng-template>
-                    @if (valorDetail.codigo == 'USD') {
-                      <div class="row gy-4 mb-4">
-                        <div class="col-xxl-3 col-md-6">
-                          <div>
-                            <label class="form-label">Tipo de cambio</label>
-                            <input type="number" class="form-control" min="1"
-                                   [(ngModel)]="valorDetail.current_tc"
-                                   (ngModelChange)="onTipoCambioChange(valorDetail, $event)">
-                          </div>
-                        </div><!--end col-->
-                        <!--end col-->
-                      </div><!--end row-->
-                    }
-                    <!-- Tabla de distribución por cajas -->
-                    <div class="table-responsive">
-                      <table class="table table-bordered">
-                        <thead>
-                        <tr>
-                          <th class="text-start">Denominación</th>
-                          @for (caja of vm.cajasData; track $index) {
-                            <th>{{ caja.caja_nombre }}</th>
-                          }
-                          <th class="text-center" style="min-width: 120px;">
-                            <strong>Total</strong>
-                          </th>
-                        </tr>
-                        </thead>
-                        <tbody>
-                          @for (denominacion of valorDetail.denominaciones; track $index) {
-                            <tr>
-                              <!-- Denominación -->
-                              <td class="align-middle">
-                                <div class="d-flex align-items-center">
-                                  <span class="fw-medium">{{ denominacion.descripcion }}</span>
+      <ng-stepper #cdkStepper [linear]="true" class="step-arrow-nav wizard">
+        <cdk-step>
+          <ng-template cdkStepLabel>
+            <li class="nav-item" role="presentation">
+              <button class="nav-link done" id="steparrow-gen-info-tab" data-bs-toggle="pill"
+                      data-bs-target="#steparrow-gen-info" type="button" role="tab"
+                      aria-controls="steparrow-gen-info" aria-selected="true">Inventario
+              </button>
+            </li>
+          </ng-template>
+          <div>
+            <div class="live-preview">
+              <div ngbAccordion>
+                @for (valorDetail of vm.valoresWithDetailsData; track $index) {
+                  <div ngbAccordionItem [collapsed]="false">
+                    <div ngbAccordionHeader class="accordion-header border-0 bg-transparent">
+                      <button ngbAccordionButton>
+                        <div class="d-flex justify-content-between align-items-center w-100">
+                          <span><i class="ri-check-line me-2"></i>{{ valorDetail.name }}</span>
+                          <span
+                            class="fw-bold text-success me-2">S/. {{ valorDetail.acumuladoConvertido?.toFixed(2) || '0.00' }}</span>
+                        </div>
+                      </button>
+                    </div>
+                    <div ngbAccordionCollapse>
+                      <div ngbAccordionBody>
+                        <ng-template>
+                          @if (valorDetail.codigo == 'USD') {
+                            <div class="row gy-4 mb-4">
+                              <div class="col-xxl-3 col-md-6">
+                                <div>
+                                  <label class="form-label">Tipo de cambio</label>
+                                  <input type="number" class="form-control" min="1"
+                                         [(ngModel)]="valorDetail.current_tc"
+                                         (ngModelChange)="onTipoCambioChange(valorDetail, $event)">
                                 </div>
-                              </td>
+                              </div><!--end col-->
+                              <!--end col-->
+                            </div><!--end row-->
+                          }
+                          <!-- Tabla de distribución por cajas -->
+                          <div class="table-responsive">
+                            <table class="table table-bordered">
+                              <thead>
+                              <tr>
+                                <th class="text-start">Denominación</th>
+                                @for (caja of vm.cajasData; track $index) {
+                                  <th>{{ caja.caja_nombre }}</th>
+                                }
+                                <th class="text-center" style="min-width: 120px;">
+                                  <strong>Total</strong>
+                                </th>
+                              </tr>
+                              </thead>
+                              <tbody>
+                                @for (denominacion of valorDetail.denominaciones; track $index) {
+                                  <tr>
+                                    <!-- Denominación -->
+                                    <td class="align-middle">
+                                      <div class="d-flex align-items-center">
+                                        <span class="fw-medium">{{ denominacion.descripcion }}</span>
+                                      </div>
+                                    </td>
 
-                              @for (caja of vm.cajasData; track $index) {
-                                <td>
-                                  <div class="input-group input-group-sm">
-                                    <button class="btn btn-outline-primary btn-sm" type="button"
-                                            (click)="decrementCantidadByCaja(denominacion, caja.caja_nombre)">
-                                      <i class="ri-subtract-line"></i>
-                                    </button>
-                                    <input type="number" class="form-control text-center" min="0"
-                                           [(ngModel)]="getCajas(denominacion)[caja.caja_nombre]"
-                                           (ngModelChange)="onCantidadCajaChange(denominacion, caja.caja_nombre, $event)"
-                                           style="max-width: 60px;">
-                                    <button class="btn btn-outline-primary btn-sm" type="button"
-                                            (click)="incrementCantidadByCaja(denominacion, caja.caja_nombre)">
-                                      <i class="ri-add-line"></i>
-                                    </button>
-                                  </div>
-                                </td>
-                              }
-                              <!-- Importe -->
-                              <td class="text-center">
+                                    @for (caja of vm.cajasData; track $index) {
+                                      <td>
+                                        <div class="input-group input-group-sm">
+                                          <button class="btn btn-outline-primary btn-sm" type="button"
+                                                  (click)="decrementCantidadByCaja(denominacion, caja.caja_nombre)">
+                                            <i class="ri-subtract-line"></i>
+                                          </button>
+                                          <input type="number" class="form-control text-center" min="0"
+                                                 [(ngModel)]="getCajas(denominacion)[caja.caja_nombre]"
+                                                 (ngModelChange)="onCantidadCajaChange(denominacion, caja.caja_nombre, $event)"
+                                                 style="max-width: 60px;">
+                                          <button class="btn btn-outline-primary btn-sm" type="button"
+                                                  (click)="incrementCantidadByCaja(denominacion, caja.caja_nombre)">
+                                            <i class="ri-add-line"></i>
+                                          </button>
+                                        </div>
+                                      </td>
+                                    }
+                                    <!-- Importe -->
+                                    <td class="text-center">
                                 <span class="fw-bold">
                                   {{ valorDetail.simbolo }} {{ denominacion.importeLocal?.toFixed(2) || '0.00' }}
                                 </span>
-                              </td>
-                            </tr>
-                          }
-                        </tbody>
-                        <!-- Fila de totales -->
-                        <tfoot>
-                        <tr>
-                          <th class="text-end" [attr.colspan]="vm.cajasData.length + 1">Total de {{ valorDetail.name }}
-                            :
-                          </th>
-                          <th class="text-center">
+                                    </td>
+                                  </tr>
+                                }
+                              </tbody>
+                              <!-- Fila de totales -->
+                              <tfoot>
+                              <tr>
+                                <th class="text-end" [attr.colspan]="vm.cajasData.length + 1">Total
+                                  de {{ valorDetail.name }}
+                                  :
+                                </th>
+                                <th class="text-center">
                               <span class="fw-bold">
                                 {{ valorDetail.simbolo }} {{ valorDetail.acumuladoLocal?.toFixed(2) || '0.00' }}
                               </span>
-                          </th>
-                        </tr>
-                        </tfoot>
-                      </table>
-                    </div>
-                    @if (valorDetail.codigo == 'USD') {
-                      <div class="p-3 bg-warning-subtle mt-2">
-                        <div class="float-end ms-2">
-                          <h6 class="text-warning mb-0">{{ valorDetail.simbolo }}: <span
-                            class="text-body">{{ valorDetail.acumuladoLocal?.toFixed(2) || '0.00' }}</span></h6>
-                        </div>
-                        <h6 class="mb-0 text-warning">Total {{ valorDetail.codigo }}</h6>
+                                </th>
+                              </tr>
+                              </tfoot>
+                            </table>
+                          </div>
+                          @if (valorDetail.codigo == 'USD') {
+                            <div class="p-3 bg-warning-subtle mt-2">
+                              <div class="float-end ms-2">
+                                <h6 class="text-warning mb-0">{{ valorDetail.simbolo }}: <span
+                                  class="text-body">{{ valorDetail.acumuladoLocal?.toFixed(2) || '0.00' }}</span></h6>
+                              </div>
+                              <h6 class="mb-0 text-warning">Total {{ valorDetail.codigo }}</h6>
+                            </div>
+                          }
+                        </ng-template>
                       </div>
-                    }
-                  </ng-template>
-                </div>
+                    </div>
+                  </div>
+                }
               </div>
             </div>
-          }
-        </div>
-      </div>
+          </div>
+          <!-- wizard-tab -->
+          <div class="d-flex align-items-start gap-3 mt-4">
+            <button type="button" class="btn btn-success btn-label right ms-auto nexttab nexttab"
+                    data-nexttab="steparrow-description-info-tab" awNextStep><i
+              class="ri-arrow-right-line label-icon align-middle fs-16 ms-2"></i>Continuar
+            </button>
+          </div>
+        </cdk-step>
+
+        <cdk-step>
+          <ng-template cdkStepLabel>
+            <li class="nav-item" role="presentation">
+              <button class="nav-link active" id="steparrow-description-info-tab"
+                      data-bs-toggle="pill" data-bs-target="#steparrow-description-info" type="button"
+                      role="tab" aria-controls="steparrow-description-info"
+                      aria-selected="false">Suma diaria
+              </button>
+            </li>
+          </ng-template>
+          <div>
+            <div class="live-preview">
+              <div ngbAccordion>
+                @for (catMovimiento of vm.catMovWithDetailsData; track $index) {
+                  <div ngbAccordionItem [collapsed]="false">
+                    <div ngbAccordionHeader class="accordion-header border-0 bg-transparent">
+                      <button ngbAccordionButton>
+                        <div class="d-flex justify-content-between align-items-center w-100">
+                          <span><i class="ri-check-line me-2"></i>{{ catMovimiento.nombre }}</span>
+                          <span
+                            class="fw-bold text-success me-2">S/. {{ catMovimiento.acumuladoConvertido?.toFixed(2) || '0.00' }}</span>
+                        </div>
+                      </button>
+                    </div>
+                    <div ngbAccordionCollapse>
+                      <div ngbAccordionBody>
+                        <ng-template>
+                          <!-- Tabla de distribución por cajas -->
+                          <div class="table-responsive">
+                            <table class="table table-bordered">
+                              <tbody>
+                                @for (detail of catMovimiento.details; track $index) {
+                                  <tr>
+                                    <td>
+                                      <span class="fw-bold">
+                                        {{ detail.nombre }}
+                                      </span>
+                                    </td>
+                                    <td class="align-items-end">
+                                      <div class="input-group input-group-sm">
+                                        <button class="btn btn-outline-primary btn-sm" type="button"
+                                                (click)="decrementCantidadByCaja(detail, '')">
+                                          <i class="ri-subtract-line"></i>
+                                        </button>
+                                        <input type="number" class="form-control text-center" min="0"
+                                               [(ngModel)]="getCajas(detail)['']"
+                                               (ngModelChange)="onCantidadCajaChange(detail, '', $event)"
+                                               style="max-width: 60px;">
+                                        <button class="btn btn-outline-primary btn-sm" type="button"
+                                                (click)="incrementCantidadByCaja(detail, '')">
+                                          <i class="ri-add-line"></i>
+                                        </button>
+                                      </div>
+                                    </td>
+
+                                  </tr>
+                                }
+                              </tbody>
+                              <!-- Fila de totales -->
+                              <tfoot>
+                              <tr>
+                                <th class="text-end">Sub total:</th>
+                                <th class="text-end">
+                                  <span class="fw-bold">
+                                    {{ catMovimiento.simbolo }} {{ catMovimiento.acumuladoLocal?.toFixed(2) || '0.00' }}
+                                  </span>
+                                </th>
+                              </tr>
+                              </tfoot>
+                            </table>
+                          </div>
+                        </ng-template>
+                      </div>
+                    </div>
+                  </div>
+                }
+              </div>
+            </div>
+          </div>
+          <div class="d-flex align-items-start gap-3 mt-4">
+            <button type="button" class="btn btn-light btn-label previestab"
+                    data-previous="steparrow-gen-info-tab" awPreviousStep><i
+              class="ri-arrow-left-line label-icon align-middle fs-16 me-2"></i> Regresar al inventario
+            </button>
+            <button type="button" class="btn btn-success btn-label right ms-auto nexttab
+    nexttab" data-nexttab="pills-experience-tab" awNextStep><i
+              class="ri-arrow-right-line label-icon align-middle fs-16 ms-2"></i>Guardar suma diaria
+            </button>
+          </div>
+        </cdk-step>
+      </ng-stepper>
       <!--end card-->
     </div>
     <!--end col-->

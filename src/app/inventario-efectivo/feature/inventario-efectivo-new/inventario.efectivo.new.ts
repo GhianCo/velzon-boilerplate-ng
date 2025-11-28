@@ -13,6 +13,8 @@ import {FormsModule} from "@angular/forms";
 import {ChartComponent} from "ng-apexcharts";
 import Swal from "sweetalert2";
 import {PersistenceService} from "@sothy/services/persistence.service";
+import {NgStepperModule} from "angular-ng-stepper";
+import {CdkStep, CdkStepLabel} from "@angular/cdk/stepper";
 
 @Component({
     selector: 'app-inventario-efectivo-new',
@@ -27,6 +29,9 @@ import {PersistenceService} from "@sothy/services/persistence.service";
     NgbAccordionBody,
     FormsModule,
     ChartComponent,
+    NgStepperModule,
+    CdkStep,
+    CdkStepLabel,
   ],
     standalone: true
 })
