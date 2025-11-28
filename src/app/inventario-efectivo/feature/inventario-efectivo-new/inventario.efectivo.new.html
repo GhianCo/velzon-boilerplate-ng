@@ -178,15 +178,15 @@
                                     <td class="text-end">
                                       <div class="input-group input-group-sm d-inline-flex justify-content-end" style="width: auto;">
                                         <button class="btn btn-outline-primary btn-sm" type="button"
-                                                (click)="decrementCantidadByCaja(detail, '')">
+                                                (click)="decrementCantidadMovimiento(detail)">
                                           <i class="ri-subtract-line"></i>
                                         </button>
                                         <input type="number" class="form-control text-center" min="0"
-                                               [(ngModel)]="getCajas(detail)['']"
-                                               (ngModelChange)="onCantidadCajaChange(detail, '', $event)"
-                                               style="max-width: 60px;">
+                                               [(ngModel)]="detail.cantidad"
+                                               (ngModelChange)="onCantidadMovimientoChange(detail, $event)"
+                                               style="max-width: 80px;" step="0.01">
                                         <button class="btn btn-outline-primary btn-sm" type="button"
-                                                (click)="incrementCantidadByCaja(detail, '')">
+                                                (click)="incrementCantidadMovimiento(detail)">
                                           <i class="ri-add-line"></i>
                                         </button>
                                       </div>
@@ -348,6 +348,27 @@
                   class="text-body">{{ vm.valoresSummary.suma_diaria_efectivo?.toFixed(2) || '0.00' }}</span></h6>
               </div>
               <h6 class="mb-0 text-success">Suma diaria de efectivo</h6>
+            </div>
+
+            <!-- Mostrar desglose de totales -->
+            <div class="mt-2 p-2 bg-light rounded">
+              <small class="text-muted d-block">Desglose:</small>
+              <div class="d-flex justify-content-between">
+                <small>Inventario:</small>
+                <small>S/. {{ vm.valoresSummary?.totalConvertido?.toFixed(2) || '0.00' }}</small>
+              </div>
+              @if (vm.valoresSummary?.totalMovimientos && vm.valoresSummary?.totalMovimientos > 0) {
+                <div class="d-flex justify-content-between">
+                  <small>Movimientos:</small>
+                  <small>S/. {{ vm.valoresSummary?.totalMovimientos?.toFixed(2) || '0.00' }}</small>
+                </div>
+              }
+              @if (vm.valoresSummary?.diferencia && vm.valoresSummary?.diferencia !== 0) {
+                <div class="d-flex justify-content-between">
+                  <small>Diferencia:</small>
+                  <small>S/. {{ vm.valoresSummary?.diferencia?.toFixed(2) || '0.00' }}</small>
+                </div>
+              }
             </div>
             <div class="mt-2 pt-2">
               <button type="button" class="btn btn-success w-100" (click)="saveInventario()"

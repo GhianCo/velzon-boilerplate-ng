@@ -70,6 +70,7 @@ const initialState: IState = {
     diferencia: 0,
     totalLocal: 0,
     totalConvertido: 0,
+    totalMovimientos: 0,
     suma_diaria_efectivo: 0,
     tipocambio: 0
   },

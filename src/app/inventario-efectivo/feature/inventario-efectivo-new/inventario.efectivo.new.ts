@@ -66,6 +66,9 @@ export class InventarioEfectivoNew implements OnInit {
         // Inicializar cajas para todas las denominaciones
         this.initializeAllCajas();
 
+        // Inicializar movimientos
+        this.initializeMovimientos();
+
         // Cargar turnos desde la API
     }
 
@@ -384,6 +387,123 @@ export class InventarioEfectivoNew implements OnInit {
             isValid: !!(this.selectedTurnoId && this.selectedOperacion)
         };
     }
+
+    // ===== MÉTODOS PARA MANEJAR CATEGORÍAS DE MOVIMIENTO =====
+
+    // Métodos para manejar cantidades de movimientos (catMovWithDetailsData)
+    incrementCantidadMovimiento(detail: any) {
+        detail.cantidad = (detail.cantidad || 0) + 1;
+        this.updateTotalesMovimiento(detail);
+    }
+
+    decrementCantidadMovimiento(detail: any) {
+        if (detail.cantidad && detail.cantidad > 0) {
+            detail.cantidad--;
+            this.updateTotalesMovimiento(detail);
+        }
+    }
+
+    onCantidadMovimientoChange(detail: any, cantidad: number) {
+        detail.cantidad = Math.max(0, cantidad || 0);
+        this.updateTotalesMovimiento(detail);
+    }
+
+    // Inicializar cantidades para movimientos
+    initializeMovimientos() {
+        const vm = this.inventarioEfectivoStore.vm();
+        if (vm?.catMovWithDetailsData) {
+            vm.catMovWithDetailsData.forEach((catMovimiento: any) => {
+                if (catMovimiento.details) {
+                    catMovimiento.details.forEach((detail: any) => {
+                        if (detail.cantidad === undefined || detail.cantidad === null) {
+                            detail.cantidad = 0;
+                        }
+                    });
+                }
+                // Inicializar totales
+                this.updateTotalesCategoriaMovimiento(catMovimiento);
+            });
+        }
+    }
+
+    // Actualizar totales para un detail específico
+    updateTotalesMovimiento(detail: any) {
+        // Buscar la categoría padre de este detail
+        const vm = this.inventarioEfectivoStore.vm();
+        if (vm?.catMovWithDetailsData) {
+            const categoriaMovimiento = vm.catMovWithDetailsData.find((cat: any) =>
+                cat.details && cat.details.includes(detail)
+            );
+
+            if (categoriaMovimiento) {
+                this.updateTotalesCategoriaMovimiento(categoriaMovimiento);
+            }
+        }
+    }
+
+    // Actualizar totales de toda la categoría de movimiento
+    updateTotalesCategoriaMovimiento(categoriaMovimiento: any) {
+        if (categoriaMovimiento && categoriaMovimiento.details) {
+            // Calcular acumuladoLocal sumando todas las cantidades
+            categoriaMovimiento.acumuladoLocal = categoriaMovimiento.details.reduce((total: number, detail: any) => {
+                return total + (detail.cantidad || 0);
+            }, 0);
+
+            // Para movimientos, acumuladoConvertido es igual a acumuladoLocal (en soles)
+            categoriaMovimiento.acumuladoConvertido = categoriaMovimiento.acumuladoLocal;
+
+            console.log(`Totales actualizados para ${categoriaMovimiento.nombre}:`, {
+                acumuladoLocal: categoriaMovimiento.acumuladoLocal,
+                acumuladoConvertido: categoriaMovimiento.acumuladoConvertido,
+                details: categoriaMovimiento.details.map((d: any) => ({
+                    nombre: d.nombre,
+                    cantidad: d.cantidad
+                }))
+            });
+
+            // Actualizar totales generales de movimientos
+            this.updateTotalesGeneralesMovimientos();
+        }
+    }
+
+    // Actualizar totales generales de todas las categorías de movimiento
+    updateTotalesGeneralesMovimientos() {
+        const vm = this.inventarioEfectivoStore.vm();
+        if (vm?.catMovWithDetailsData) {
+            // Calcular total general de movimientos
+            let totalMovimientos = 0;
+
+            vm.catMovWithDetailsData.forEach((categoriaMovimiento: any) => {
+                totalMovimientos += (categoriaMovimiento.acumuladoConvertido || 0);
+            });
+
+            // Actualizar el summary de movimientos si existe
+            if (vm.valoresSummary) {
+                vm.valoresSummary.totalMovimientos = totalMovimientos;
+
+                // Recalcular suma diaria total incluyendo movimientos
+                const totalInventario = vm.valoresSummary.totalConvertido || 0;
+                const diferencia = vm.valoresSummary.diferencia || 0;
+                vm.valoresSummary.suma_diaria_efectivo = totalInventario + totalMovimientos + diferencia;
+            }
+
+            console.log('Totales generales de movimientos actualizados:', {
+                totalMovimientos: totalMovimientos,
+                suma_diaria_efectivo: vm.valoresSummary?.suma_diaria_efectivo
+            });
+        }
+    }
+
+    // Método para obtener la cantidad total de una categoría de movimiento
+    getCantidadTotalMovimiento(categoriaMovimiento: any): number {
+        if (!categoriaMovimiento.details) return 0;
+
+        return categoriaMovimiento.details.reduce((total: number, detail: any) => {
+            return total + (detail.cantidad || 0);
+        }, 0);
+    }
+
+    // ===== FIN MÉTODOS PARA CATEGORÍAS DE MOVIMIENTO =====
 
     /**
      * Open modal
