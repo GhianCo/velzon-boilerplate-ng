@@ -71,6 +71,7 @@ const initialState: IState = {
     totalLocal: 0,
     totalConvertido: 0,
     totalMovimientos: 0,
+    total_real_turno: 0,
     suma_diaria_efectivo: 0,
     tipocambio: 0
   },

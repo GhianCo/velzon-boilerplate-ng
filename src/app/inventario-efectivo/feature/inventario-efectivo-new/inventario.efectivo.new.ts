@@ -15,6 +15,7 @@ import Swal from "sweetalert2";
 import {PersistenceService} from "@sothy/services/persistence.service";
 import {NgStepperModule} from "angular-ng-stepper";
 import {CdkStep, CdkStepLabel} from "@angular/cdk/stepper";
+import {NgClass} from "@angular/common";
 
 @Component({
     selector: 'app-inventario-efectivo-new',
@@ -32,6 +33,7 @@ import {CdkStep, CdkStepLabel} from "@angular/cdk/stepper";
     NgStepperModule,
     CdkStep,
     CdkStepLabel,
+    NgClass,
   ],
     standalone: true
 })
@@ -273,14 +275,17 @@ export class InventarioEfectivoNew implements OnInit {
         if (vm?.valoresSummary) {
             vm.valoresSummary.diferencia = nuevaDiferencia || 0;
 
-            // Recalcular suma diaria de efectivo
+            // Recalcular total real del turno
             const totalConvertido = vm.valoresSummary.totalConvertido || 0;
-            vm.valoresSummary.suma_diaria_efectivo = totalConvertido + vm.valoresSummary.diferencia;
+            const totalMovimientos = vm.valoresSummary.totalMovimientos || 0;
+            vm.valoresSummary.total_real_turno = totalConvertido + totalMovimientos + vm.valoresSummary.diferencia;
+            vm.valoresSummary.suma_diaria_efectivo = vm.valoresSummary.total_real_turno;
 
             console.log('Diferencia actualizada:', {
                 diferencia: vm.valoresSummary.diferencia,
                 totalConvertido: totalConvertido,
-                suma_diaria_efectivo: vm.valoresSummary.suma_diaria_efectivo
+                totalMovimientos: totalMovimientos,
+                total_real_turno: vm.valoresSummary.total_real_turno
             });
         }
     }
@@ -470,26 +475,53 @@ export class InventarioEfectivoNew implements OnInit {
     updateTotalesGeneralesMovimientos() {
         const vm = this.inventarioEfectivoStore.vm();
         if (vm?.catMovWithDetailsData) {
-            // Calcular total general de movimientos
+            // Calcular total general de movimientos con operadores
             let totalMovimientos = 0;
 
             vm.catMovWithDetailsData.forEach((categoriaMovimiento: any) => {
-                totalMovimientos += (categoriaMovimiento.acumuladoConvertido || 0);
+                const montoCategoria = categoriaMovimiento.acumuladoConvertido || 0;
+
+                // Determinar el operador de la categoría
+                const operador = categoriaMovimiento.tipo_operacion || categoriaMovimiento.operador || '+';
+
+                switch (operador) {
+                    case '+':
+                        totalMovimientos += montoCategoria;
+                        break;
+                    case '-':
+                        totalMovimientos -= montoCategoria;
+                        break;
+                    case 'diff':
+                    case 'diferencia':
+                        // Para diferencias, sumamos el valor tal como está (puede ser positivo o negativo)
+                        totalMovimientos += montoCategoria;
+                        break;
+                    default:
+                        // Si no tiene operador, se considera neutro (no afecta el total)
+                        break;
+                }
+
+                console.log(`Categoría ${categoriaMovimiento.nombre}: ${operador}${montoCategoria} = ${totalMovimientos}`);
             });
 
-            // Actualizar el summary de movimientos si existe
+            // Actualizar el summary de movimientos
             if (vm.valoresSummary) {
                 vm.valoresSummary.totalMovimientos = totalMovimientos;
 
-                // Recalcular suma diaria total incluyendo movimientos
+                // Recalcular total real por turno
                 const totalInventario = vm.valoresSummary.totalConvertido || 0;
                 const diferencia = vm.valoresSummary.diferencia || 0;
-                vm.valoresSummary.suma_diaria_efectivo = totalInventario + totalMovimientos + diferencia;
+
+                // Total real = inventario base + movimientos (con sus operadores) + diferencia manual
+                vm.valoresSummary.total_real_turno = totalInventario + totalMovimientos + diferencia;
+                vm.valoresSummary.suma_diaria_efectivo = vm.valoresSummary.total_real_turno;
             }
 
             console.log('Totales generales de movimientos actualizados:', {
+                totalInventario: vm.valoresSummary?.totalConvertido,
                 totalMovimientos: totalMovimientos,
-                suma_diaria_efectivo: vm.valoresSummary?.suma_diaria_efectivo
+                diferencia: vm.valoresSummary?.diferencia,
+                totalRealTurno: vm.valoresSummary?.total_real_turno
             });
         }
     }
@@ -501,6 +533,17 @@ export class InventarioEfectivoNew implements OnInit {
         return categoriaMovimiento.details.reduce((total: number, detail: any) => {
             return total + (detail.cantidad || 0);
         }, 0);
+    }
+
+    // Método para obtener clases CSS según el tipo de operación
+    getOperacionClass(tipoOperacion: string): string {
+        switch (tipoOperacion) {
+            case '+': return 'text-success';
+            case '-': return 'text-danger';
+            case 'diff':
+            case 'diferencia': return 'text-warning';
+            default: return 'text-success';
+        }
     }
 
     // ===== FIN MÉTODOS PARA CATEGORÍAS DE MOVIMIENTO =====

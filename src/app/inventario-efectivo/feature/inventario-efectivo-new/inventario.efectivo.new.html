@@ -155,9 +155,27 @@
                     <div ngbAccordionHeader class="accordion-header border-0 bg-transparent">
                       <button ngbAccordionButton>
                         <div class="d-flex justify-content-between align-items-center w-100">
-                          <span><i class="ri-check-line me-2"></i>{{ catMovimiento.nombre }}</span>
-                          <span
-                            class="fw-bold text-success me-2">S/. {{ catMovimiento.acumuladoConvertido?.toFixed(2) || '0.00' }}</span>
+                          <span>
+                            @if (catMovimiento.tipo_operacion === '+') {
+                              <i class="ri-add-circle-line me-2 text-success"></i>
+                            } @else if (catMovimiento.tipo_operacion === '-') {
+                              <i class="ri-subtract-circle-line me-2 text-danger"></i>
+                            } @else if (catMovimiento.tipo_operacion === 'diff' || catMovimiento.tipo_operacion === 'diferencia') {
+                              <i class="ri-exchange-line me-2 text-warning"></i>
+                            } @else {
+                              <i class="ri-check-line me-2"></i>
+                            }
+                            {{ catMovimiento.nombre }}
+                          </span>
+                          <span class="fw-bold me-2" [ngClass]="getOperacionClass(catMovimiento.tipo_operacion)">
+                            @if (catMovimiento.tipo_operacion === '-') {
+                              - S/. {{ catMovimiento.acumuladoConvertido?.toFixed(2) || '0.00' }}
+                            } @else if (catMovimiento.tipo_operacion === '+') {
+                              + S/. {{ catMovimiento.acumuladoConvertido?.toFixed(2) || '0.00' }}
+                            } @else {
+                              S/. {{ catMovimiento.acumuladoConvertido?.toFixed(2) || '0.00' }}
+                            }
+                          </span>
                         </div>
                       </button>
                     </div>
@@ -325,9 +343,9 @@
       <div class="card">
         <div class="card-header">
           <div class="d-flex">
-            <h5 class="card-title flex-grow-1 mb-0">Suma diaria de efectivo</h5>
+            <h5 class="card-title flex-grow-1 mb-0">Total Real del Turno</h5>
             <div class="flex-shrink-0">
-              <a class="text-danger">Diferencia (+/-)</a>
+              <a class="text-info">Cálculo final</a>
             </div>
           </div>
         </div>
@@ -345,30 +363,65 @@
             <div class="p-3 bg-success-subtle">
               <div class="float-end ms-2">
                 <h6 class="text-success mb-0">S/. <span
-                  class="text-body">{{ vm.valoresSummary.suma_diaria_efectivo?.toFixed(2) || '0.00' }}</span></h6>
+                  class="text-body">{{ vm.valoresSummary.total_real_turno?.toFixed(2) || '0.00' }}</span></h6>
               </div>
-              <h6 class="mb-0 text-success">Suma diaria de efectivo</h6>
+              <h6 class="mb-0 text-success">Total Real del Turno</h6>
             </div>
 
-            <!-- Mostrar desglose de totales -->
+            <!-- Mostrar desglose detallado de totales -->
             <div class="mt-2 p-2 bg-light rounded">
-              <small class="text-muted d-block">Desglose:</small>
+              <small class="text-muted d-block mb-2"><strong>Desglose del cálculo:</strong></small>
+
+              <!-- Inventario base -->
               <div class="d-flex justify-content-between">
-                <small>Inventario:</small>
-                <small>S/. {{ vm.valoresSummary?.totalConvertido?.toFixed(2) || '0.00' }}</small>
+                <small><i class="ri-coins-line me-1"></i>Inventario base:</small>
+                <small class="fw-medium">S/. {{ vm.valoresSummary?.totalConvertido?.toFixed(2) || '0.00' }}</small>
               </div>
-              @if (vm.valoresSummary?.totalMovimientos && vm.valoresSummary?.totalMovimientos > 0) {
-                <div class="d-flex justify-content-between">
-                  <small>Movimientos:</small>
-                  <small>S/. {{ vm.valoresSummary?.totalMovimientos?.toFixed(2) || '0.00' }}</small>
-                </div>
+
+              <!-- Movimientos de cada categoría -->
+              @for (catMovimiento of vm.catMovWithDetailsData; track $index) {
+                @if (catMovimiento.acumuladoConvertido && catMovimiento.acumuladoConvertido > 0) {
+                  <div class="d-flex justify-content-between">
+                    <small>
+                      @if (catMovimiento.tipo_operacion === '+') {
+                        <i class="ri-add-line me-1 text-success"></i>
+                      } @else if (catMovimiento.tipo_operacion === '-') {
+                        <i class="ri-subtract-line me-1 text-danger"></i>
+                      } @else {
+                        <i class="ri-exchange-line me-1 text-warning"></i>
+                      }
+                      {{ catMovimiento.nombre }}:
+                    </small>
+                    <small [ngClass]="getOperacionClass(catMovimiento.tipo_operacion)">
+                      @if (catMovimiento.tipo_operacion === '-') {
+                        - S/. {{ catMovimiento.acumuladoConvertido?.toFixed(2) || '0.00' }}
+                      } @else if (catMovimiento.tipo_operacion === '+') {
+                        + S/. {{ catMovimiento.acumuladoConvertido?.toFixed(2) || '0.00' }}
+                      } @else {
+                        S/. {{ catMovimiento.acumuladoConvertido?.toFixed(2) || '0.00' }}
+                      }
+                    </small>
+                  </div>
+                }
               }
+
+              <!-- Diferencia manual -->
               @if (vm.valoresSummary?.diferencia && vm.valoresSummary?.diferencia !== 0) {
                 <div class="d-flex justify-content-between">
-                  <small>Diferencia:</small>
-                  <small>S/. {{ vm.valoresSummary?.diferencia?.toFixed(2) || '0.00' }}</small>
+                  <small><i class="ri-edit-line me-1"></i>Diferencia manual:</small>
+                  <small [ngClass]="vm.valoresSummary?.diferencia > 0 ? 'text-success' : 'text-danger'">
+                    {{ vm.valoresSummary?.diferencia > 0 ? '+' : '' }}S/. {{ vm.valoresSummary?.diferencia?.toFixed(2) || '0.00' }}
+                  </small>
                 </div>
               }
+
+              <hr class="my-2">
+
+              <!-- Total final -->
+              <div class="d-flex justify-content-between">
+                <small class="fw-bold"><i class="ri-calculator-line me-1"></i>Total Real:</small>
+                <small class="fw-bold text-success">S/. {{ vm.valoresSummary?.total_real_turno?.toFixed(2) || '0.00' }}</small>
+              </div>
             </div>
             <div class="mt-2 pt-2">
               <button type="button" class="btn btn-success w-100" (click)="saveInventario()"
