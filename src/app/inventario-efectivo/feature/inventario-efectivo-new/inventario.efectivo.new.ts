@@ -12,7 +12,6 @@ import {InventarioEfectivoStore} from "@app/inventario-efectivo/data-access/inve
 import {FormsModule} from "@angular/forms";
 import {ChartComponent} from "ng-apexcharts";
 import Swal from "sweetalert2";
-import {DatePipe, DecimalPipe, NgClass} from "@angular/common";
 import {PersistenceService} from "@sothy/services/persistence.service";
 
 @Component({
@@ -28,9 +27,6 @@ import {PersistenceService} from "@sothy/services/persistence.service";
     NgbAccordionBody,
     FormsModule,
     ChartComponent,
-    DatePipe,
-    DecimalPipe,
-    NgClass,
   ],
     standalone: true
 })
@@ -81,6 +77,11 @@ export class InventarioEfectivoNew implements OnInit {
         const vm = this.inventarioEfectivoStore.vm();
         if (vm?.valoresWithDetailsData) {
             vm.valoresWithDetailsData.forEach((valorDetail: any) => {
+                // Inicializar porcentaje en 0 para evitar NaN
+                if (!valorDetail.porcentaje || isNaN(valorDetail.porcentaje)) {
+                    valorDetail.porcentaje = 0;
+                }
+
                 if (valorDetail.denominaciones) {
                     valorDetail.denominaciones.forEach((denominacion: any) => {
                         this.initializeCajas(denominacion);
@@ -296,7 +297,7 @@ export class InventarioEfectivoNew implements OnInit {
 
             // Calcular porcentajes
             vm.valoresWithDetailsData.forEach((valorDetail: any) => {
-                if (totalConvertido > 0) {
+                if (totalConvertido > 0 && valorDetail.acumuladoConvertido && !isNaN(valorDetail.acumuladoConvertido)) {
                     valorDetail.porcentaje = (valorDetail.acumuladoConvertido / totalConvertido) * 100;
                 } else {
                     valorDetail.porcentaje = 0;
