@@ -60,11 +60,16 @@
                               </thead>
                               <tbody>
                                 @for (denominacion of valorDetail.denominaciones; track $index) {
-                                  <tr>
+                                  <tr [class]="getRowClass(valorDetail, denominacion)"
+                                      (click)="toggleRowSelection(valorDetail, denominacion)"
+                                      style="cursor: pointer; transition: background-color 0.2s ease;">
                                     <!-- Denominación -->
                                     <td class="align-middle">
                                       <div class="d-flex align-items-center">
                                         <span class="fw-medium">{{ denominacion.descripcion }}</span>
+                                        @if (isRowSelected(valorDetail, denominacion)) {
+                                          <i class="ri-check-line ms-2 text-primary"></i>
+                                        }
                                       </div>
                                     </td>
 
@@ -72,15 +77,16 @@
                                       <td>
                                         <div class="input-group input-group-sm">
                                           <button class="btn btn-outline-primary btn-sm" type="button"
-                                                  (click)="decrementCantidadByCaja(denominacion, caja.caja_nombre)">
+                                                  (click)="decrementCantidadByCaja(denominacion, caja.caja_nombre); $event.stopPropagation()">
                                             <i class="ri-subtract-line"></i>
                                           </button>
                                           <input type="number" class="form-control text-center" min="0"
                                                  [(ngModel)]="getCajas(denominacion)[caja.caja_nombre]"
                                                  (ngModelChange)="onCantidadCajaChange(denominacion, caja.caja_nombre, $event)"
+                                                 (click)="$event.stopPropagation()"
                                                  style="max-width: 60px;">
                                           <button class="btn btn-outline-primary btn-sm" type="button"
-                                                  (click)="incrementCantidadByCaja(denominacion, caja.caja_nombre)">
+                                                  (click)="incrementCantidadByCaja(denominacion, caja.caja_nombre); $event.stopPropagation()">
                                             <i class="ri-add-line"></i>
                                           </button>
                                         </div>
@@ -423,6 +429,7 @@
                 <small class="fw-bold text-success">S/. {{ vm.valoresSummary?.total_real_turno?.toFixed(2) || '0.00' }}</small>
               </div>
             </div>
+
             <div class="mt-2 pt-2">
               <button type="button" class="btn btn-success w-100" (click)="saveInventario()"
                       [disabled]="vm.saveInventarioEfectivoLoading || vm.valoresSummary?.totalConvertido < 1 || !selectedTurnoId || !selectedOperacion">

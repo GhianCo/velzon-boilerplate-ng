@@ -35,7 +35,25 @@ import {NgClass} from "@angular/common";
     CdkStepLabel,
     NgClass,
   ],
-    standalone: true
+    standalone: true,
+    styles: [`
+        .selected-row {
+            background-color: rgba(13, 110, 253, 0.08) !important;
+            border-left: 4px solid #0d6efd !important;
+        }
+
+        .selected-row:hover {
+            background-color: rgba(13, 110, 253, 0.25) !important;
+        }
+
+        tr:hover:not(.selected-row) {
+            background-color: rgba(0, 0, 0, 0.05) !important;
+        }
+
+        .selected-row td {
+            border-color: rgba(13, 110, 253, 0.2) !important;
+        }
+    `]
 })
 
 /**
@@ -52,6 +70,9 @@ export class InventarioEfectivoNew implements OnInit {
     // Propiedades para selección de turno
     selectedTurnoId: string | null = null;
     selectedOperacion: string | null = null;
+
+    // Propiedades para manejo de selección de filas (solo una fila)
+    selectedRowId: string | null = null;
 
     constructor(private modalService: NgbModal) {
     }
@@ -547,6 +568,94 @@ export class InventarioEfectivoNew implements OnInit {
     }
 
     // ===== FIN MÉTODOS PARA CATEGORÍAS DE MOVIMIENTO =====
+
+    // ===== MÉTODOS PARA SELECCIÓN DE FILAS (UNA SOLA FILA) =====
+
+    // Generar ID único para cada fila
+    private getRowId(valorDetail: any, denominacion: any): string {
+        return `${valorDetail.id || valorDetail.nombre}_${denominacion.id || denominacion.descripcion}`;
+    }
+
+    // Seleccionar fila (solo una a la vez)
+    toggleRowSelection(valorDetail: any, denominacion: any): void {
+        const rowId = this.getRowId(valorDetail, denominacion);
+
+        // Si la fila ya está seleccionada, deseleccionarla
+        if (this.selectedRowId === rowId) {
+            this.selectedRowId = null;
+        } else {
+            // Seleccionar la nueva fila (deselecciona automáticamente la anterior)
+            this.selectedRowId = rowId;
+        }
+
+        console.log('Fila seleccionada:', {
+            valorDetail: valorDetail.nombre,
+            denominacion: denominacion.descripcion,
+            seleccionada: this.selectedRowId === rowId,
+            rowId: this.selectedRowId
+        });
+    }
+
+    // Verificar si una fila está seleccionada
+    isRowSelected(valorDetail: any, denominacion: any): boolean {
+        const rowId = this.getRowId(valorDetail, denominacion);
+        return this.selectedRowId === rowId;
+    }
+
+    // Obtener clase CSS para la fila
+    getRowClass(valorDetail: any, denominacion: any): string {
+        const isSelected = this.isRowSelected(valorDetail, denominacion);
+        return isSelected ? 'table-primary selected-row' : '';
+    }
+
+    // Obtener información de la fila seleccionada
+    getSelectedRowInfo(): any | null {
+        if (!this.selectedRowId) return null;
+
+        const vm = this.inventarioEfectivoStore.vm();
+
+        if (vm?.valoresWithDetailsData) {
+            for (const valorDetail of vm.valoresWithDetailsData) {
+                if (valorDetail.denominaciones) {
+                    for (const denominacion of valorDetail.denominaciones) {
+                        if (this.getRowId(valorDetail, denominacion) === this.selectedRowId) {
+                            return {
+                                valorDetail: valorDetail,
+                                denominacion: denominacion,
+                                rowId: this.selectedRowId
+                            };
+                        }
+                    }
+                }
+            }
+        }
+
+        return null;
+    }
+
+    // Mostrar información de la fila seleccionada en consola
+    logSelectedRows(): void {
+        const selectedRowInfo = this.getSelectedRowInfo();
+
+        if (selectedRowInfo) {
+            console.log('Fila seleccionada:', selectedRowInfo);
+
+            // Mostrar información más legible
+            const summary = {
+                moneda: selectedRowInfo.valorDetail.nombre,
+                denominacion: selectedRowInfo.denominacion.descripcion,
+                valor: selectedRowInfo.denominacion.valor,
+                importe: selectedRowInfo.denominacion.importeLocal,
+                cantidadTotal: selectedRowInfo.denominacion.cantidadTotal
+            };
+
+            console.table([summary]);
+        } else {
+            console.log('Ninguna fila seleccionada');
+        }
+    }
+
+    // ===== FIN MÉTODOS PARA SELECCIÓN DE FILAS =====
 
     /**
      * Open modal
