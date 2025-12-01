@@ -14,7 +14,7 @@ import {ChartComponent} from "ng-apexcharts";
 import Swal from "sweetalert2";
 import {PersistenceService} from "@sothy/services/persistence.service";
 import {NgStepperModule} from "angular-ng-stepper";
-import {CdkStep, CdkStepLabel} from "@angular/cdk/stepper";
+import {CdkStep, CdkStepLabel, CdkStepper, CdkStepperNext, CdkStepperPrevious} from "@angular/cdk/stepper";
 import {NgClass} from "@angular/common";
 
 @Component({
@@ -33,7 +33,10 @@ import {NgClass} from "@angular/common";
     NgStepperModule,
     CdkStep,
     CdkStepLabel,
-    NgClass,
+    CdkStepper,
+    CdkStepperNext,
+    CdkStepperPrevious,
+    NgClass
   ],
     standalone: true,
     styles: [`

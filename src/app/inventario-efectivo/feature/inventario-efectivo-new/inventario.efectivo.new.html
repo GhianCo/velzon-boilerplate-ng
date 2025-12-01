@@ -136,9 +136,13 @@
           </div>
           <!-- wizard-tab -->
           <div class="d-flex align-items-start gap-3 mt-4">
-            <button type="button" class="btn btn-success btn-label right ms-auto nexttab nexttab"
-                    data-nexttab="steparrow-description-info-tab" awNextStep><i
-              class="ri-arrow-right-line label-icon align-middle fs-16 ms-2"></i>Continuar
+            <button type="button"
+                    class="btn btn-label right ms-auto nexttab nexttab"
+                    [ngClass]="(vm.valoresSummary?.totalConvertido || 0) > 0 ? 'btn-success' : 'btn-secondary'"
+                    [disabled]="(vm.valoresSummary?.totalConvertido || 0) <= 0"
+                    data-nexttab="steparrow-description-info-tab"
+                    cdkStepperNext>
+              <i class="ri-arrow-right-line label-icon align-middle fs-16 ms-2"></i>Continuar
             </button>
           </div>
         </cdk-step>
@@ -241,13 +245,17 @@
             </div>
           </div>
           <div class="d-flex align-items-start gap-3 mt-4">
-            <button type="button" class="btn btn-light btn-label previestab"
-                    data-previous="steparrow-gen-info-tab" awPreviousStep><i
-              class="ri-arrow-left-line label-icon align-middle fs-16 me-2"></i> Regresar al inventario
+            <button type="button"
+                    class="btn btn-light btn-label previestab"
+                    data-previous="steparrow-gen-info-tab"
+                    cdkStepperPrevious>
+              <i class="ri-arrow-left-line label-icon align-middle fs-16 me-2"></i> Regresar al inventario
             </button>
-            <button type="button" class="btn btn-success btn-label right ms-auto nexttab
-    nexttab" data-nexttab="pills-experience-tab" awNextStep><i
-              class="ri-arrow-right-line label-icon align-middle fs-16 ms-2"></i>Guardar suma diaria
+            <button type="button"
+                    class="btn btn-success btn-label right ms-auto nexttab nexttab"
+                    data-nexttab="pills-experience-tab"
+                    cdkStepperNext>
+              <i class="ri-arrow-right-line label-icon align-middle fs-16 ms-2"></i>Guardar suma diaria
             </button>
           </div>
         </cdk-step>
