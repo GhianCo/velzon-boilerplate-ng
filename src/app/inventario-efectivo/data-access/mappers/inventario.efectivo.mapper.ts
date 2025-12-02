@@ -5,7 +5,8 @@ export class InventarioEfectivoMapper extends MainMapper<any, any> {
   protected map(inventario_efectivo: any): any {
     return {
       ...inventario_efectivo,
-      fecha: DateTimeService.formatearFecha(inventario_efectivo.fecha),
+      apertura: DateTimeService.formatearFecha(inventario_efectivo.apertura),
+      cierre: DateTimeService.formatearFecha(inventario_efectivo.cierre),
     }
   }
 

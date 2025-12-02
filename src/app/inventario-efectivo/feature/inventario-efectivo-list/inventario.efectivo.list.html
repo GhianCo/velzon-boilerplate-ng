@@ -60,24 +60,24 @@
                     <tbody>
                       @for (inventarioEfectivo of vm.inventarioEfectivoData?.body; track $index) {
                         <tr>
-                          <td>{{ inventarioEfectivo.fecha }}</td>
+                          <td>{{ inventarioEfectivo.apertura }}</td>
+                          <td>{{ inventarioEfectivo.cierre }}</td>
                           <td>
                             <div class="d-flex align-items-center">
                               <div class="flex-grow-1">
-                                <h5 class="fs-14 mb-1">{{ inventarioEfectivo.nomape_gerente }}</h5>
+                                <h5 class="fs-14 mb-1">{{ inventarioEfectivo.gerente }}</h5>
                               </div>
                             </div>
                           </td>
                           <td>
                             <div class="d-flex align-items-center">
                               <div class="flex-grow-1">
-                                <h5 class="fs-14 mb-1">{{ inventarioEfectivo.nomape_created }}</h5>
+                                <h5 class="fs-14 mb-1">{{ inventarioEfectivo.supervisor }}</h5>
                               </div>
                             </div>
                           </td>
-                          <td>{{ inventarioEfectivo.total }}</td>
-                          <td>{{ inventarioEfectivo.diferencia }}</td>
-                          <td>{{ inventarioEfectivo.suma_diaria }}</td>
+                          <td>{{ inventarioEfectivo.totalinventario }}</td>
+                          <td>{{ inventarioEfectivo.sumadiaria }}</td>
                           <td>{{ inventarioEfectivo.sala }}</td>
                           <td>{{ inventarioEfectivo.turno }}</td>
                           <td class="text-center">

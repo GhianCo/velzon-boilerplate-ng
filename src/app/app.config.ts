@@ -2,11 +2,10 @@ import {ApplicationConfig, importProvidersFrom} from "@angular/core";
 import {
   PreloadAllModules,
   provideRouter,
-  withHashLocation,
   withInMemoryScrolling,
   withPreloading
 } from "@angular/router";
-import {HttpClient, provideHttpClient, withInterceptorsFromDi} from "@angular/common/http";
+import {HttpClient, provideHttpClient} from "@angular/common/http";
 import {ErrorInterceptor} from "@velzon/core/helpers/error.interceptor";
 import {FakeBackendInterceptor} from "@velzon/core/helpers/fake-backend";
 import {NgPipesModule} from "ngx-pipes";
@@ -45,6 +44,7 @@ import { registerLanguageDictionary, deDE } from 'handsontable/i18n';
 import {controlActivosAPiCreator, ControlActivosApiService} from "@sothy/services/control.activos.api.service";
 import {workersAPiCreator, WorkersApiService} from "@sothy/services/workers.api.service";
 import {AlertService, alertServiceFactory} from "@sothy/services/alert.service";
+import {provideAuth} from "@sothy/providers/auth.provider";
 registerLanguageDictionary(deDE);
 
 const globalHotConfig: HotGlobalConfig = {
@@ -74,6 +74,7 @@ export const appConfig: ApplicationConfig = {
     ),
     {provide: HOT_GLOBAL_CONFIG, useValue: globalHotConfig},
     provideHttpClient(),
+    provideAuth(),
     // Interceptores HTTP
     {provide: 'HTTP_INTERCEPTORS', useClass: ErrorInterceptor, multi: true},
     {provide: 'HTTP_INTERCEPTORS', useClass: FakeBackendInterceptor, multi: true},

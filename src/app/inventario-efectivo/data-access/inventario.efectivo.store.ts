@@ -36,6 +36,10 @@ export type IState = {
   turnosLoading: boolean,
   turnosData: any,
   turnosError: any,
+
+  // Campos para turno y tipo de operación seleccionados
+  selectedTurnoId: string | null,
+  selectedOperacion: string | null,
 }
 
 const initialState: IState = {
@@ -65,6 +69,10 @@ const initialState: IState = {
   turnosLoading: false,
   turnosData: [],
   turnosError: null,
+
+  // Inicializar campos de turno y operación
+  selectedTurnoId: null,
+  selectedOperacion: null,
 
   valoresSummary: {
     diferencia: 0,
@@ -140,7 +148,10 @@ export class InventarioEfectivoStore extends SignalStore<IState> {
     'chartSummary',
 
     'saveInventarioEfectivoLoading',
-    'saveInventarioEfectivoError'
+    'saveInventarioEfectivoError',
+
+    'selectedTurnoId',
+    'selectedOperacion'
   ]);
 
   constructor(
@@ -236,7 +247,11 @@ export class InventarioEfectivoStore extends SignalStore<IState> {
   public async saveInventarioEfectivoWithDetils() {
     this.patch({saveInventarioEfectivoLoading: true, saveInventarioEfectivoError: null});
     const state = this.vm();
+
+    // Construir el payload con turno y tipo de operación
     const inventario = {
+      turno_id: state.selectedTurnoId,
+      tipo_operacion: state.selectedOperacion,
       total: state.valoresSummary.totalConvertido,
       diferencia: state.valoresSummary.diferencia,
       suma_diaria: state.valoresSummary.suma_diaria_efectivo,
@@ -244,6 +259,7 @@ export class InventarioEfectivoStore extends SignalStore<IState> {
       inventario_efectivo_detalle: state.valoresWithDetailsData,
       suma_diaria_detalle: state.catMovWithDetailsData
     };
+
     this._inventarioEfectivoRemoteReq.requestSaveInventario(inventario).pipe(
       tap(async ({data, pagination}) => {
         this._router.navigate(['./'], {relativeTo: this._activatedRoute});
@@ -398,5 +414,14 @@ export class InventarioEfectivoStore extends SignalStore<IState> {
     this.loadAllInvetarioEfectivoStore();
     this.patch({filtersToApply});
   };
+
+  // Métodos para actualizar turno y tipo de operación
+  public setSelectedTurnoId(turnoId: string | null) {
+    this.patch({selectedTurnoId: turnoId});
+  }
+
+  public setSelectedOperacion(operacion: string | null) {
+    this.patch({selectedOperacion: operacion});
+  }
 
 }

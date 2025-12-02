@@ -23,7 +23,7 @@ export class InventarioEfectivoRemoteReq {
   }
 
   requestSearchByCriteria(criteria: any): Observable<IResponse> {
-    return this.http.post(this.REMOTE_API_URI + 'inventario/searchByParams', criteria)
+    return this.http.post(this.REMOTE_API_URI + 'operacionturno/searchByParams', criteria)
       .pipe(
         map((response: any) => {
           if (response.data) {

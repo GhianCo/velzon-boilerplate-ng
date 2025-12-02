@@ -69,9 +69,6 @@ export class InventarioEfectivoNew implements OnInit {
     inventarioEfectivoStore = inject(InventarioEfectivoStore);
     persistenceService = inject(PersistenceService);
 
-    // Propiedades para selección de turno
-    selectedTurnoId: string | null = null;
-    selectedOperacion: string | null = null;
 
     // Propiedades para manejo de selección de filas (solo una fila)
     selectedRowId: string | null = null;
@@ -130,8 +127,10 @@ export class InventarioEfectivoNew implements OnInit {
     }
 
     saveInventario() {
+        const vm = this.inventarioEfectivoStore.vm();
+
         // Validar que se haya seleccionado turno y operación
-        if (!this.selectedTurnoId || !this.selectedOperacion) {
+        if (!vm.selectedTurnoId || !vm.selectedOperacion) {
             Swal.fire({
                 title: 'Faltan datos',
                 text: 'Por favor selecciona un turno y el tipo de operación antes de guardar.',
@@ -151,7 +150,7 @@ export class InventarioEfectivoNew implements OnInit {
                     <p>He revisado que los datos sean los correctos!</p>
                     <div class="mt-3 p-3 bg-light rounded">
                         <strong>Turno:</strong> ${turnoInfo?.turno_nombre}<br>
-                        <strong>Operación:</strong> <span class="badge ${this.selectedOperacion === 'apertura' ? 'bg-success' : 'bg-danger'}">${this.selectedOperacion}</span><br>
+                        <strong>Operación:</strong> <span class="badge ${vm.selectedOperacion === 'apertura' ? 'bg-success' : 'bg-danger'}">${vm.selectedOperacion}</span><br>
                     </div>
                 </div>
             `,
@@ -163,14 +162,11 @@ export class InventarioEfectivoNew implements OnInit {
             cancelButtonText: 'No, cerrar'
         }).then(result => {
             if (result.value) {
-                // Agregar información del turno al store antes de guardar
-                const inventarioData = {
-                    turno_id: this.selectedTurnoId,
-                    tipo_operacion: this.selectedOperacion,
+                console.log('Guardando inventario con datos de turno:', {
+                    turno_id: vm.selectedTurnoId,
+                    tipo_operacion: vm.selectedOperacion,
                     turno_info: turnoInfo
-                };
-
-                console.log('Guardando inventario con datos de turno:', inventarioData);
+                });
 
                 this.inventarioEfectivoStore.saveInventarioEfectivoWithDetils();
             }
@@ -396,23 +392,24 @@ export class InventarioEfectivoNew implements OnInit {
 
     // Método para obtener el turno seleccionado
     getSelectedTurno(): any {
-        if (!this.selectedTurnoId) return null;
-
         const vm = this.inventarioEfectivoStore.vm();
+        if (!vm.selectedTurnoId) return null;
+
         if (!vm.turnosData) return null;
 
-        return vm.turnosData.find((turno: any) => turno.turno_id.toString() === this.selectedTurnoId);
+        return vm.turnosData.find((turno: any) => turno.turno_id.toString() === vm.selectedTurnoId);
     }
 
     // Método para obtener información completa de la selección actual
     getSelectionInfo(): any {
+        const vm = this.inventarioEfectivoStore.vm();
         const turno = this.getSelectedTurno();
-        if (!turno || !this.selectedOperacion) return null;
+        if (!turno || !vm.selectedOperacion) return null;
 
         return {
             turno: turno,
-            operacion: this.selectedOperacion,
-            isValid: !!(this.selectedTurnoId && this.selectedOperacion)
+            operacion: vm.selectedOperacion,
+            isValid: !!(vm.selectedTurnoId && vm.selectedOperacion)
         };
     }
 
@@ -708,6 +705,20 @@ export class InventarioEfectivoNew implements OnInit {
     }
 
     // ===== FIN MÉTODOS PARA SELECCIÓN DE FILAS =====
+
+    // ===== MÉTODOS PARA ACTUALIZAR TURNO Y OPERACIÓN =====
+
+    onTurnoChange(turnoId: string) {
+        this.inventarioEfectivoStore.setSelectedTurnoId(turnoId);
+        console.log('Turno seleccionado:', turnoId);
+    }
+
+    onOperacionChange(operacion: string) {
+        this.inventarioEfectivoStore.setSelectedOperacion(operacion);
+        console.log('Operación seleccionada:', operacion);
+    }
+
+    // ===== FIN MÉTODOS TURNO Y OPERACIÓN =====
 
     /**
      * Open modal

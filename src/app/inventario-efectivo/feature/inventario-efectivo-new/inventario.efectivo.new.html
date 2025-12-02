@@ -274,7 +274,7 @@
               Resumen de inventario</h5>
             <div class="flex-shrink-0">
               <button type="button" class="btn btn-success btn-sm" (click)="saveInventario()"
-                      [disabled]="vm.saveInventarioEfectivoLoading || vm.valoresSummary?.totalConvertido < 1 || !selectedTurnoId || !selectedOperacion">
+                      [disabled]="vm.saveInventarioEfectivoLoading || vm.valoresSummary?.totalConvertido < 1 || !vm.selectedTurnoId || !vm.selectedOperacion">
                 <i class="ri-save-fill align-middle"></i> Guardar inventario
               </button>
             </div>
@@ -322,7 +322,10 @@
             <div class="row g-3">
               <div class="col-6">
                 <label class="form-label fw-medium">Turno:</label>
-                <select class="form-select form-select-sm" [(ngModel)]="selectedTurnoId">
+                <select class="form-select form-select-sm"
+                        [ngModel]="vm.selectedTurnoId"
+                        (ngModelChange)="onTurnoChange($event)">
+                  <option [value]="null" disabled selected>Seleccionar turno</option>
                   @for (turno of vm.turnosData; track turno.turno_id) {
                     <option [value]="turno.turno_id">{{ turno.turno_nombre }}</option>
                   }
@@ -331,7 +334,10 @@
 
               <div class="col-6">
                 <label class="form-label fw-medium">Tipo de operación:</label>
-                <select class="form-select form-select-sm" [(ngModel)]="selectedOperacion">
+                <select class="form-select form-select-sm"
+                        [ngModel]="vm.selectedOperacion"
+                        (ngModelChange)="onOperacionChange($event)">
+                  <option [value]="null" disabled selected>Seleccionar operación</option>
                   <option value="apertura">
                     <i class="ri-play-circle-line me-1"></i> Abrir
                   </option>
@@ -443,7 +449,7 @@
 
             <div class="mt-2 pt-2">
               <button type="button" class="btn btn-success w-100" (click)="saveInventario()"
-                      [disabled]="vm.saveInventarioEfectivoLoading || vm.valoresSummary?.totalConvertido < 1 || !selectedTurnoId || !selectedOperacion">
+                      [disabled]="vm.saveInventarioEfectivoLoading || vm.valoresSummary?.totalConvertido < 1 || !vm.selectedTurnoId || !vm.selectedOperacion">
                 <i class="ri-save-fill align-middle"></i> Guardar inventario
               </button>
             </div>
