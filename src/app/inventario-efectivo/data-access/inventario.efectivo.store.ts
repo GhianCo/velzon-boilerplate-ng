@@ -241,7 +241,8 @@ export class InventarioEfectivoStore extends SignalStore<IState> {
       diferencia: state.valoresSummary.diferencia,
       suma_diaria: state.valoresSummary.suma_diaria_efectivo,
       tipocambio: state.valoresSummary.tipocambio,
-      detalle: state.valoresWithDetailsData
+      inventario_efectivo_detalle: state.valoresWithDetailsData,
+      suma_diaria_detalle: state.catMovWithDetailsData
     };
     this._inventarioEfectivoRemoteReq.requestSaveInventario(inventario).pipe(
       tap(async ({data, pagination}) => {
