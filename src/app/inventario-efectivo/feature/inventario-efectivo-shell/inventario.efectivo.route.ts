@@ -30,6 +30,13 @@ export default [
           data: InventarioEfectivoNewResolver,
         },
       },
+      {
+        path: "cerrar/:id",
+        component: InventarioEfectivoNew,
+        resolve: {
+          data: InventarioEfectivoNewResolver,
+        },
+      },
     ]
   }
 ] as Routes;

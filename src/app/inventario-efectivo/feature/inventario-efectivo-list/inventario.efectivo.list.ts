@@ -506,8 +506,8 @@ export class InventarioEfectivoList {
     this.products = this.allproduct
   }
 
-  godetail(id: any) {
-    this.router.navigate(['/ecommerce/product-detail/1', this.products[id]])
+  cerrarTurno(id: any) {
+    this.router.navigate(['/inventario-efectivo/cerrar/' + id])
   }
 
   openEnd(content: TemplateRef<any>) {

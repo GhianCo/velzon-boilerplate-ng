@@ -102,18 +102,12 @@
                               </button>
                               <ul class="dropdown-menu dropdown-menu-end" ngbDropdownMenu>
                                 <li>
-                                  <a class="dropdown-item" (click)="godetail($index)"><i
-                                    class="ri-eye-fill align-bottom me-2 text-muted"></i> View </a>
+                                  <a class="dropdown-item" (click)="cerrarTurno(inventarioEfectivo.operacionturno_id)"><i
+                                    class="ri-eye-fill align-bottom me-2 text-muted"></i> Cerrar </a>
                                 </li>
                                 <li>
                                   <a class="dropdown-item" routerLink="/ecommerce/add-product"><i
-                                    class="ri-pencil-fill align-bottom me-2 text-muted"></i> Edit</a>
-                                </li>
-                                <li class="dropdown-divider"></li>
-                                <li>
-                                  <a class="dropdown-item" href="javascript:void(0);" data-bs-toggle="modal"
-                                     data-bs-target="#removeItemModal"><i
-                                    class="ri-delete-bin-fill align-bottom me-2 text-muted"></i> Delete</a>
+                                    class="ri-pencil-fill align-bottom me-2 text-muted"></i> Editar</a>
                                 </li>
                               </ul>
                             </div>
