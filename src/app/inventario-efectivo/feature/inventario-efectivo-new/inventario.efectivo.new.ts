@@ -14,7 +14,7 @@ import {ChartComponent} from "ng-apexcharts";
 import Swal from "sweetalert2";
 import {PersistenceService} from "@sothy/services/persistence.service";
 import {NgStepperModule} from "angular-ng-stepper";
-import {CdkStep, CdkStepLabel, CdkStepper, CdkStepperNext, CdkStepperPrevious} from "@angular/cdk/stepper";
+import {CdkStep, CdkStepLabel, CdkStepperNext, CdkStepperPrevious} from "@angular/cdk/stepper";
 import {NgClass} from "@angular/common";
 
 @Component({
@@ -33,10 +33,9 @@ import {NgClass} from "@angular/common";
     NgStepperModule,
     CdkStep,
     CdkStepLabel,
-    CdkStepper,
     CdkStepperNext,
     CdkStepperPrevious,
-    NgClass
+    NgClass,
   ],
     standalone: true,
     styles: [`
@@ -426,15 +425,44 @@ export class InventarioEfectivoNew implements OnInit {
     }
 
     decrementCantidadMovimiento(detail: any) {
-        if (detail.cantidad && detail.cantidad > 0) {
-            detail.cantidad--;
-            this.updateTotalesMovimiento(detail);
+        const categoriaMovimiento = this.getCategoriaMovimientoByDetail(detail);
+        const operador = categoriaMovimiento?.tipo_operacion || categoriaMovimiento?.operador;
+
+        // Si es diferencia, permitir valores negativos
+        if (operador === 'diff' || operador === 'diferencia') {
+            detail.cantidad = (detail.cantidad || 0) - 1;
+        } else {
+            // Para otros tipos, solo decrementar si es mayor a 0
+            if (detail.cantidad && detail.cantidad > 0) {
+                detail.cantidad--;
+            }
         }
+        this.updateTotalesMovimiento(detail);
     }
 
     onCantidadMovimientoChange(detail: any, cantidad: number) {
-        detail.cantidad = Math.max(0, cantidad || 0);
+        const categoriaMovimiento = this.getCategoriaMovimientoByDetail(detail);
+        const operador = categoriaMovimiento?.tipo_operacion || categoriaMovimiento?.operador;
+
+        // Si es diferencia, permitir valores negativos
+        if (operador === 'diff' || operador === 'diferencia') {
+            detail.cantidad = cantidad || 0;
+        } else {
+            // Para otros tipos, solo valores positivos
+            detail.cantidad = Math.max(0, cantidad || 0);
+        }
         this.updateTotalesMovimiento(detail);
+    }
+
+    // Método auxiliar para obtener la categoría padre de un detail
+    getCategoriaMovimientoByDetail(detail: any): any {
+        const vm = this.inventarioEfectivoStore.vm();
+        if (vm?.catMovWithDetailsData) {
+            return vm.catMovWithDetailsData.find((cat: any) =>
+                cat.details && cat.details.includes(detail)
+            );
+        }
+        return null;
     }
 
     // Inicializar cantidades para movimientos
@@ -568,6 +596,27 @@ export class InventarioEfectivoNew implements OnInit {
             case 'diferencia': return 'text-warning';
             default: return 'text-success';
         }
+    }
+
+    // Método para obtener clase CSS según el valor de la cantidad (para diferencias)
+    getCantidadClass(detail: any, categoriaMovimiento: any): string {
+        const operador = categoriaMovimiento?.tipo_operacion || categoriaMovimiento?.operador;
+
+        // Solo aplicar colores especiales si es diferencia
+        if (operador === 'diff' || operador === 'diferencia') {
+            const cantidad = detail.cantidad || 0;
+            if (cantidad > 0) return 'text-success fw-bold';
+            if (cantidad < 0) return 'text-danger fw-bold';
+            return '';
+        }
+
+        return '';
+    }
+
+    // Método para verificar si un item permite valores negativos
+    isNegativeAllowed(categoriaMovimiento: any): boolean {
+        const operador = categoriaMovimiento?.tipo_operacion || categoriaMovimiento?.operador;
+        return operador === 'diff' || operador === 'diferencia';
     }
 
     // ===== FIN MÉTODOS PARA CATEGORÍAS DE MOVIMIENTO =====
