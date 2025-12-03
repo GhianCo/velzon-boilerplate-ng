@@ -244,13 +244,14 @@ export class InventarioEfectivoStore extends SignalStore<IState> {
     ).subscribe();
   };
 
-  public async saveInventarioEfectivoWithDetils() {
+  public async saveInventarioEfectivoWithDetils(turnoId?: string, operacionTurnoId?: string | null) {
     this.patch({saveInventarioEfectivoLoading: true, saveInventarioEfectivoError: null});
     const state = this.vm();
 
     // Construir el payload con turno y tipo de operación
     const inventario = {
-      turno_id: state.selectedTurnoId,
+      turno_id: turnoId || state.selectedTurnoId,
+      operacionturno_id: operacionTurnoId || null,
       tipo_operacion: state.selectedOperacion,
       total: state.valoresSummary.totalConvertido,
       diferencia: state.valoresSummary.diferencia,

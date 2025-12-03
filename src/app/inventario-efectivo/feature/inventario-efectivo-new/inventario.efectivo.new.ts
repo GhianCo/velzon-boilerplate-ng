@@ -132,20 +132,11 @@ export class InventarioEfectivoNew implements OnInit {
 
             if (inventarioApertura) {
                 this.turnoData = {
-                    turno_id: operacionTurnoId,
+                    turno_id: inventarioApertura.turno_id,
                     turno_nombre: inventarioApertura.turno || 'Turno',
                     fecha_apertura: inventarioApertura.apertura || '',
                     monto_inicial: Number(inventarioApertura.totalinventario) || 0,
                     usuario_apertura: inventarioApertura.gerente || ''
-                };
-            } else {
-                // Si no se encuentra en la lista, cargar valores por defecto
-                this.turnoData = {
-                    turno_id: operacionTurnoId,
-                    turno_nombre: 'Turno',
-                    fecha_apertura: new Date().toISOString(),
-                    monto_inicial: 0,
-                    usuario_apertura: ''
                 };
             }
         }
@@ -225,13 +216,13 @@ export class InventarioEfectivoNew implements OnInit {
             cancelButtonText: 'No, cerrar'
         }).then(result => {
             if (result.value) {
-                console.log('Guardando inventario con datos de turno:', {
-                    turno_id: vm.selectedTurnoId,
-                    tipo_operacion: vm.selectedOperacion,
-                    turno_info: turnoInfo
-                });
+                // Obtener turno_id desde turnoData (si está en modo cierre) o desde selectedTurnoId
+                const turnoId = this.turnoData?.turno_id || vm.selectedTurnoId;
 
-                this.inventarioEfectivoStore.saveInventarioEfectivoWithDetils();
+                // Pasar operacionturno_id solo si está en modo cierre
+                const operacionTurnoId = this.operacionTurnoId || null;
+
+                this.inventarioEfectivoStore.saveInventarioEfectivoWithDetils(turnoId, operacionTurnoId);
             }
         });
     }
