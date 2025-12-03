@@ -37,6 +37,13 @@ export default [
           data: InventarioEfectivoNewResolver,
         },
       },
+      {
+        path: "replicar/:id",
+        component: InventarioEfectivoNew,
+        resolve: {
+          data: InventarioEfectivoNewResolver,
+        },
+      },
     ]
   }
 ] as Routes;

@@ -510,6 +510,10 @@ export class InventarioEfectivoList {
     this.router.navigate(['/inventario-efectivo/cerrar/' + id])
   }
 
+  replicarInventario(id: any) {
+    this.router.navigate(['/inventario-efectivo/replicar/' + id])
+  }
+
   openEnd(content: TemplateRef<any>) {
     this.offcanvasService.open(content, {position: 'end'});
   }
