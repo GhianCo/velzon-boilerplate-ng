@@ -5,6 +5,7 @@ import {InventarioEfectivoStore} from "@app/inventario-efectivo/data-access/inve
 export const InventarioEfectivoReplicarResolver = (route: ActivatedRouteSnapshot) => {
   const inventarioEfectivoStore = inject(InventarioEfectivoStore);
   const id = route.params['id'];
+  inventarioEfectivoStore.loadCajas();
   inventarioEfectivoStore.loadOperacionTurnoWithDetails(id);
   return true;
 }
