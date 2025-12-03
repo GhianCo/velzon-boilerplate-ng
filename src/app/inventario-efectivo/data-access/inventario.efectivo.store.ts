@@ -186,9 +186,9 @@ export class InventarioEfectivoStore extends SignalStore<IState> {
 
   public async loadOperacionTurnoWithDetails(operacionturno_id: any) {
     this._inventarioEfectivoRemoteReq.requestOperacionTurnoWithDetails(operacionturno_id).pipe(
-      tap(async ({data, pagination}) => {
+      tap(async ({data}) => {
         this.patch({
-
+          valoresWithDetailsData: data.inventario_efectivo_detalle,
         })
       }),
       finalize(async () => {
