@@ -312,41 +312,70 @@
 
           <!-- Nueva Sección de Turnos -->
           <div class="mt-4 pt-3 border-top">
-            <div class="d-flex align-items-center mb-3">
-              <h6 class="card-title mb-0">
-                <i class="ri-time-line align-middle me-1 text-muted"></i> Seleccionar Turno
-              </h6>
-            </div>
-
-            <!-- Selectores de Turno -->
-            <div class="row g-3">
-              <div class="col-6">
-                <label class="form-label fw-medium">Turno:</label>
-                <select class="form-select form-select-sm"
-                        [ngModel]="vm.selectedTurnoId"
-                        (ngModelChange)="onTurnoChange($event)">
-                  <option [value]="null" disabled selected>Seleccionar turno</option>
-                  @for (turno of vm.turnosData; track turno.turno_id) {
-                    <option [value]="turno.turno_id">{{ turno.turno_nombre }}</option>
-                  }
-                </select>
+            @if (!isCerrarMode) {
+              <!-- MODO APERTURA: Selectores de turno y operación -->
+              <div class="d-flex align-items-center mb-3">
+                <h6 class="card-title mb-0">
+                  <i class="ri-time-line align-middle me-1 text-muted"></i> Seleccionar Turno
+                </h6>
               </div>
 
-              <div class="col-6">
-                <label class="form-label fw-medium">Tipo de operación:</label>
-                <select class="form-select form-select-sm"
-                        [ngModel]="vm.selectedOperacion"
-                        (ngModelChange)="onOperacionChange($event)">
-                  <option [value]="null" disabled selected>Seleccionar operación</option>
-                  <option value="apertura">
-                    <i class="ri-play-circle-line me-1"></i> Abrir
-                  </option>
-                  <option value="cierre">
-                    <i class="ri-stop-circle-line me-1"></i> Cerrar
-                  </option>
-                </select>
+              <!-- Selectores de Turno -->
+              <div class="row g-3">
+                <div class="col-6">
+                  <label class="form-label fw-medium">Turno:</label>
+                  <select class="form-select form-select-sm"
+                          [ngModel]="vm.selectedTurnoId"
+                          (ngModelChange)="onTurnoChange($event)">
+                    <option [value]="null" disabled selected>Seleccionar turno</option>
+                    @for (turno of vm.turnosData; track turno.turno_id) {
+                      <option [value]="turno.turno_id">{{ turno.turno_nombre }}</option>
+                    }
+                  </select>
+                </div>
+
+                <div class="col-6">
+                  <label class="form-label fw-medium">Tipo de operación:</label>
+                  <select class="form-select form-select-sm"
+                          [ngModel]="vm.selectedOperacion"
+                          (ngModelChange)="onOperacionChange($event)">
+                    <option [value]="null" disabled selected>Seleccionar operación</option>
+                    <option value="apertura">
+                      <i class="ri-play-circle-line me-1"></i> Abrir
+                    </option>
+                    <option value="cierre">
+                      <i class="ri-stop-circle-line me-1"></i> Cerrar
+                    </option>
+                  </select>
+                </div>
               </div>
-            </div>
+            } @else {
+              <!-- MODO CIERRE: Información del turno abierto -->
+              <div class="d-flex align-items-center mb-3">
+                <h6 class="card-title mb-0">
+                  <i class="ri-shut-down-line align-middle me-1 text-danger"></i> Cerrar Turno
+                </h6>
+              </div>
+
+              <div class="alert alert-info border-0" role="alert">
+                <div class="d-flex align-items-start">
+                  <div class="flex-shrink-0">
+                    <i class="ri-information-line fs-16 align-middle me-2"></i>
+                  </div>
+                  <div class="flex-grow-1">
+                    <h6 class="mb-1">{{ turnoData?.turno_nombre }}</h6>
+                    <p class="mb-1">
+                      <strong>Fecha/Hora Apertura:</strong> {{ turnoData?.fecha_apertura }}
+                    </p>
+                    @if (turnoData?.usuario_apertura) {
+                      <p class="mb-0">
+                        <strong>Usuario Apertura:</strong> {{ turnoData?.usuario_apertura }}
+                      </p>
+                    }
+                  </div>
+                </div>
+              </div>
+            }
 
             <!-- Información del turno seleccionado -->
             @if (!vm.turnosData || !vm.turnosData.length) {
@@ -374,6 +403,16 @@
             <!-- Mostrar desglose detallado de totales -->
             <div class="mt-2 p-2 bg-light rounded">
               <small class="text-muted d-block mb-2"><strong>Detalle:</strong></small>
+
+              <!-- Monto inicial apertura del turno (solo en modo cierre) -->
+              @if (isCerrarMode && turnoData?.monto_inicial) {
+                <div class="d-flex justify-content-between mb-2 pb-2 border-bottom">
+                  <small class="fw-bold text-primary">
+                    <i class="ri-safe-line me-1"></i>Monto Inicial Apertura del Turno:
+                  </small>
+                  <small class="fw-bold text-primary">S/. {{ turnoData?.monto_inicial?.toFixed(2) || '0.00' }}</small>
+                </div>
+              }
 
               <!-- Inventario base -->
               <div class="d-flex justify-content-between">

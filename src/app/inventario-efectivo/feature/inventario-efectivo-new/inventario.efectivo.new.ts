@@ -16,6 +16,7 @@ import {PersistenceService} from "@sothy/services/persistence.service";
 import {NgStepperModule} from "angular-ng-stepper";
 import {CdkStep, CdkStepLabel, CdkStepperNext, CdkStepperPrevious} from "@angular/cdk/stepper";
 import {NgClass} from "@angular/common";
+import {ActivatedRoute, Router} from "@angular/router";
 
 @Component({
     selector: 'app-inventario-efectivo-new',
@@ -68,7 +69,13 @@ export class InventarioEfectivoNew implements OnInit {
     submitted = false;
     inventarioEfectivoStore = inject(InventarioEfectivoStore);
     persistenceService = inject(PersistenceService);
+    private route = inject(ActivatedRoute);
+    private router = inject(Router);
 
+    // Propiedades para modo cierre
+    isCerrarMode: boolean = false;
+    operacionTurnoId: string | null = null;
+    turnoData: any = null; // Datos del turno abierto
 
     // Propiedades para manejo de selección de filas (solo una fila)
     selectedRowId: string | null = null;
@@ -77,12 +84,21 @@ export class InventarioEfectivoNew implements OnInit {
     }
 
     ngOnInit(): void {
+        // Detectar si estamos en modo cierre
+        this.route.params.subscribe(params => {
+            this.operacionTurnoId = params['id'];
+            this.isCerrarMode = !!this.operacionTurnoId;
+            if (this.isCerrarMode && this.operacionTurnoId) {
+                this.loadTurnoData(this.operacionTurnoId as string);
+            }
+        });
+
         /**
          * BreadCrumb
          */
         this.breadCrumbItems = [
             {label: 'Inventario efectivo'},
-            {label: 'Registrar', active: true}
+            {label: this.isCerrarMode ? 'Cerrar turno' : 'Registrar', active: true}
         ];
 
         // Inicializar cajas para todas las denominaciones
@@ -91,7 +107,29 @@ export class InventarioEfectivoNew implements OnInit {
         // Inicializar movimientos
         this.initializeMovimientos();
 
-        // Cargar turnos desde la API
+        // Cargar turnos desde la API (solo si es modo apertura)
+        if (!this.isCerrarMode) {
+            // Cargar turnos
+        }
+    }
+
+    // Método para cargar datos del turno abierto
+    loadTurnoData(operacionTurnoId: string) {
+        // Aquí harías la petición al backend para obtener los datos del turno
+        // Por ahora simularemos los datos
+        this.turnoData = {
+            turno_id: operacionTurnoId,
+            turno_nombre: 'Turno 1',
+            fecha_apertura: '2024-12-03 08:00:00',
+            monto_inicial: 1500.50,
+            usuario_apertura: 'Juan Pérez'
+        };
+
+        // Actualizar el store con los datos del turno
+        this.inventarioEfectivoStore.setSelectedTurnoId(operacionTurnoId);
+        this.inventarioEfectivoStore.setSelectedOperacion('cierre');
+
+        console.log('Datos del turno cargados:', this.turnoData);
     }
 
     // Método para simular datos de turnos - después reemplazarás con request real
@@ -708,9 +746,9 @@ export class InventarioEfectivoNew implements OnInit {
 
     // ===== MÉTODOS PARA ACTUALIZAR TURNO Y OPERACIÓN =====
 
-    onTurnoChange(turnoId: string) {
-        this.inventarioEfectivoStore.setSelectedTurnoId(turnoId);
-        console.log('Turno seleccionado:', turnoId);
+    onTurnoChange(operacionTurnoId: string) {
+        this.inventarioEfectivoStore.setSelectedTurnoId(operacionTurnoId);
+        console.log('Turno seleccionado:', operacionTurnoId);
     }
 
     onOperacionChange(operacion: string) {
