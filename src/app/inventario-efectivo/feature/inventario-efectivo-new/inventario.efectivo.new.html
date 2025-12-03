@@ -412,13 +412,13 @@
                   </small>
                   <small class="fw-bold text-primary">S/. {{ turnoData?.monto_inicial || '0.00' }}</small>
                 </div>
+              } @else {
+                <!-- Inventario base -->
+                <div class="d-flex justify-content-between">
+                  <small><i class="ri-coins-line me-1"></i>Inventario de efectivo:</small>
+                  <small class="fw-medium">S/. {{ vm.valoresSummary?.totalConvertido?.toFixed(2) || '0.00' }}</small>
+                </div>
               }
-
-              <!-- Inventario base -->
-              <div class="d-flex justify-content-between">
-                <small><i class="ri-coins-line me-1"></i>Inventario de efectivo:</small>
-                <small class="fw-medium">S/. {{ vm.valoresSummary?.totalConvertido?.toFixed(2) || '0.00' }}</small>
-              </div>
 
               <!-- Movimientos de cada categoría -->
               @for (catMovimiento of vm.catMovWithDetailsData; track $index) {

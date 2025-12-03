@@ -135,7 +135,7 @@ export class InventarioEfectivoNew implements OnInit {
                     turno_id: operacionTurnoId,
                     turno_nombre: inventarioApertura.turno || 'Turno',
                     fecha_apertura: inventarioApertura.apertura || '',
-                    monto_inicial: inventarioApertura.totalinventario || 0,
+                    monto_inicial: Number(inventarioApertura.totalinventario) || 0,
                     usuario_apertura: inventarioApertura.gerente || ''
                 };
             } else {
@@ -400,8 +400,13 @@ export class InventarioEfectivoNew implements OnInit {
             });
 
             // Calcular suma diaria de efectivo (total + diferencia)
-            const diferencia = vm.valoresSummary.diferencia || 0;
+            const diferencia = Number(vm.valoresSummary.diferencia) || 0;
             vm.valoresSummary.suma_diaria_efectivo = totalConvertido + diferencia;
+
+            // Asegurar que total_real_turno sea un número
+            if (!vm.valoresSummary.total_real_turno || isNaN(vm.valoresSummary.total_real_turno)) {
+                vm.valoresSummary.total_real_turno = 0;
+            }
 
             // ✅ MEJORADO: Actualizar chartSummary solo con valores > 0
             const valoresConDatos = vm.valoresWithDetailsData.filter((v: any) =>
@@ -620,19 +625,25 @@ export class InventarioEfectivoNew implements OnInit {
             if (vm.valoresSummary) {
                 vm.valoresSummary.totalMovimientos = totalMovimientos;
 
-                // Recalcular total real por turno
-                const totalInventario = vm.valoresSummary.totalConvertido || 0;
-                const diferencia = vm.valoresSummary.diferencia || 0;
+                // 🔄 SOLO EN MODO CIERRE: calcular total_real_turno desde monto_inicial
+                if (vm.selectedOperacion === 'cierre' && this.turnoData?.monto_inicial) {
+                    // En modo cierre: base es monto_inicial + movimientos
+                    const montoInicial = Number(this.turnoData.monto_inicial) || 0;
+                    vm.valoresSummary.total_real_turno = montoInicial + totalMovimientos;
+                } else {
+                    // En modo apertura: base es totalConvertido + movimientos + diferencia
+                    const totalInventario = vm.valoresSummary.totalConvertido || 0;
+                    const diferencia = vm.valoresSummary.diferencia || 0;
+                    vm.valoresSummary.total_real_turno = totalInventario + totalMovimientos + diferencia;
+                }
 
-                // Total real = inventario base + movimientos (con sus operadores) + diferencia manual
-                vm.valoresSummary.total_real_turno = totalInventario + totalMovimientos + diferencia;
                 vm.valoresSummary.suma_diaria_efectivo = vm.valoresSummary.total_real_turno;
             }
 
             console.log('Totales generales de movimientos actualizados:', {
-                totalInventario: vm.valoresSummary?.totalConvertido,
+                modo: vm.selectedOperacion,
+                baseAmount: vm.selectedOperacion === 'cierre' ? this.turnoData?.monto_inicial : vm.valoresSummary?.totalConvertido,
                 totalMovimientos: totalMovimientos,
-                diferencia: vm.valoresSummary?.diferencia,
                 totalRealTurno: vm.valoresSummary?.total_real_turno
             });
         }
