@@ -264,6 +264,41 @@ export class InventarioEfectivoStore extends SignalStore<IState> {
     this.patch({saveInventarioEfectivoLoading: true, saveInventarioEfectivoError: null});
     const state = this.vm();
 
+    // Transformar inventario_efectivo_detalle con array de cajas por denominación
+    const inventarioDetallePorDenominacion: any[] = [];
+
+    state.valoresWithDetailsData?.forEach((valorDetail: any) => {
+      valorDetail.denominaciones?.forEach((denominacion: any) => {
+        // Construir array de cajas para esta denominación
+        const cajas: any[] = [];
+
+        if (denominacion.cajas) {
+          // Obtener todas las cajas del sistema
+          state.cajasData?.forEach((cajaInfo: any) => {
+            const cajaNombre = cajaInfo.caja_nombre;
+            const cantidadCaja = denominacion.cajas[cajaNombre] || 0;
+
+            // Agregar TODAS las cajas, incluso con cantidad 0
+            cajas.push({
+              caja_id: cajaInfo.caja_id,
+              caja_nombre: cajaNombre,
+              cantidad: cantidadCaja
+            });
+          });
+        }
+
+        // Agregar la denominación con su array de cajas
+        inventarioDetallePorDenominacion.push({
+          valor_id: valorDetail.id || valorDetail.valor_id,
+          denominacion_id: denominacion.id || denominacion.denominacion_id,
+          denominacion_descripcion: denominacion.descripcion,
+          denominacion_valor: denominacion.valor,
+          tipo_cambio: valorDetail.current_tc || 1,
+          cajas: cajas
+        });
+      });
+    });
+
     // Construir el payload con turno y tipo de operación
     const inventario = {
       turno_id: turnoId || state.selectedTurnoId,
@@ -273,7 +308,7 @@ export class InventarioEfectivoStore extends SignalStore<IState> {
       diferencia: state.valoresSummary.diferencia,
       suma_diaria: state.valoresSummary.suma_diaria_efectivo,
       tipocambio: state.valoresSummary.tipocambio,
-      inventario_efectivo_detalle: state.valoresWithDetailsData,
+      inventario_efectivo_detalle: inventarioDetallePorDenominacion,
       suma_diaria_detalle: state.catMovWithDetailsData
     };
 
