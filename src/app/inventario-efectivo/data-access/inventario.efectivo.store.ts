@@ -184,6 +184,22 @@ export class InventarioEfectivoStore extends SignalStore<IState> {
     ).subscribe();
   };
 
+  public async loadOperacionTurnoWithDetails(operacionturno_id: any) {
+    this._inventarioEfectivoRemoteReq.requestOperacionTurnoWithDetails(operacionturno_id).pipe(
+      tap(async ({data, pagination}) => {
+        this.patch({
+
+        })
+      }),
+      finalize(async () => {
+      }),
+      catchError((error) => {
+        return of(this.patch({
+        }));
+      }),
+    ).subscribe();
+  };
+
   public async loadCajas() {
     this.patch({cajasLoading: true, cajasError: null});
     this._inventarioEfectivoRemoteReq.requestAllCajasBySala(this._persistenceService.getSalaId()).pipe(

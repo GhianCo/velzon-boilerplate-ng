@@ -10,6 +10,9 @@ import {InventarioEfectivoNew} from "@app/inventario-efectivo/feature/inventario
 import {
   InventarioEfectivoNewResolver
 } from "@app/inventario-efectivo/feature/inventario-efectivo-new/inventario.efectivo.new.resolver";
+import {
+  InventarioEfectivoReplicarResolver
+} from "@app/inventario-efectivo/feature/inventario-efectivo-new/inventario.efectivo.replicar.resolver";
 
 export default [
   {
@@ -41,7 +44,7 @@ export default [
         path: "replicar/:id",
         component: InventarioEfectivoNew,
         resolve: {
-          data: InventarioEfectivoNewResolver,
+          data: InventarioEfectivoReplicarResolver,
         },
       },
     ]

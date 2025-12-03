@@ -34,6 +34,18 @@ export class InventarioEfectivoRemoteReq {
       );
   }
 
+  requestOperacionTurnoWithDetails(operacionturno_id: any): Observable<IResponse> {
+    return this.http.get(this.REMOTE_API_URI + `operacionturno/${operacionturno_id}/details`)
+      .pipe(
+        map((response: any) => {
+          if (response.data) {
+            response.data.body = this.inventarioEfectivoMapper.transform(response.data.body);
+          }
+          return response;
+        })
+      );
+  }
+
   requestGetValoresWithDetails(): Observable<IResponse> {
     return this.http.get(this.REMOTE_API_URI + 'valor/withDetails')
   }
