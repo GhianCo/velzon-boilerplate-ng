@@ -88,8 +88,15 @@ export class InventarioEfectivoNew implements OnInit {
         this.route.params.subscribe(params => {
             this.operacionTurnoId = params['id'];
             this.isCerrarMode = !!this.operacionTurnoId;
+
             if (this.isCerrarMode && this.operacionTurnoId) {
-                this.loadTurnoData(this.operacionTurnoId as string);
+                // Cargar datos de inventarios primero, luego buscar el turno específico
+                this.inventarioEfectivoStore.loadAllInvetarioEfectivoStore();
+
+                // Esperar un momento para que los datos se carguen
+                setTimeout(() => {
+                    this.loadTurnoData(this.operacionTurnoId as string);
+                }, 500);
             }
         });
 
@@ -115,15 +122,33 @@ export class InventarioEfectivoNew implements OnInit {
 
     // Método para cargar datos del turno abierto
     loadTurnoData(operacionTurnoId: string) {
-        // Aquí harías la petición al backend para obtener los datos del turno
-        // Por ahora simularemos los datos
-        this.turnoData = {
-            turno_id: operacionTurnoId,
-            turno_nombre: 'Turno 1',
-            fecha_apertura: '2024-12-03 08:00:00',
-            monto_inicial: 1500.50,
-            usuario_apertura: 'Juan Pérez'
-        };
+        const vm = this.inventarioEfectivoStore.vm();
+
+        // Buscar el inventario en la lista por operacionturno_id
+        if (vm?.inventarioEfectivoData?.body) {
+            const inventarioApertura = vm.inventarioEfectivoData.body.find(
+                (inv: any) => inv.operacionturno_id == operacionTurnoId
+            );
+
+            if (inventarioApertura) {
+                this.turnoData = {
+                    turno_id: operacionTurnoId,
+                    turno_nombre: inventarioApertura.turno || 'Turno',
+                    fecha_apertura: inventarioApertura.apertura || '',
+                    monto_inicial: inventarioApertura.totalinventario || 0,
+                    usuario_apertura: inventarioApertura.gerente || ''
+                };
+            } else {
+                // Si no se encuentra en la lista, cargar valores por defecto
+                this.turnoData = {
+                    turno_id: operacionTurnoId,
+                    turno_nombre: 'Turno',
+                    fecha_apertura: new Date().toISOString(),
+                    monto_inicial: 0,
+                    usuario_apertura: ''
+                };
+            }
+        }
 
         // Actualizar el store con los datos del turno
         this.inventarioEfectivoStore.setSelectedTurnoId(operacionTurnoId);
