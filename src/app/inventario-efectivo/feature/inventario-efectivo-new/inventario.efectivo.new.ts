@@ -84,13 +84,22 @@ export class InventarioEfectivoNew implements OnInit {
     }
 
     ngOnInit(): void {
-        // Detectar si estamos en modo cierre
+        // Detectar el modo según la ruta
+        this.route.url.subscribe(urlSegments => {
+            const rutaActual = urlSegments.map(segment => segment.path).join('/');
+
+            // Detectar si es modo cierre o replicar
+            const esModoReplicar = rutaActual.includes('replicar');
+            const esModoCierre = rutaActual.includes('cerrar');
+
+            this.isCerrarMode = esModoCierre;
+        });
+
         this.route.params.subscribe(params => {
             this.operacionTurnoId = params['id'];
-            this.isCerrarMode = !!this.operacionTurnoId;
 
             if (this.isCerrarMode && this.operacionTurnoId) {
-                // Cargar datos de inventarios primero, luego buscar el turno específico
+                // Modo CIERRE: cargar datos del turno abierto para cerrarlo
                 this.inventarioEfectivoStore.loadAllInvetarioEfectivoStore();
 
                 // Esperar un momento para que los datos se carguen
@@ -98,15 +107,13 @@ export class InventarioEfectivoNew implements OnInit {
                     this.loadTurnoData(this.operacionTurnoId as string);
                 }, 500);
 
-                // NO inicializar cajas ni movimientos aquí, se cargan desde el backend
+                // NO inicializar cajas ni movimientos, se cargan desde el backend
+            } else if (this.operacionTurnoId) {
+                // Modo REPLICAR: cargar datos del turno anterior como plantilla para apertura
+                // NO inicializar cajas ni movimientos, se cargan desde el backend
             } else {
-                // Solo inicializar cajas y movimientos si NO estamos en modo replicar
-                // En modo apertura normal
-
-                // Inicializar cajas para todas las denominaciones
+                // Modo APERTURA normal: inicializar desde cero
                 this.initializeAllCajas();
-
-                // Inicializar movimientos
                 this.initializeMovimientos();
             }
         });
@@ -118,11 +125,6 @@ export class InventarioEfectivoNew implements OnInit {
             {label: 'Inventario efectivo'},
             {label: this.isCerrarMode ? 'Cerrar turno' : 'Registrar', active: true}
         ];
-
-        // Cargar turnos desde la API (solo si es modo apertura)
-        if (!this.isCerrarMode) {
-            // Cargar turnos
-        }
     }
 
     // Método para cargar datos del turno abierto
