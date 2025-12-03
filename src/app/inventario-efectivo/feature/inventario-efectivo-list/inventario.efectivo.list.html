@@ -101,10 +101,12 @@
                                 <i class="ri-more-fill"></i>
                               </button>
                               <ul class="dropdown-menu dropdown-menu-end" ngbDropdownMenu>
-                                <li>
-                                  <a class="dropdown-item" (click)="cerrarTurno(inventarioEfectivo.operacionturno_id)"><i
-                                    class="ri-eye-fill align-bottom me-2 text-muted"></i> Cerrar </a>
-                                </li>
+                                @if (inventarioEfectivo.abierta == 1) {
+                                  <li>
+                                    <a class="dropdown-item" (click)="cerrarTurno(inventarioEfectivo.operacionturno_id)"><i
+                                      class="ri-lock-2-fill align-bottom me-2 text-muted"></i> Cerrar </a>
+                                  </li>
+                                }
                                 <li>
                                   <a class="dropdown-item" routerLink="/ecommerce/add-product"><i
                                     class="ri-pencil-fill align-bottom me-2 text-muted"></i> Editar</a>
