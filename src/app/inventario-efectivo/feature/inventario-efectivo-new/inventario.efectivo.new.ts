@@ -97,6 +97,17 @@ export class InventarioEfectivoNew implements OnInit {
                 setTimeout(() => {
                     this.loadTurnoData(this.operacionTurnoId as string);
                 }, 500);
+
+                // NO inicializar cajas ni movimientos aquí, se cargan desde el backend
+            } else {
+                // Solo inicializar cajas y movimientos si NO estamos en modo replicar
+                // En modo apertura normal
+
+                // Inicializar cajas para todas las denominaciones
+                this.initializeAllCajas();
+
+                // Inicializar movimientos
+                this.initializeMovimientos();
             }
         });
 
@@ -107,12 +118,6 @@ export class InventarioEfectivoNew implements OnInit {
             {label: 'Inventario efectivo'},
             {label: this.isCerrarMode ? 'Cerrar turno' : 'Registrar', active: true}
         ];
-
-        // Inicializar cajas para todas las denominaciones
-        this.initializeAllCajas();
-
-        // Inicializar movimientos
-        this.initializeMovimientos();
 
         // Cargar turnos desde la API (solo si es modo apertura)
         if (!this.isCerrarMode) {
@@ -230,21 +235,26 @@ export class InventarioEfectivoNew implements OnInit {
     // Métodos para manejar cantidades por caja
     incrementCantidadByCaja(denominacion: any, caja: string) {
         const cajas = this.getCajas(denominacion);
-        cajas[caja] = (cajas[caja] || 0) + 1;
+        // Convertir a número antes de incrementar
+        const cantidadActual = Number(cajas[caja]) || 0;
+        cajas[caja] = cantidadActual + 1;
         this.updateTotales(denominacion);
     }
 
     decrementCantidadByCaja(denominacion: any, caja: string) {
         const cajas = this.getCajas(denominacion);
-        if (cajas[caja] && cajas[caja] > 0) {
-            cajas[caja]--;
+        // Convertir a número antes de decrementar
+        const cantidadActual = Number(cajas[caja]) || 0;
+        if (cantidadActual > 0) {
+            cajas[caja] = cantidadActual - 1;
             this.updateTotales(denominacion);
         }
     }
 
     onCantidadCajaChange(denominacion: any, caja: string, cantidad: number) {
         const cajas = this.getCajas(denominacion);
-        cajas[caja] = Math.max(0, cantidad || 0);
+        // Convertir explícitamente a número para evitar concatenación
+        cajas[caja] = Math.max(0, Number(cantidad) || 0);
         this.updateTotales(denominacion);
     }
 
@@ -277,14 +287,18 @@ export class InventarioEfectivoNew implements OnInit {
         if (vm?.cajasData) {
             vm.cajasData.forEach((caja: any) => {
                 const cajaNombre = caja.caja_nombre;
-                cantidadTotal += (cajas[cajaNombre] || 0);
+                // Convertir a número al sumar para evitar concatenación
+                cantidadTotal += Number(cajas[cajaNombre]) || 0;
             });
         }
 
-        denominacion.cantidadTotal = cantidadTotal;
+        // Asegurar que sean números
+        denominacion.cantidadTotal = Number(cantidadTotal) || 0;
+        const valor = Number(denominacion.valor) || 0;
 
         // Calcular importe local
-        denominacion.importeLocal = denominacion.cantidadTotal * (denominacion.valor || 0);
+        denominacion.importeLocal = denominacion.cantidadTotal * valor;
+
 
         // Actualizar totales de la categoría completa
         this.updateValorDetailTotales(denominacion);
@@ -295,12 +309,11 @@ export class InventarioEfectivoNew implements OnInit {
         const vm = this.inventarioEfectivoStore.vm();
         if (!vm?.valoresWithDetailsData) return;
 
-        // Buscar el valorDetail que contiene esta denominación de forma más robusta
+        // Buscar el valorDetail que contiene esta denominación
         let valorDetailFound: any = null;
 
         for (const valorDetail of vm.valoresWithDetailsData) {
             if (valorDetail.denominaciones && valorDetail.denominaciones.length > 0) {
-                // Buscar si esta denominación específica está en este valorDetail
                 const found = valorDetail.denominaciones.find((denom: any) => denom === denominacionChanged);
                 if (found) {
                     valorDetailFound = valorDetail;
@@ -310,35 +323,30 @@ export class InventarioEfectivoNew implements OnInit {
         }
 
         if (valorDetailFound && valorDetailFound.denominaciones) {
-            // Calcular el acumuladoLocal sumando todos los importeLocal de las denominaciones
-            let totalAcumulado = 0;
+            // Convertir tipoCambio a número explícitamente
+            const tipoCambio = Number(valorDetailFound.current_tc) || 1;
+
+            // Recalcular totales sumando desde las denominaciones
+            let totalAcumuladoLocal = 0;
+            let totalAcumuladoConvertido = 0;
 
             valorDetailFound.denominaciones.forEach((denominacion: any) => {
-                if (denominacion.importeLocal && !isNaN(denominacion.importeLocal)) {
-                    totalAcumulado += denominacion.importeLocal;
-                }
+                // Asegurar que importeLocal sea número
+                const importeLocal = Number(denominacion.importeLocal) || 0;
+
+                // Recalcular importeConvertido de cada denominación
+                denominacion.importeConvertido = importeLocal * tipoCambio;
+
+                totalAcumuladoLocal += importeLocal;
+                totalAcumuladoConvertido += denominacion.importeConvertido;
             });
 
-            valorDetailFound.acumuladoLocal = totalAcumulado;
+            valorDetailFound.acumuladoLocal = totalAcumuladoLocal;
+            valorDetailFound.acumuladoConvertido = totalAcumuladoConvertido;
 
-            // También calcular el acumuladoConvertido (para el resumen)
-            const tipoCambio = valorDetailFound.current_tc || 1;
-            valorDetailFound.acumuladoConvertido = valorDetailFound.acumuladoLocal * tipoCambio;
-
-            console.log(`Actualizados totales para ${valorDetailFound.name}:`, {
-                acumuladoLocal: valorDetailFound.acumuladoLocal,
-                acumuladoConvertido: valorDetailFound.acumuladoConvertido,
-                denominaciones: valorDetailFound.denominaciones.map((d: any) => ({
-                    descripcion: d.descripcion,
-                    importeLocal: d.importeLocal,
-                    cantidadTotal: d.cantidadTotal
-                }))
-            });
 
             // Recalcular totales generales del store
             this.updateTotalesGenerales();
-        } else {
-            console.error('No se encontró el valorDetail para la denominación:', denominacionChanged);
         }
     }
 
@@ -372,9 +380,8 @@ export class InventarioEfectivoNew implements OnInit {
         let totalConvertido = 0;
 
         vm.valoresWithDetailsData.forEach((valorDetail: any) => {
-            if (valorDetail.acumuladoConvertido && !isNaN(valorDetail.acumuladoConvertido)) {
-                totalConvertido += valorDetail.acumuladoConvertido;
-            }
+            const acumulado = Number(valorDetail.acumuladoConvertido) || 0;
+            totalConvertido += acumulado;
         });
 
         // Actualizar el summary
@@ -383,8 +390,9 @@ export class InventarioEfectivoNew implements OnInit {
 
             // Calcular porcentajes
             vm.valoresWithDetailsData.forEach((valorDetail: any) => {
-                if (totalConvertido > 0 && valorDetail.acumuladoConvertido && !isNaN(valorDetail.acumuladoConvertido)) {
-                    valorDetail.porcentaje = (valorDetail.acumuladoConvertido / totalConvertido) * 100;
+                const acumulado = Number(valorDetail.acumuladoConvertido) || 0;
+                if (totalConvertido > 0) {
+                    valorDetail.porcentaje = (acumulado / totalConvertido) * 100;
                 } else {
                     valorDetail.porcentaje = 0;
                 }
@@ -395,30 +403,24 @@ export class InventarioEfectivoNew implements OnInit {
             vm.valoresSummary.suma_diaria_efectivo = totalConvertido + diferencia;
 
             // Asegurar que total_real_turno sea un número
-            if (!vm.valoresSummary.total_real_turno || isNaN(vm.valoresSummary.total_real_turno)) {
+            if (typeof vm.valoresSummary.total_real_turno !== 'number' || isNaN(vm.valoresSummary.total_real_turno)) {
                 vm.valoresSummary.total_real_turno = 0;
             }
 
-            // ✅ MEJORADO: Actualizar chartSummary solo con valores > 0
-            const valoresConDatos = vm.valoresWithDetailsData.filter((v: any) =>
-                v.acumuladoConvertido && v.acumuladoConvertido > 0
-            );
+            // Actualizar chartSummary solo con valores > 0
+            const valoresConDatos = vm.valoresWithDetailsData.filter((v: any) => {
+                const acumulado = Number(v.acumuladoConvertido) || 0;
+                return acumulado > 0;
+            });
 
             vm.chartSummary = {
                 ...vm.chartSummary,
-                series: valoresConDatos.map((v: any) => v.acumuladoConvertido),
+                series: valoresConDatos.map((v: any) => Number(v.acumuladoConvertido) || 0),
                 labels: valoresConDatos.map((v: any) => v.name || 'Sin nombre')
             };
         }
-
-        console.log('Totales generales actualizados:', {
-            totalConvertido: totalConvertido,
-            suma_diaria_efectivo: vm.valoresSummary?.suma_diaria_efectivo,
-            chartSeries: vm.chartSummary?.series,
-            chartLabels: vm.chartSummary?.labels,
-            valoresConDatos: vm.valoresWithDetailsData?.filter((v: any) => v.acumuladoConvertido > 0).length
-        });
     }
+
 
     // Método para manejar cambios en el tipo de cambio
     onTipoCambioChange(valorDetail: any, nuevoTipoCambio: number) {

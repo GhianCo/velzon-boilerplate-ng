@@ -187,15 +187,137 @@ export class InventarioEfectivoStore extends SignalStore<IState> {
   public async loadOperacionTurnoWithDetails(operacionturno_id: any) {
     this._inventarioEfectivoRemoteReq.requestOperacionTurnoWithDetails(operacionturno_id).pipe(
       tap(async ({data}) => {
+        // Transformar inventario_efectivo_detalle
+        const valoresTransformados = data.inventario_efectivo_detalle?.map((valor: any) => {
+          let acumuladoLocal = 0;
+          let acumuladoConvertido = 0;
+
+          const denominacionesTransformadas = valor.denominaciones?.map((denom: any) => {
+            // Convertir array de cajas a objeto { "Boveda": 9689, "Caja 01": 0, ... }
+            const cajasObj: any = {};
+
+            denom.cajas?.forEach((caja: any) => {
+              cajasObj[caja.caja_nombre] = caja.cantidad || 0;
+            });
+
+            // Calcular totales desde los datos del backend
+            const importeLocal = denom.cajas?.reduce((sum: number, c: any) => sum + (c.importeLocal || 0), 0) || 0;
+            const importeConvertido = denom.cajas?.reduce((sum: number, c: any) => sum + (c.importeConvertido || 0), 0) || 0;
+            const cantidadTotal = denom.cajas?.reduce((sum: number, c: any) => sum + (c.cantidad || 0), 0) || 0;
+
+            // Calcular el valor unitario real desde los datos del backend
+            // Si hay cantidad, dividir importeLocal / cantidadTotal para obtener el valor unitario real
+            let valorUnitario = denom.valor || 1;
+            if (cantidadTotal > 0 && importeLocal > 0) {
+              valorUnitario = importeLocal / cantidadTotal;
+            }
+
+            acumuladoLocal += importeLocal;
+            acumuladoConvertido += importeConvertido;
+
+            return {
+              id: denom.denominacion_id,
+              denominacion_id: denom.denominacion_id,
+              descripcion: denom.descripcion,
+              valor: valorUnitario,  // Usar el valor unitario real calculado
+              cajas: cajasObj,
+              cantidad: cantidadTotal,
+              cantidadTotal,
+              importeLocal,
+              importeConvertido
+            };
+          });
+
+          return {
+            id: valor.valor_id,
+            valor_id: valor.valor_id,
+            name: valor.name,
+            denominaciones: denominacionesTransformadas,
+            acumuladoLocal,
+            acumuladoConvertido,
+            current_tc: parseFloat(valor.current_tc) || 1
+          };
+        });
+
+        // Calcular totales y porcentajes
+        const totalConvertido = valoresTransformados?.reduce((sum: number, v: any) => sum + (v.acumuladoConvertido || 0), 0) || 0;
+
+        const valoresConPorcentaje = valoresTransformados?.map((valor: any) => {
+          const porcentaje = totalConvertido > 0 ? ((valor.acumuladoConvertido || 0) / totalConvertido) * 100 : 0;
+          return { ...valor, porcentaje };
+        });
+
+        // Summary
+        const valoresSummary = {
+          diferencia: 0,
+          totalLocal: totalConvertido,
+          totalConvertido,
+          totalMovimientos: 0,
+          total_real_turno: totalConvertido,
+          suma_diaria_efectivo: totalConvertido,
+          tipocambio: data.tipocambio || 0
+        };
+
+        // Chart
+        const valoresConDatos = valoresConPorcentaje?.filter((v: any) => v.acumuladoConvertido > 0) || [];
+        const chartSummary = {
+          series: valoresConDatos.map((v: any) => v.acumuladoConvertido),
+          labels: valoresConDatos.map((v: any) => v.name || 'Sin nombre'),
+          chart: { type: "donut", height: 100 },
+          plotOptions: {
+            pie: {
+              offsetX: 0,
+              offsetY: 0,
+              donut: { size: "70%", labels: { show: false } }
+            }
+          },
+          dataLabels: { enabled: false },
+          legend: { show: false },
+          stroke: { lineCap: "round", width: 0 }
+        };
+
+        // Mezclar suma_diaria_detalle
+        const currentCatMov = this.vm().catMovWithDetailsData || [];
+        const sumaDiariaDelBackend = data.suma_diaria_detalle || [];
+
+        const catMovActualizado = currentCatMov.map((catMov: any) => {
+          const dataBackend = sumaDiariaDelBackend.find(
+            (item: any) => item.sumdiamovimiento_id === catMov.id || item.sumdiamovimiento_id === catMov.sumdiamovimiento_id
+          );
+
+          if (dataBackend && dataBackend.details && catMov.details) {
+            const detailsActualizados = catMov.details.map((detail: any, index: number) => {
+              const detailBackend = dataBackend.details[index];
+              return {
+                ...detail,
+                cantidad: detailBackend?.cantidad || 0
+              };
+            });
+
+            const acumuladoLocal = detailsActualizados.reduce((sum: number, d: any) => sum + (d.cantidad || 0), 0);
+
+            return {
+              ...catMov,
+              details: detailsActualizados,
+              acumuladoLocal,
+              acumuladoConvertido: acumuladoLocal
+            };
+          }
+
+          return catMov;
+        });
+
         this.patch({
-          valoresWithDetailsData: data.inventario_efectivo_detalle,
-        })
+          valoresWithDetailsData: valoresConPorcentaje,
+          valoresSummary,
+          chartSummary,
+          catMovWithDetailsData: catMovActualizado
+        });
       }),
       finalize(async () => {
       }),
       catchError((error) => {
-        return of(this.patch({
-        }));
+        return of(this.patch({}));
       }),
     ).subscribe();
   };
