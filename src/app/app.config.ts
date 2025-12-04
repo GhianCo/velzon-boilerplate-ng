@@ -1,7 +1,7 @@
 import {ApplicationConfig, importProvidersFrom} from "@angular/core";
 import {
   PreloadAllModules,
-  provideRouter,
+  provideRouter, withHashLocation,
   withInMemoryScrolling,
   withPreloading
 } from "@angular/router";
@@ -68,7 +68,7 @@ export const appConfig: ApplicationConfig = {
   providers: [
     provideRouter(
       appRoutes,
-      //withHashLocation(),
+      withHashLocation(),
       withPreloading(PreloadAllModules),
       withInMemoryScrolling({scrollPositionRestoration: 'enabled'})
     ),
