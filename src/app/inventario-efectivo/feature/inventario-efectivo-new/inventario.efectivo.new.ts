@@ -93,6 +93,15 @@ export class InventarioEfectivoNew implements OnInit {
             const esModoCierre = rutaActual.includes('cerrar');
 
             this.isCerrarMode = esModoCierre;
+
+            // Detectar automáticamente el tipo de operación según la ruta
+            if (esModoCierre) {
+                // Ruta "cerrar" → operación de cierre
+                this.inventarioEfectivoStore.setSelectedOperacion('cierre');
+            } else {
+                // Rutas "replicar" o "new" → operación de apertura
+                this.inventarioEfectivoStore.setSelectedOperacion('apertura');
+            }
         });
 
         this.route.params.subscribe(params => {
@@ -782,10 +791,7 @@ export class InventarioEfectivoNew implements OnInit {
         console.log('Turno seleccionado:', operacionTurnoId);
     }
 
-    onOperacionChange(operacion: string) {
-        this.inventarioEfectivoStore.setSelectedOperacion(operacion);
-        console.log('Operación seleccionada:', operacion);
-    }
+    // ===== FIN MÉTODOS PARA ACTUALIZAR TURNO Y OPERACIÓN ====
 
     // ===== FIN MÉTODOS TURNO Y OPERACIÓN =====
 

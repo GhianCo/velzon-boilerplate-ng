@@ -274,7 +274,7 @@
               Resumen de inventario</h5>
             <div class="flex-shrink-0">
               <button type="button" class="btn btn-success btn-sm" (click)="saveInventario()"
-                      [disabled]="vm.saveInventarioEfectivoLoading || vm.valoresSummary?.totalConvertido < 1 || !vm.selectedTurnoId || !vm.selectedOperacion">
+                      [disabled]="vm.saveInventarioEfectivoLoading || vm.valoresSummary?.totalConvertido < 1 || !vm.selectedTurnoId">
                 <i class="ri-save-fill align-middle"></i> Guardar inventario
               </button>
             </div>
@@ -331,21 +331,6 @@
                     @for (turno of vm.turnosData; track turno.turno_id) {
                       <option [value]="turno.turno_id">{{ turno.turno_nombre }}</option>
                     }
-                  </select>
-                </div>
-
-                <div class="col-6">
-                  <label class="form-label fw-medium">Tipo de operación:</label>
-                  <select class="form-select form-select-sm"
-                          [ngModel]="vm.selectedOperacion"
-                          (ngModelChange)="onOperacionChange($event)">
-                    <option [value]="null" disabled selected>Seleccionar operación</option>
-                    <option value="apertura">
-                      <i class="ri-play-circle-line me-1"></i> Abrir
-                    </option>
-                    <option value="cierre">
-                      <i class="ri-stop-circle-line me-1"></i> Cerrar
-                    </option>
                   </select>
                 </div>
               </div>
@@ -470,7 +455,7 @@
 
             <div class="mt-2 pt-2">
               <button type="button" class="btn btn-success w-100" (click)="saveInventario()"
-                      [disabled]="vm.saveInventarioEfectivoLoading || vm.valoresSummary?.totalConvertido < 1 || !vm.selectedTurnoId || !vm.selectedOperacion">
+                      [disabled]="vm.saveInventarioEfectivoLoading || vm.valoresSummary?.totalConvertido < 1 || !vm.selectedTurnoId">
                 <i class="ri-save-fill align-middle"></i> Guardar inventario
               </button>
             </div>

@@ -107,10 +107,12 @@
                                       class="ri-lock-2-fill align-bottom me-2 text-muted"></i> Cerrar </a>
                                   </li>
                                 } @else {
-                                  <li>
-                                    <a class="dropdown-item" (click)="replicarInventario(inventarioEfectivo.operacionturno_id)"><i
-                                      class="ri-lock-unlock-fill align-bottom me-2 text-muted"></i> Replicar inventario  </a>
-                                  </li>
+                                  @if (inventarioEfectivo.operacionturno_id_aperturada == null) {
+                                    <li>
+                                      <a class="dropdown-item" (click)="replicarInventario(inventarioEfectivo.operacionturno_id)"><i
+                                        class="ri-lock-unlock-fill align-bottom me-2 text-muted"></i> Abrir de este inventario  </a>
+                                    </li>
+                                  }
                                 }
                                 <li>
                                   <a class="dropdown-item" routerLink="/ecommerce/add-product"><i
