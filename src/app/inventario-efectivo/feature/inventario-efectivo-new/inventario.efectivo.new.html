@@ -92,66 +92,79 @@
                   }
 
                   <!-- Filas de denominaciones con items de suma diaria en paralelo -->
-                  @for (denominacion of valorDetail.denominaciones; track dIdx; let dIdx = $index) {
-                    <tr [class]="getRowClass(valorDetail, denominacion)"
-                        (click)="toggleRowSelection(valorDetail, denominacion)"
-                        style="cursor: pointer; transition: background-color 0.2s ease;">
-                      <!-- Columna fija: Denominación -->
-                      <td class="align-middle">
-                        <div class="d-flex align-items-center">
-                          <span class="fw-medium">{{ denominacion.descripcion }}</span>
-                          @if (isRowSelected(valorDetail, denominacion)) {
-                            <i class="ri-check-line ms-2 text-primary"></i>
-                          }
-                        </div>
-                      </td>
+                  <!-- Calcular el máximo entre denominaciones e items -->
+                  @for (i of getMaxRowsArray(valorDetail.denominaciones?.length || 0, vm.catMovWithDetailsData && vm.catMovWithDetailsData[vIdx]?.details?.length || 0); track i) {
+                    <tr [class]="valorDetail.denominaciones && valorDetail.denominaciones[i] ? getRowClass(valorDetail, valorDetail.denominaciones[i]) : ''"
+                        (click)="valorDetail.denominaciones && valorDetail.denominaciones[i] ? toggleRowSelection(valorDetail, valorDetail.denominaciones[i]) : null"
+                        [style.cursor]="valorDetail.denominaciones && valorDetail.denominaciones[i] ? 'pointer' : 'default'"
+                        style="transition: background-color 0.2s ease;">
 
-                      <!-- Columnas de Inventario: Cajas -->
-                      @for (caja of vm.cajasData; track $index) {
-                        <td class="text-center">
-                          <div class="input-group input-group-sm">
-                            <button class="btn btn-outline-primary btn-sm" type="button"
-                                    (click)="decrementCantidadByCaja(denominacion, caja.caja_nombre); $event.stopPropagation()">
-                              <i class="ri-subtract-line"></i>
-                            </button>
-                            <input type="number" class="form-control text-center" min="0"
-                                   [(ngModel)]="getCajas(denominacion)[caja.caja_nombre]"
-                                   (ngModelChange)="onCantidadCajaChange(denominacion, caja.caja_nombre, $event)"
-                                   (click)="$event.stopPropagation()"
-                                   style="max-width: 60px;">
-                            <button class="btn btn-outline-primary btn-sm" type="button"
-                                    (click)="incrementCantidadByCaja(denominacion, caja.caja_nombre); $event.stopPropagation()">
-                              <i class="ri-add-line"></i>
-                            </button>
+                      <!-- SECCIÓN INVENTARIO -->
+                      @if (valorDetail.denominaciones && valorDetail.denominaciones[i]) {
+                        <!-- Columna: Denominación -->
+                        <td class="align-middle">
+                          <div class="d-flex align-items-center">
+                            <span class="fw-medium">{{ valorDetail.denominaciones[i].descripcion }}</span>
+                            @if (isRowSelected(valorDetail, valorDetail.denominaciones[i])) {
+                              <i class="ri-check-line ms-2 text-primary"></i>
+                            }
                           </div>
                         </td>
+
+                        <!-- Columnas de Inventario: Cajas -->
+                        @for (caja of vm.cajasData; track $index) {
+                          <td class="text-center">
+                            <div class="input-group input-group-sm">
+                              <button class="btn btn-outline-primary btn-sm" type="button"
+                                      (click)="decrementCantidadByCaja(valorDetail.denominaciones[i], caja.caja_nombre); $event.stopPropagation()">
+                                <i class="ri-subtract-line"></i>
+                              </button>
+                              <input type="number" class="form-control text-center" min="0"
+                                     [(ngModel)]="getCajas(valorDetail.denominaciones[i])[caja.caja_nombre]"
+                                     (ngModelChange)="onCantidadCajaChange(valorDetail.denominaciones[i], caja.caja_nombre, $event)"
+                                     (click)="$event.stopPropagation()"
+                                     style="max-width: 60px;">
+                              <button class="btn btn-outline-primary btn-sm" type="button"
+                                      (click)="incrementCantidadByCaja(valorDetail.denominaciones[i], caja.caja_nombre); $event.stopPropagation()">
+                                <i class="ri-add-line"></i>
+                              </button>
+                            </div>
+                          </td>
+                        }
+
+                        <!-- Total -->
+                        <td class="text-center">
+                          <span class="fw-bold">
+                            {{ valorDetail.simbolo }} {{ valorDetail.denominaciones[i].importeLocal?.toFixed(2) || '0.00' }}
+                          </span>
+                        </td>
+                      } @else {
+                        <!-- Filas vacías cuando no hay más denominaciones -->
+                        <td></td>
+                        @for (caja of vm.cajasData; track $index) {
+                          <td></td>
+                        }
+                        <td></td>
                       }
 
-                      <!-- Total -->
-                      <td class="text-center">
-                        <span class="fw-bold">
-                          {{ valorDetail.simbolo }} {{ denominacion.importeLocal?.toFixed(2) || '0.00' }}
-                        </span>
-                      </td>
-
-                      <!-- Columna Suma Diaria: item correspondiente -->
-                      @if (vm.catMovWithDetailsData && vm.catMovWithDetailsData[vIdx]?.details && vm.catMovWithDetailsData[vIdx].details[dIdx]) {
+                      <!-- SECCIÓN SUMA DIARIA -->
+                      @if (vm.catMovWithDetailsData && vm.catMovWithDetailsData[vIdx]?.details && vm.catMovWithDetailsData[vIdx].details[i]) {
                         <td class="align-middle">
                           <div class="d-flex align-items-center justify-content-between gap-2">
                             <span class="fw-medium text-truncate" style="flex: 0 1 auto; min-width: 0;">
-                              {{ vm.catMovWithDetailsData[vIdx].details[dIdx].nombre }}
+                              {{ vm.catMovWithDetailsData[vIdx].details[i].nombre }}
                             </span>
                             <div class="input-group input-group-sm" style="flex: 0 0 auto; width: 150px;">
                               <button class="btn btn-outline-primary btn-sm" type="button"
-                                      (click)="decrementCantidadMovimiento(vm.catMovWithDetailsData[vIdx].details[dIdx])">
+                                      (click)="decrementCantidadMovimiento(vm.catMovWithDetailsData[vIdx].details[i])">
                                 <i class="ri-subtract-line"></i>
                               </button>
                               <input type="number" class="form-control text-center"
-                                     [(ngModel)]="vm.catMovWithDetailsData[vIdx].details[dIdx].cantidad"
-                                     (ngModelChange)="onCantidadMovimientoChange(vm.catMovWithDetailsData[vIdx].details[dIdx], $event)"
+                                     [(ngModel)]="vm.catMovWithDetailsData[vIdx].details[i].cantidad"
+                                     (ngModelChange)="onCantidadMovimientoChange(vm.catMovWithDetailsData[vIdx].details[i], $event)"
                                      style="max-width: 60px;">
                               <button class="btn btn-outline-primary btn-sm" type="button"
-                                      (click)="incrementCantidadMovimiento(vm.catMovWithDetailsData[vIdx].details[dIdx])">
+                                      (click)="incrementCantidadMovimiento(vm.catMovWithDetailsData[vIdx].details[i])">
                                 <i class="ri-add-line"></i>
                               </button>
                             </div>

@@ -773,6 +773,16 @@ export class InventarioEfectivoNew implements OnInit {
 
     // ===== FIN MÉTODOS PARA SELECCIÓN DE FILAS =====
 
+    // ===== MÉTODO AUXILIAR PARA TABLA =====
+
+    // Método para generar array con el máximo de filas entre inventario y suma diaria
+    getMaxRowsArray(denominacionesLength: number, detailsLength: number): number[] {
+        const maxLength = Math.max(denominacionesLength, detailsLength);
+        return Array.from({length: maxLength}, (_, i) => i);
+    }
+
+    // ===== FIN MÉTODO AUXILIAR =====
+
     // ===== MÉTODOS PARA ACTUALIZAR TURNO Y OPERACIÓN =====
 
     onTurnoChange(operacionTurnoId: string) {
