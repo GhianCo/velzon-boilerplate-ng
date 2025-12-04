@@ -12,7 +12,7 @@ export const environment = {
     measurementId: ''
   },
   // -------------------------------\\
-  api: 'http://localhost/cash-control-back',
+  api: 'http://10.45.1.171:84/cash-control-api',
   apiRest: 'api/',
   publicRest: 'public/',
   endpoints: {
