@@ -413,9 +413,16 @@ export class InventarioEfectivoNew implements OnInit {
             const diferencia = Number(vm.valoresSummary.diferencia) || 0;
             vm.valoresSummary.suma_diaria_efectivo = totalConvertido + diferencia;
 
-            // Asegurar que total_real_turno sea un número
-            if (typeof vm.valoresSummary.total_real_turno !== 'number' || isNaN(vm.valoresSummary.total_real_turno)) {
-                vm.valoresSummary.total_real_turno = 0;
+            // 🔄 RECALCULAR total_real_turno según el modo
+            const totalMovimientos = Number(vm.valoresSummary.totalMovimientos) || 0;
+
+            if (vm.selectedOperacion === 'cierre' && this.turnoData?.monto_inicial) {
+                // Modo CIERRE: total_real_turno = monto_inicial + movimientos
+                const montoInicial = Number(this.turnoData.monto_inicial) || 0;
+                vm.valoresSummary.total_real_turno = montoInicial + totalMovimientos;
+            } else {
+                // Modo APERTURA: total_real_turno = totalConvertido + movimientos + diferencia
+                vm.valoresSummary.total_real_turno = totalConvertido + totalMovimientos + diferencia;
             }
 
             // Actualizar chartSummary solo con valores > 0
