@@ -1,20 +1,11 @@
 import {Component, inject, OnInit} from '@angular/core';
-import {
-    NgbAccordionBody,
-    NgbAccordionButton, NgbAccordionCollapse,
-    NgbAccordionDirective,
-    NgbAccordionHeader,
-    NgbAccordionItem,
-    NgbModal
-} from '@ng-bootstrap/ng-bootstrap';
+import {NgbModal} from '@ng-bootstrap/ng-bootstrap';
 import {BreadcrumbsComponent} from "@velzon/components/breadcrumbs/breadcrumbs.component";
 import {InventarioEfectivoStore} from "@app/inventario-efectivo/data-access/inventario.efectivo.store";
 import {FormsModule} from "@angular/forms";
 import {ChartComponent} from "ng-apexcharts";
 import Swal from "sweetalert2";
 import {PersistenceService} from "@sothy/services/persistence.service";
-import {NgStepperModule} from "angular-ng-stepper";
-import {CdkStep, CdkStepLabel, CdkStepperNext, CdkStepperPrevious} from "@angular/cdk/stepper";
 import {NgClass} from "@angular/common";
 import {ActivatedRoute, Router} from "@angular/router";
 
@@ -23,19 +14,8 @@ import {ActivatedRoute, Router} from "@angular/router";
     templateUrl: './inventario.efectivo.new.html',
   imports: [
     BreadcrumbsComponent,
-    NgbAccordionDirective,
-    NgbAccordionItem,
-    NgbAccordionHeader,
-    NgbAccordionButton,
-    NgbAccordionCollapse,
-    NgbAccordionBody,
     FormsModule,
     ChartComponent,
-    NgStepperModule,
-    CdkStep,
-    CdkStepLabel,
-    CdkStepperNext,
-    CdkStepperPrevious,
     NgClass,
   ],
     standalone: true,
@@ -84,12 +64,11 @@ export class InventarioEfectivoNew implements OnInit {
     }
 
     ngOnInit(): void {
-        // Detectar el modo según la ruta
+        // Detectar el modo según la ruta y procesar parámetros
         this.route.url.subscribe(urlSegments => {
             const rutaActual = urlSegments.map(segment => segment.path).join('/');
 
             // Detectar si es modo cierre o replicar
-            const esModoReplicar = rutaActual.includes('replicar');
             const esModoCierre = rutaActual.includes('cerrar');
 
             this.isCerrarMode = esModoCierre;
@@ -102,29 +81,32 @@ export class InventarioEfectivoNew implements OnInit {
                 // Rutas "replicar" o "new" → operación de apertura
                 this.inventarioEfectivoStore.setSelectedOperacion('apertura');
             }
-        });
 
-        this.route.params.subscribe(params => {
-            this.operacionTurnoId = params['id'];
+            // Procesar parámetros de ruta dentro del mismo contexto
+            this.route.params.subscribe(params => {
+                this.operacionTurnoId = params['id'];
 
-            if (this.isCerrarMode && this.operacionTurnoId) {
-                // Modo CIERRE: cargar datos del turno abierto para cerrarlo
-                this.inventarioEfectivoStore.loadAllInvetarioEfectivoStore();
+                if (esModoCierre && this.operacionTurnoId) {
+                    // Modo CIERRE: cargar datos del turno abierto para cerrarlo
+                    this.inventarioEfectivoStore.loadAllInvetarioEfectivoStore();
 
-                // Esperar un momento para que los datos se carguen
-                setTimeout(() => {
-                    this.loadTurnoData(this.operacionTurnoId as string);
-                }, 500);
+                    // Esperar un momento para que los datos se carguen
+                    setTimeout(() => {
+                        this.loadTurnoData(this.operacionTurnoId as string);
+                    }, 500);
 
-                // NO inicializar cajas ni movimientos, se cargan desde el backend
-            } else if (this.operacionTurnoId) {
-                // Modo REPLICAR: cargar datos del turno anterior como plantilla para apertura
-                // NO inicializar cajas ni movimientos, se cargan desde el backend
-            } else {
-                // Modo APERTURA normal: inicializar desde cero
-                this.initializeAllCajas();
-                this.initializeMovimientos();
-            }
+                    // Inicializar movimientos para suma diaria
+                    this.initializeMovimientos();
+                } else if (this.operacionTurnoId) {
+                    // Modo REPLICAR: cargar datos del turno anterior como plantilla para apertura
+                    // Inicializar movimientos para suma diaria
+                    this.initializeMovimientos();
+                } else {
+                    // Modo APERTURA normal: inicializar desde cero
+                    this.initializeAllCajas();
+                    this.initializeMovimientos();
+                }
+            });
         });
 
         /**
