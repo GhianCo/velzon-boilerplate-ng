@@ -82,7 +82,7 @@
                                      [(ngModel)]="getCajas(denominacion)[caja.caja_nombre]"
                                      (ngModelChange)="onCantidadCajaChange(denominacion, caja.caja_nombre, $event)"
                                      (click)="$event.stopPropagation()"
-                                     style="max-width: 60px;">
+                                     style="max-width: 80px;">
                               <button class="btn btn-outline-primary btn-sm" type="button"
                                       (click)="incrementCantidadByCaja(denominacion, caja.caja_nombre); $event.stopPropagation()">
                                 <i class="ri-add-line"></i>
@@ -160,12 +160,8 @@
                       @for (detail of catMovimiento.details; track $index) {
                         <tr>
                           <!-- Nombre del item -->
-                          <td class="align-middle">
+                          <td class="align-middle d-flex align-items-center justify-content-between">
                             <span class="fw-medium">{{ detail.nombre }}</span>
-                          </td>
-
-                          <!-- Input con cantidad -->
-                          <td class="text-center">
                             <div class="input-group input-group-sm justify-content-center">
                               <button class="btn btn-outline-primary btn-sm" type="button"
                                       (click)="decrementCantidadMovimiento(detail)">
