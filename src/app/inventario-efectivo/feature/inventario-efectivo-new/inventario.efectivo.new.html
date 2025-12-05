@@ -3,7 +3,181 @@
 <!-- End Breadcrumbs -->
 @if (inventarioEfectivoStore.vm(); as vm) {
   <div class="row">
-    <div class="col-xl-9">
+    <div class="col-xl-12">
+      <div class="card crm-widget">
+        <div class="card-body p-0">
+          <div class="row row-cols-md-3 row-cols-1">
+              <div class="col col-lg border-end">
+                <div class="py-4 px-3">
+                  <h5 class="text-muted text-uppercase fs-13">Resumen</h5>
+                  <div>
+                    @for (valorDetail of vm.valoresWithDetailsData; track $index) {
+                      <div class="d-flex justify-content-between border-bottom border-bottom-dashed py-2">
+                        <p class="fw-medium mb-0">
+                          <i class="ri-number-{{$index + 1}} text-primary align-middle me-2"></i> {{ valorDetail.name }}</p>
+                        <div>
+                          <span class="text-muted pe-5">S/. {{ valorDetail.acumuladoConvertido?.toFixed(2) || '0.00' }}</span>
+                          <span class="text-success fw-medium fs-12">{{ valorDetail.porcentaje?.toFixed(0) || '0' }}%</span>
+                        </div>
+                      </div><!-- end -->
+                    }
+                  </div>
+                </div>
+              </div><!-- end col -->
+            <div class="col col-lg border-end d-flex align-items-center justify-content-center">
+              <div class="py-4 px-3">
+                <h5 class="text-muted text-uppercase fs-13">Total este inventario</h5>
+                <div class="d-flex align-items-center">
+                  <div class="flex-shrink-0 display-6 text-muted">
+                    S/.
+                  </div>
+                  <div class="flex-grow-1 ms-3">
+                    <h2 class="mb-0"><span [countUp]="vm.valoresSummary?.totalConvertido" class="counter-value" [options]="option"></span></h2>
+                  </div>
+                </div>
+              </div>
+            </div><!-- end col -->
+            @if (isCerrarMode){
+              <div class="col col-lg border-end">
+                <div class="py-4 px-3">
+                  <h5 class="text-muted text-uppercase fs-13">Suma diaria de efectivo</h5>
+                  <div>
+                    <div class="mt-2 p-2 bg-light rounded">
+                      <!-- Monto inicial apertura del turno (solo en modo cierre) -->
+                      @if (isCerrarMode && turnoData?.monto_inicial) {
+                        <div class="d-flex justify-content-between mb-2 pb-2 border-bottom">
+                          <small class="fw-bold text-primary">
+                            <i class="ri-safe-line me-1"></i>Monto inicial apertura del turno:
+                          </small>
+                          <small class="fw-bold text-primary">S/. {{ turnoData?.monto_inicial || '0.00' }}</small>
+                        </div>
+                      } @else {
+                        <!-- Inventario base -->
+                        <div class="d-flex justify-content-between">
+                          <small><i class="ri-coins-line me-1"></i>Inventario de efectivo:</small>
+                          <small class="fw-medium">S/. {{ vm.valoresSummary?.totalConvertido?.toFixed(2) || '0.00' }}</small>
+                        </div>
+                      }
+
+                      <!-- Movimientos de cada categoría -->
+                      @for (catMovimiento of vm.catMovWithDetailsData; track $index) {
+                        @if (catMovimiento.acumuladoConvertido) {
+                          <div class="d-flex justify-content-between">
+                            <small>
+                              @if (catMovimiento.tipo_operacion === '+') {
+                                <i class="ri-add-line me-1 text-success"></i>
+                              } @else if (catMovimiento.tipo_operacion === '-') {
+                                <i class="ri-subtract-line me-1 text-danger"></i>
+                              } @else {
+                                <i class="ri-exchange-line me-1 text-warning"></i>
+                              }
+                              {{ catMovimiento.nombre }}:
+                            </small>
+                            <small [ngClass]="getOperacionClass(catMovimiento.tipo_operacion)">
+                              @if (catMovimiento.tipo_operacion === '-') {
+                                - S/. {{ catMovimiento.acumuladoConvertido?.toFixed(2) || '0.00' }}
+                              } @else if (catMovimiento.tipo_operacion === '+') {
+                                + S/. {{ catMovimiento.acumuladoConvertido?.toFixed(2) || '0.00' }}
+                              } @else {
+                                S/. {{ catMovimiento.acumuladoConvertido?.toFixed(2) || '0.00' }}
+                              }
+                            </small>
+                          </div>
+                        }
+                      }
+
+                      <!-- Diferencia manual -->
+                      @if (vm.valoresSummary?.diferencia && vm.valoresSummary?.diferencia !== 0) {
+                        <div class="d-flex justify-content-between">
+                          <small><i class="ri-edit-line me-1"></i>Diferencia manual:</small>
+                          <small [ngClass]="vm.valoresSummary?.diferencia > 0 ? 'text-success' : 'text-danger'">
+                            {{ vm.valoresSummary?.diferencia > 0 ? '+' : '' }}S/. {{ vm.valoresSummary?.diferencia?.toFixed(2) || '0.00' }}
+                          </small>
+                        </div>
+                      }
+
+                      <hr class="my-2">
+
+                      <div class="p-3 bg-success-subtle">
+                        <div class="float-end ms-2">
+                          <h6 class="text-success mb-0">S/. <span
+                            class="text-body">{{ vm.valoresSummary.total_real_turno?.toFixed(2) || '0.00' }}</span></h6>
+                        </div>
+                        <h6 class="mb-0 text-success">Total</h6>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div><!-- end col -->
+            }
+              <div class="col col-lg border-end">
+                <div class="py-4 px-3">
+                  @if (isCerrarMode) {
+                    <div class="alert alert-info border-0 mb-4" role="alert">
+                      <div class="d-flex align-items-start">
+                        <div class="flex-shrink-0">
+                          <i class="ri-information-line fs-16 align-middle me-2 text-danger"></i>
+                        </div>
+                        <div class="flex-grow-1">
+                          <h6 class="mb-1">Cerrar turno {{ turnoData?.turno_nombre }}</h6>
+                          <p class="mb-1">
+                            <strong>Fecha/Hora Apertura:</strong> {{ turnoData?.fecha_apertura }}
+                          </p>
+                          @if (turnoData?.usuario_apertura) {
+                            <p class="mb-0">
+                              <strong>Usuario de apertura:</strong> {{ turnoData?.usuario_apertura }}
+                            </p>
+                          }
+                        </div>
+                      </div>
+                    </div>
+                  } @else {
+                    <div class="alert alert-success border-0 mb-2" role="alert">
+                      <div class="d-flex align-items-start">
+                        <div class="flex-shrink-0">
+                          <i class="ri-information-line fs-16 align-middle me-2 text-danger"></i>
+                        </div>
+                        <div class="flex-grow-1">
+                          <h6 class="mb-1">Apertura de turno</h6>
+                          <p class="mb-1">
+                            <strong>Gestiona los turnos</strong> por apertura y cierre.
+                          </p>
+                            <p class="mb-0">
+                              <strong>Los usuarios que realizan las operaciones</strong> se registran en automatico.
+                            </p>
+                        </div>
+                      </div>
+                    </div>
+                    <div class="d-flex align-items-center justify-content-between mb-2">
+                      <h5 class="text-muted text-uppercase fs-13 mb-0">Selecciona el turno a aperturar</h5>
+                      <div>
+                        <select class="form-select form-select-sm"
+                                [ngModel]="vm.selectedTurnoId"
+                                (ngModelChange)="onTurnoChange($event)">
+                          <option [value]="null" disabled selected>Selecciona turno</option>
+                          @for (turno of vm.turnosData; track turno.turno_id) {
+                            <option [value]="turno.turno_id">{{ turno.turno_nombre }}</option>
+                          }
+                        </select>
+                      </div>
+
+                    </div>
+                    }
+                  <button type="button" class="btn btn-success w-100" (click)="saveInventario()"
+                          [disabled]="vm.saveInventarioEfectivoLoading || vm.valoresSummary?.totalConvertido < 1 || !vm.selectedTurnoId">
+                    <i class="ri-save-fill align-middle"></i> Guardar inventario
+                  </button>
+                  <div>
+                  </div>
+                </div>
+              </div><!-- end col -->
+          </div><!-- end row -->
+        </div><!-- end card body -->
+      </div><!-- end card -->
+    </div><!-- end col -->
+  </div><!-- end row -->
+  <div class="row">
+    <div class="col-xl-12">
       <!-- Tabla Unificada con colspan -->
       <div class="card">
         <div class="card-body p-0">
@@ -160,9 +334,11 @@
                       @for (detail of catMovimiento.details; track $index) {
                         <tr>
                           <!-- Nombre del item -->
-                          <td class="align-middle d-flex align-items-center justify-content-between">
+                          <td class="align-middle">
                             <span class="fw-medium">{{ detail.nombre }}</span>
-                            <div class="input-group input-group-sm justify-content-center">
+                          </td>
+                          <td>
+                            <div class="input-group input-group-sm justify-content-end">
                               <button class="btn btn-outline-primary btn-sm" type="button"
                                       (click)="decrementCantidadMovimiento(detail)">
                                 <i class="ri-subtract-line"></i>
@@ -194,192 +370,6 @@
       </div>
       <!--end card-->
     </div>
-    <!--end col-->
-    <div class="col-xl-3">
-      <div class="card">
-        <div class="card-header">
-          <div class="d-flex">
-            <h5 class="card-title flex-grow-1 mb-0"><i class="mdi mdi-chart-arc align-middle me-1 text-muted"></i>
-              Resumen de inventario</h5>
-            <div class="flex-shrink-0">
-              <button type="button" class="btn btn-success btn-sm" (click)="saveInventario()"
-                      [disabled]="vm.saveInventarioEfectivoLoading || vm.valoresSummary?.totalConvertido < 1 || !vm.selectedTurnoId">
-                <i class="ri-save-fill align-middle"></i> Guardar inventario
-              </button>
-            </div>
-          </div>
-        </div>
-        <div class="card-body">
-          <!-- Sección de Resumen Total -->
-          <div>
-            <div class="d-flex justify-content-center align-items-center">
-              <h2 class="me-3 ff-secondary mb-0">S/. {{ vm.valoresSummary?.totalConvertido?.toFixed(2) || '0.00' }}</h2>
-              <div>
-                <p class="text-muted mb-0">Total este inventario</p>
-              </div>
-            </div>
-
-            @for (valorDetail of vm.valoresWithDetailsData; track $index) {
-              <div class="d-flex justify-content-between border-bottom border-bottom-dashed py-2">
-                <p class="fw-medium mb-0">
-                  <i class="ri-number-{{$index + 1}} text-primary align-middle me-2"></i> {{ valorDetail.name }}</p>
-                <div>
-                  <span class="text-muted pe-5">S/. {{ valorDetail.acumuladoConvertido?.toFixed(2) || '0.00' }}</span>
-                  <span class="text-success fw-medium fs-12">{{ valorDetail.porcentaje?.toFixed(0) || '0' }}%</span>
-                </div>
-              </div><!-- end -->
-            }
-          </div>
-
-          <!-- Nueva Sección de Turnos -->
-          <div class="mt-2">
-            @if (!isCerrarMode) {
-              <!-- MODO APERTURA: Selectores de turno y operación -->
-              <div class="d-flex align-items-center mb-3">
-                <h6 class="card-title mb-0">
-                  <i class="ri-time-line align-middle me-1 text-muted"></i> Seleccionar Turno
-                </h6>
-              </div>
-
-              <!-- Selectores de Turno -->
-              <div class="row g-3">
-                <div class="col-6">
-                  <label class="form-label fw-medium">Turno:</label>
-                  <select class="form-select form-select-sm"
-                          [ngModel]="vm.selectedTurnoId"
-                          (ngModelChange)="onTurnoChange($event)">
-                    <option [value]="null" disabled selected>Seleccionar turno</option>
-                    @for (turno of vm.turnosData; track turno.turno_id) {
-                      <option [value]="turno.turno_id">{{ turno.turno_nombre }}</option>
-                    }
-                  </select>
-                </div>
-              </div>
-            } @else {
-              <div class="alert alert-info border-0 mb-0" role="alert">
-                <div class="d-flex align-items-start">
-                  <div class="flex-shrink-0">
-                    <i class="ri-information-line fs-16 align-middle me-2 text-danger"></i>
-                  </div>
-                  <div class="flex-grow-1">
-                    <h6 class="mb-1">Cerrar turno {{ turnoData?.turno_nombre }}</h6>
-                    <p class="mb-1">
-                      <strong>Fecha/Hora Apertura:</strong> {{ turnoData?.fecha_apertura }}
-                    </p>
-                    @if (turnoData?.usuario_apertura) {
-                      <p class="mb-0">
-                        <strong>Usuario Apertura:</strong> {{ turnoData?.usuario_apertura }}
-                      </p>
-                    }
-                  </div>
-                </div>
-              </div>
-            }
-
-            <!-- Información del turno seleccionado -->
-            @if (!vm.turnosData || !vm.turnosData.length) {
-              <div class="text-center py-3">
-                <div class="text-muted">
-                  <i class="ri-time-line display-6"></i>
-                  <p class="mt-2 mb-0">No hay turnos disponibles</p>
-                  <small>Los turnos aparecerán aquí cuando estén disponibles</small>
-                </div>
-              </div>
-            }
-          </div>
-        </div><!-- end cardbody -->
-      </div>
-      <!--end card-->
-      @if (isCerrarMode){
-        <div class="card">
-          <div class="card-header">
-            <div class="d-flex">
-              <h5 class="card-title flex-grow-1 mb-0">Suma diaria de efectivo</h5>
-            </div>
-          </div>
-          <div class="card-body">
-
-            <!-- Mostrar desglose detallado de totales -->
-            <div class="mt-2 p-2 bg-light rounded">
-              <small class="text-muted d-block mb-2"><strong>Detalle:</strong></small>
-
-              <!-- Monto inicial apertura del turno (solo en modo cierre) -->
-              @if (isCerrarMode && turnoData?.monto_inicial) {
-                <div class="d-flex justify-content-between mb-2 pb-2 border-bottom">
-                  <small class="fw-bold text-primary">
-                    <i class="ri-safe-line me-1"></i>Monto Inicial Apertura del Turno:
-                  </small>
-                  <small class="fw-bold text-primary">S/. {{ turnoData?.monto_inicial || '0.00' }}</small>
-                </div>
-              } @else {
-                <!-- Inventario base -->
-                <div class="d-flex justify-content-between">
-                  <small><i class="ri-coins-line me-1"></i>Inventario de efectivo:</small>
-                  <small class="fw-medium">S/. {{ vm.valoresSummary?.totalConvertido?.toFixed(2) || '0.00' }}</small>
-                </div>
-              }
-
-              <!-- Movimientos de cada categoría -->
-              @for (catMovimiento of vm.catMovWithDetailsData; track $index) {
-                @if (catMovimiento.acumuladoConvertido) {
-                  <div class="d-flex justify-content-between">
-                    <small>
-                      @if (catMovimiento.tipo_operacion === '+') {
-                        <i class="ri-add-line me-1 text-success"></i>
-                      } @else if (catMovimiento.tipo_operacion === '-') {
-                        <i class="ri-subtract-line me-1 text-danger"></i>
-                      } @else {
-                        <i class="ri-exchange-line me-1 text-warning"></i>
-                      }
-                      {{ catMovimiento.nombre }}:
-                    </small>
-                    <small [ngClass]="getOperacionClass(catMovimiento.tipo_operacion)">
-                      @if (catMovimiento.tipo_operacion === '-') {
-                        - S/. {{ catMovimiento.acumuladoConvertido?.toFixed(2) || '0.00' }}
-                      } @else if (catMovimiento.tipo_operacion === '+') {
-                        + S/. {{ catMovimiento.acumuladoConvertido?.toFixed(2) || '0.00' }}
-                      } @else {
-                        S/. {{ catMovimiento.acumuladoConvertido?.toFixed(2) || '0.00' }}
-                      }
-                    </small>
-                  </div>
-                }
-              }
-
-              <!-- Diferencia manual -->
-              @if (vm.valoresSummary?.diferencia && vm.valoresSummary?.diferencia !== 0) {
-                <div class="d-flex justify-content-between">
-                  <small><i class="ri-edit-line me-1"></i>Diferencia manual:</small>
-                  <small [ngClass]="vm.valoresSummary?.diferencia > 0 ? 'text-success' : 'text-danger'">
-                    {{ vm.valoresSummary?.diferencia > 0 ? '+' : '' }}S/. {{ vm.valoresSummary?.diferencia?.toFixed(2) || '0.00' }}
-                  </small>
-                </div>
-              }
-
-              <hr class="my-2">
-
-              <div class="p-3 bg-success-subtle">
-                <div class="float-end ms-2">
-                  <h6 class="text-success mb-0">S/. <span
-                    class="text-body">{{ vm.valoresSummary.total_real_turno?.toFixed(2) || '0.00' }}</span></h6>
-                </div>
-                <h6 class="mb-0 text-success">Total</h6>
-              </div>
-            </div>
-
-            <div class="mt-2 pt-2">
-              <button type="button" class="btn btn-success w-100" (click)="saveInventario()"
-                      [disabled]="vm.saveInventarioEfectivoLoading || vm.valoresSummary?.totalConvertido < 1 || !vm.selectedTurnoId">
-                <i class="ri-save-fill align-middle"></i> Guardar inventario
-              </button>
-            </div>
-
-          </div>
-        </div>
-      }
-      <!--end card-->
-    </div>
-    <!--end col-->
   </div>
   <!--end row-->
 }

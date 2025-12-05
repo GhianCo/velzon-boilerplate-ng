@@ -7,6 +7,7 @@ import Swal from "sweetalert2";
 import {PersistenceService} from "@sothy/services/persistence.service";
 import {NgClass} from "@angular/common";
 import {ActivatedRoute, Router} from "@angular/router";
+import {CountUpModule} from "ngx-countup";
 
 @Component({
     selector: 'app-inventario-efectivo-new',
@@ -15,6 +16,7 @@ import {ActivatedRoute, Router} from "@angular/router";
     BreadcrumbsComponent,
     FormsModule,
     NgClass,
+    CountUpModule,
   ],
     standalone: true,
     styles: [`
@@ -57,7 +59,13 @@ export class InventarioEfectivoNew implements OnInit {
 
     // Propiedades para manejo de selección de filas (solo una fila)
     selectedRowId: string | null = null;
-
+    num: number = 0;
+    option = {
+      startVal: this.num,
+      useEasing: true,
+      duration: 0.5,
+      decimalPlaces: 2,
+    };
     constructor(private modalService: NgbModal) {
     }
 
