@@ -3,7 +3,6 @@ import {NgbModal} from '@ng-bootstrap/ng-bootstrap';
 import {BreadcrumbsComponent} from "@velzon/components/breadcrumbs/breadcrumbs.component";
 import {InventarioEfectivoStore} from "@app/inventario-efectivo/data-access/inventario.efectivo.store";
 import {FormsModule} from "@angular/forms";
-import {ChartComponent} from "ng-apexcharts";
 import Swal from "sweetalert2";
 import {PersistenceService} from "@sothy/services/persistence.service";
 import {NgClass} from "@angular/common";
@@ -15,7 +14,6 @@ import {ActivatedRoute, Router} from "@angular/router";
   imports: [
     BreadcrumbsComponent,
     FormsModule,
-    ChartComponent,
     NgClass,
   ],
     standalone: true,
