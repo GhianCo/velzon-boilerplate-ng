@@ -20,6 +20,6 @@ export const environment = {
       signIn: 'auth/sign-in',
     }
   },
-  apiControlActivos: 'http://10.45.1.171/control-activos-masaris',
+  apiControlActivos: 'https://10.45.1.171/control-activos-masaris',
   apiWorkers: 'https://10.45.1.171/workers',
 };
