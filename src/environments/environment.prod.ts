@@ -21,4 +21,5 @@ export const environment = {
     }
   },
   apiControlActivos: 'http://10.45.1.171/control-activos-masaris',
+  apiWorkers: 'https://10.45.1.171/workers',
 };
