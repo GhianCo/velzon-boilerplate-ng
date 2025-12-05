@@ -290,92 +290,93 @@
         </div><!-- end cardbody -->
       </div>
       <!--end card-->
-
-      <div class="card">
-        <div class="card-header">
-          <div class="d-flex">
-            <h5 class="card-title flex-grow-1 mb-0">Suma diaria de efectivo</h5>
+      @if (isCerrarMode){
+        <div class="card">
+          <div class="card-header">
+            <div class="d-flex">
+              <h5 class="card-title flex-grow-1 mb-0">Suma diaria de efectivo</h5>
+            </div>
           </div>
-        </div>
-        <div class="card-body">
+          <div class="card-body">
 
-          <!-- Mostrar desglose detallado de totales -->
-          <div class="mt-2 p-2 bg-light rounded">
-            <small class="text-muted d-block mb-2"><strong>Detalle:</strong></small>
+            <!-- Mostrar desglose detallado de totales -->
+            <div class="mt-2 p-2 bg-light rounded">
+              <small class="text-muted d-block mb-2"><strong>Detalle:</strong></small>
 
-            <!-- Monto inicial apertura del turno (solo en modo cierre) -->
-            @if (isCerrarMode && turnoData?.monto_inicial) {
-              <div class="d-flex justify-content-between mb-2 pb-2 border-bottom">
-                <small class="fw-bold text-primary">
-                  <i class="ri-safe-line me-1"></i>Monto Inicial Apertura del Turno:
-                </small>
-                <small class="fw-bold text-primary">S/. {{ turnoData?.monto_inicial || '0.00' }}</small>
-              </div>
-            } @else {
-              <!-- Inventario base -->
-              <div class="d-flex justify-content-between">
-                <small><i class="ri-coins-line me-1"></i>Inventario de efectivo:</small>
-                <small class="fw-medium">S/. {{ vm.valoresSummary?.totalConvertido?.toFixed(2) || '0.00' }}</small>
-              </div>
-            }
-
-            <!-- Movimientos de cada categoría -->
-            @for (catMovimiento of vm.catMovWithDetailsData; track $index) {
-              @if (catMovimiento.acumuladoConvertido) {
-                <div class="d-flex justify-content-between">
-                  <small>
-                    @if (catMovimiento.tipo_operacion === '+') {
-                      <i class="ri-add-line me-1 text-success"></i>
-                    } @else if (catMovimiento.tipo_operacion === '-') {
-                      <i class="ri-subtract-line me-1 text-danger"></i>
-                    } @else {
-                      <i class="ri-exchange-line me-1 text-warning"></i>
-                    }
-                    {{ catMovimiento.nombre }}:
+              <!-- Monto inicial apertura del turno (solo en modo cierre) -->
+              @if (isCerrarMode && turnoData?.monto_inicial) {
+                <div class="d-flex justify-content-between mb-2 pb-2 border-bottom">
+                  <small class="fw-bold text-primary">
+                    <i class="ri-safe-line me-1"></i>Monto Inicial Apertura del Turno:
                   </small>
-                  <small [ngClass]="getOperacionClass(catMovimiento.tipo_operacion)">
-                    @if (catMovimiento.tipo_operacion === '-') {
-                      - S/. {{ catMovimiento.acumuladoConvertido?.toFixed(2) || '0.00' }}
-                    } @else if (catMovimiento.tipo_operacion === '+') {
-                      + S/. {{ catMovimiento.acumuladoConvertido?.toFixed(2) || '0.00' }}
-                    } @else {
-                      S/. {{ catMovimiento.acumuladoConvertido?.toFixed(2) || '0.00' }}
-                    }
+                  <small class="fw-bold text-primary">S/. {{ turnoData?.monto_inicial || '0.00' }}</small>
+                </div>
+              } @else {
+                <!-- Inventario base -->
+                <div class="d-flex justify-content-between">
+                  <small><i class="ri-coins-line me-1"></i>Inventario de efectivo:</small>
+                  <small class="fw-medium">S/. {{ vm.valoresSummary?.totalConvertido?.toFixed(2) || '0.00' }}</small>
+                </div>
+              }
+
+              <!-- Movimientos de cada categoría -->
+              @for (catMovimiento of vm.catMovWithDetailsData; track $index) {
+                @if (catMovimiento.acumuladoConvertido) {
+                  <div class="d-flex justify-content-between">
+                    <small>
+                      @if (catMovimiento.tipo_operacion === '+') {
+                        <i class="ri-add-line me-1 text-success"></i>
+                      } @else if (catMovimiento.tipo_operacion === '-') {
+                        <i class="ri-subtract-line me-1 text-danger"></i>
+                      } @else {
+                        <i class="ri-exchange-line me-1 text-warning"></i>
+                      }
+                      {{ catMovimiento.nombre }}:
+                    </small>
+                    <small [ngClass]="getOperacionClass(catMovimiento.tipo_operacion)">
+                      @if (catMovimiento.tipo_operacion === '-') {
+                        - S/. {{ catMovimiento.acumuladoConvertido?.toFixed(2) || '0.00' }}
+                      } @else if (catMovimiento.tipo_operacion === '+') {
+                        + S/. {{ catMovimiento.acumuladoConvertido?.toFixed(2) || '0.00' }}
+                      } @else {
+                        S/. {{ catMovimiento.acumuladoConvertido?.toFixed(2) || '0.00' }}
+                      }
+                    </small>
+                  </div>
+                }
+              }
+
+              <!-- Diferencia manual -->
+              @if (vm.valoresSummary?.diferencia && vm.valoresSummary?.diferencia !== 0) {
+                <div class="d-flex justify-content-between">
+                  <small><i class="ri-edit-line me-1"></i>Diferencia manual:</small>
+                  <small [ngClass]="vm.valoresSummary?.diferencia > 0 ? 'text-success' : 'text-danger'">
+                    {{ vm.valoresSummary?.diferencia > 0 ? '+' : '' }}S/. {{ vm.valoresSummary?.diferencia?.toFixed(2) || '0.00' }}
                   </small>
                 </div>
               }
-            }
 
-            <!-- Diferencia manual -->
-            @if (vm.valoresSummary?.diferencia && vm.valoresSummary?.diferencia !== 0) {
-              <div class="d-flex justify-content-between">
-                <small><i class="ri-edit-line me-1"></i>Diferencia manual:</small>
-                <small [ngClass]="vm.valoresSummary?.diferencia > 0 ? 'text-success' : 'text-danger'">
-                  {{ vm.valoresSummary?.diferencia > 0 ? '+' : '' }}S/. {{ vm.valoresSummary?.diferencia?.toFixed(2) || '0.00' }}
-                </small>
+              <hr class="my-2">
+
+              <div class="p-3 bg-success-subtle">
+                <div class="float-end ms-2">
+                  <h6 class="text-success mb-0">S/. <span
+                    class="text-body">{{ vm.valoresSummary.total_real_turno?.toFixed(2) || '0.00' }}</span></h6>
+                </div>
+                <h6 class="mb-0 text-success">Total</h6>
               </div>
-            }
-
-            <hr class="my-2">
-
-            <div class="p-3 bg-success-subtle">
-              <div class="float-end ms-2">
-                <h6 class="text-success mb-0">S/. <span
-                  class="text-body">{{ vm.valoresSummary.total_real_turno?.toFixed(2) || '0.00' }}</span></h6>
-              </div>
-              <h6 class="mb-0 text-success">Total</h6>
             </div>
-          </div>
 
-          <div class="mt-2 pt-2">
-            <button type="button" class="btn btn-success w-100" (click)="saveInventario()"
-                    [disabled]="vm.saveInventarioEfectivoLoading || vm.valoresSummary?.totalConvertido < 1 || !vm.selectedTurnoId">
-              <i class="ri-save-fill align-middle"></i> Guardar inventario
-            </button>
-          </div>
+            <div class="mt-2 pt-2">
+              <button type="button" class="btn btn-success w-100" (click)="saveInventario()"
+                      [disabled]="vm.saveInventarioEfectivoLoading || vm.valoresSummary?.totalConvertido < 1 || !vm.selectedTurnoId">
+                <i class="ri-save-fill align-middle"></i> Guardar inventario
+              </button>
+            </div>
 
+          </div>
         </div>
-      </div>
+      }
       <!--end card-->
     </div>
     <!--end col-->
