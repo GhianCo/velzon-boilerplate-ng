@@ -514,7 +514,7 @@ export class InventarioEfectivoList {
     this.router.navigate(['/inventario-efectivo/replicar/' + id])
   }
 
-  openEnd(content: TemplateRef<any>) {
+  openFilters(content: TemplateRef<any>) {
     this.offcanvasService.open(content, {position: 'end'});
   }
 

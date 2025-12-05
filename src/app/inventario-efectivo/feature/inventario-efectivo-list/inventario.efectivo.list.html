@@ -34,7 +34,7 @@
               <div class="col-sm-auto ms-auto">
                 <div class="hstack gap-2">
                   <button type="button" class="btn btn-info" data-bs-toggle="offcanvas"
-                          href="javascript:void(0);" (click)="openEnd(filtetcontent)"><i
+                          href="javascript:void(0);" (click)="openFilters(filterscontent)"><i
                     class="ri-filter-3-line align-bottom me-1"></i> Filtros
                   </button>
                 </div>
@@ -103,14 +103,17 @@
                               <ul class="dropdown-menu dropdown-menu-end" ngbDropdownMenu>
                                 @if (inventarioEfectivo.abierta == 1) {
                                   <li>
-                                    <a class="dropdown-item" (click)="cerrarTurno(inventarioEfectivo.operacionturno_id)"><i
+                                    <a class="dropdown-item"
+                                       (click)="cerrarTurno(inventarioEfectivo.operacionturno_id)"><i
                                       class="ri-lock-2-fill align-bottom me-2 text-muted"></i> Cerrar </a>
                                   </li>
                                 } @else {
                                   @if (inventarioEfectivo.operacionturno_id_aperturada == null) {
                                     <li>
-                                      <a class="dropdown-item" (click)="replicarInventario(inventarioEfectivo.operacionturno_id)"><i
-                                        class="ri-lock-unlock-fill align-bottom me-2 text-muted"></i> Abrir de este inventario  </a>
+                                      <a class="dropdown-item"
+                                         (click)="replicarInventario(inventarioEfectivo.operacionturno_id)"><i
+                                        class="ri-lock-unlock-fill align-bottom me-2 text-muted"></i> Abrir de este
+                                        inventario </a>
                                     </li>
                                   }
                                 }
@@ -126,7 +129,7 @@
                     </tbody>
                   </table>
                 </div>
-                @if(vm.inventarioEfectivoData?.body.length == 0){
+                @if (vm.inventarioEfectivoData?.body.length == 0) {
                   <div class="tab-pane" id="productnav-draft" role="tabpanel">
                     <div class="py-4 text-center">
                       <div>
@@ -203,7 +206,7 @@
   </div><!-- /.modal-content -->
 </ng-template>
 
-<ng-template #filtetcontent let-offcanvas>
+<ng-template #filterscontent let-offcanvas>
   <div class="offcanvas-header bg-light">
     <h5 class="offcanvas-title" id="offcanvasExampleLabel">Filtros de inventario de efectivo</h5>
     <button type="button" class="btn-close text-body" data-bs-dismiss="offcanvas" aria-label="Close"
@@ -213,13 +216,13 @@
   <form action="" class="d-flex flex-column justify-content-end h-100">
     <div class="offcanvas-body">
       <div class="mb-4">
-        <label class="form-label text-muted text-uppercase fw-semibold mb-3">Date</label>
+        <label class="form-label text-muted text-uppercase fw-semibold mb-3">Rango de fechas</label>
         <input class="form-control flatpickr-input" type="text" placeholder="Select Date" mwlFlatpickr
                [altInput]="true" id="isDate">
       </div>
       <div class="mb-4">
         <label for="country-select"
-               class="form-label text-muted text-uppercase fw-semibold mb-3">Country</label>
+               class="form-label text-muted text-uppercase fw-semibold mb-3">Turno</label>
         <select class="form-control" data-choices data-choices-multiple-remove="true" name="country-select"
                 id="country-select">
           <option value="" selected>Select country</option>
@@ -239,131 +242,25 @@
         </select>
       </div>
       <div class="mb-4">
-        <label class="form-label text-muted text-uppercase fw-semibold mb-3">Status</label>
-        <div class="row g-2">
-          <div class="col-lg-6">
-            <div class="form-check">
-              <input class="form-check-input" type="checkbox" id="inlineCheckbox1" value="option1">
-              <label class="form-check-label" for="inlineCheckbox1">New Leads</label>
-            </div>
-          </div>
-          <div class="col-lg-6">
-            <div class="form-check">
-              <input class="form-check-input" type="checkbox" id="inlineCheckbox2" value="option2">
-              <label class="form-check-label" for="inlineCheckbox2">Old Leads</label>
-            </div>
-          </div>
-          <div class="col-lg-6">
-            <div class="form-check">
-              <input class="form-check-input" type="checkbox" id="inlineCheckbox3" value="option3">
-              <label class="form-check-label" for="inlineCheckbox3">Loss Leads</label>
-            </div>
-          </div>
-          <div class="col-lg-6">
-            <div class="form-check">
-              <input class="form-check-input" type="checkbox" id="inlineCheckbox4" value="option4">
-              <label class="form-check-label" for="inlineCheckbox4">Follow Up</label>
-            </div>
-          </div>
-        </div>
-      </div>
-      <div class="mb-4">
-        <label class="form-label text-muted text-uppercase fw-semibold mb-3">Lead Score</label>
-        <div class="row g-2 align-items-center">
-          <div class="col-lg">
-            <input type="number" class="form-control" placeholder="0">
-          </div>
-          <div class="col-lg-auto">
-            To
-          </div>
-          <div class="col-lg">
-            <input type="number" class="form-control" placeholder="0">
-          </div>
-        </div>
-      </div>
-      <div>
-        <label class="form-label text-muted text-uppercase fw-semibold mb-3">Tags</label>
-        <div class="col-lg-6">
-          <div class="form-check">
-            <input class="form-check-input" type="checkbox" id="marketing" value="marketing"
-                   name="checkAll">
-            <label class="form-check-label" for="marketing">Marketing</label>
-          </div>
-        </div>
-        <div class="col-lg-6">
-          <div class="form-check">
-            <input class="form-check-input" type="checkbox" id="management" value="management"
-                   name="checkAll">
-            <label class="form-check-label" for="management">Management</label>
-          </div>
-        </div>
-        <div class="col-lg-6">
-          <div class="form-check">
-            <input class="form-check-input" type="checkbox" id="business" value="business"
-                   name="checkAll">
-            <label class="form-check-label" for="business">Business</label>
-          </div>
-        </div>
-        <div class="col-lg-6">
-          <div class="form-check">
-            <input class="form-check-input" type="checkbox" id="investing" value="investing"
-                   name="checkAll">
-            <label class="form-check-label" for="investing">Investing</label>
-          </div>
-        </div>
-        <div class="col-lg-6">
-          <div class="form-check">
-            <input class="form-check-input" type="checkbox" id="partner" value="partner"
-                   name="checkAll">
-            <label class="form-check-label" for="partner">Partner</label>
-          </div>
-        </div>
-        <div class="col-lg-6">
-          <div class="form-check">
-            <input class="form-check-input" type="checkbox" id="lead" value="lead" name="checkAll">
-            <label class="form-check-label" for="lead">Leads</label>
-          </div>
-        </div>
-        <div class="col-lg-6">
-          <div class="form-check">
-            <input class="form-check-input" type="checkbox" id="sale" value="sale" name="checkAll">
-            <label class="form-check-label" for="sale">Sale</label>
-          </div>
-        </div>
-        <div class="col-lg-6">
-          <div class="form-check">
-            <input class="form-check-input" type="checkbox" id="owner" value="owner" name="checkAll">
-            <label class="form-check-label" for="owner">Owner</label>
-          </div>
-        </div>
-        <div class="col-lg-6">
-          <div class="form-check">
-            <input class="form-check-input" type="checkbox" value="banking"
-                   name="checkAll">
-            <label class="form-check-label">Banking</label>
-          </div>
-        </div>
-        <div class="col-lg-6">
-          <div class="form-check">
-            <input class="form-check-input" type="checkbox" value="banking"
-                   name="checkAll">
-            <label class="form-check-label">Exiting</label>
-          </div>
-        </div>
-        <div class="col-lg-6">
-          <div class="form-check">
-            <input class="form-check-input" type="checkbox" value="banking"
-                   name="checkAll">
-            <label class="form-check-label">Finance</label>
-          </div>
-        </div>
-        <div class="col-lg-6">
-          <div class="form-check">
-            <input class="form-check-input" type="checkbox" value="banking"
-                   name="checkAll">
-            <label class="form-check-label">Fashion</label>
-          </div>
-        </div>
+        <label for="country-select"
+               class="form-label text-muted text-uppercase fw-semibold mb-3">Sala</label>
+        <select class="form-control" data-choices data-choices-multiple-remove="true" name="country-select"
+                id="country-select">
+          <option value="" selected>Select country</option>
+          <option value="Argentina">Argentina</option>
+          <option value="Belgium">Belgium</option>
+          <option value="Brazil">Brazil</option>
+          <option value="Colombia">Colombia</option>
+          <option value="Denmark">Denmark</option>
+          <option value="France">France</option>
+          <option value="Germany">Germany</option>
+          <option value="Mexico">Mexico</option>
+          <option value="Russia">Russia</option>
+          <option value="Spain">Spain</option>
+          <option value="Syria">Syria</option>
+          <option value="United Kingdom">United Kingdom</option>
+          <option value="United States of America">United States of America</option>
+        </select>
       </div>
     </div>
     <!--end offcanvas-body-->
