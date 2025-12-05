@@ -8,12 +8,12 @@ export const MENU: MenuItem[] = [
   },
   {
     id: 2,
-    label: 'Operacion',
+    label: 'Turno',
     icon: 'ri-number-1',
     subItems: [
       {
         id: 3,
-        label: 'Inventario de efectivo',
+        label: 'Apertura y cierre',
         link: '/inventario-efectivo',
         parentId: 2
       },
