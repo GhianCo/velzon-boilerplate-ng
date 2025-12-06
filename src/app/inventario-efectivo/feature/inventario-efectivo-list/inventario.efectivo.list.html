@@ -208,60 +208,37 @@
 
 <ng-template #filterscontent let-offcanvas>
   <div class="offcanvas-header bg-light">
-    <h5 class="offcanvas-title" id="offcanvasExampleLabel">Filtros de inventario de efectivo</h5>
+    <h5 class="offcanvas-title" id="offcanvasExampleLabel">Filtros de apertura y cierre de turno</h5>
     <button type="button" class="btn-close text-body" data-bs-dismiss="offcanvas" aria-label="Close"
             (click)="offcanvas.dismiss('Cross click')"></button>
   </div>
   <!--end offcanvas-header-->
-  <form action="" class="d-flex flex-column justify-content-end h-100">
+  <form (ngSubmit)="aplicarFiltros()" class="d-flex flex-column justify-content-end h-100">
     <div class="offcanvas-body">
       <div class="mb-4">
         <label class="form-label text-muted text-uppercase fw-semibold mb-3">Rango de fechas</label>
-        <input class="form-control flatpickr-input" type="text" placeholder="Select Date" mwlFlatpickr
-               [altInput]="true" id="isDate">
+        <input class="form-control"
+               type="text"
+               placeholder="Seleccionar rango de fechas"
+               mwlFlatpickr
+               [formControl]="dateRangeControl"
+               [options]="flatpickrOptions">
       </div>
       <div class="mb-4">
         <label class="form-label text-muted text-uppercase fw-semibold mb-3">Turno</label>
-        <select class="form-control" data-choices data-choices-multiple-remove="true" name="country-select">
-          <option value="" selected>Select country</option>
-          <option value="Argentina">Argentina</option>
-          <option value="Belgium">Belgium</option>
-          <option value="Brazil">Brazil</option>
-          <option value="Colombia">Colombia</option>
-          <option value="Denmark">Denmark</option>
-          <option value="France">France</option>
-          <option value="Germany">Germany</option>
-          <option value="Mexico">Mexico</option>
-          <option value="Russia">Russia</option>
-          <option value="Spain">Spain</option>
-          <option value="Syria">Syria</option>
-          <option value="United Kingdom">United Kingdom</option>
-          <option value="United States of America">United States of America</option>
-        </select>
-      </div>
-      <div class="mb-4">
-        <label class="form-label text-muted text-uppercase fw-semibold mb-3">Sala</label>
-        <select class="form-control" data-choices data-choices-multiple-remove="true" name="country-select">
-          <option value="" selected>Select country</option>
-          <option value="Argentina">Argentina</option>
-          <option value="Belgium">Belgium</option>
-          <option value="Brazil">Brazil</option>
-          <option value="Colombia">Colombia</option>
-          <option value="Denmark">Denmark</option>
-          <option value="France">France</option>
-          <option value="Germany">Germany</option>
-          <option value="Mexico">Mexico</option>
-          <option value="Russia">Russia</option>
-          <option value="Spain">Spain</option>
-          <option value="Syria">Syria</option>
-          <option value="United Kingdom">United Kingdom</option>
-          <option value="United States of America">United States of America</option>
+        <select class="form-control"
+                [value]="inventarioEfectivoStore.vm().filtersToApply?.turno_id"
+                (change)="onTurnoChange($event.target)">
+          <option [value]="-1">Todos los turnos</option>
+          @for (turno of inventarioEfectivoStore.vm().turnosData; track turno.turno_id) {
+            <option [value]="turno.turno_id">{{ turno.turno_nombre }}</option>
+          }
         </select>
       </div>
     </div>
     <!--end offcanvas-body-->
     <div class="offcanvas-footer border-top p-3 text-center hstack gap-2">
-      <button class="btn btn-light w-100">Limpiar filtros</button>
+      <button type="button" class="btn btn-light w-100" (click)="limpiarFiltros()">Limpiar filtros</button>
       <button type="submit" class="btn btn-success w-100">Aplicar filtros</button>
     </div>
     <!--end offcanvas-footer-->

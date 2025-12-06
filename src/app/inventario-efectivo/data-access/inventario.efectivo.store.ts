@@ -52,6 +52,10 @@ const initialState: IState = {
     query: PARAM.UNDEFINED,
     page: 1,
     perPage: 10,
+    startDate: null,
+    endDate: null,
+    turno_id: PARAM.UNDEFINED,
+    sala_id: PARAM.UNDEFINED,
   },
 
   valoresWithDetailsLoading: false,
@@ -171,6 +175,7 @@ export class InventarioEfectivoStore extends SignalStore<IState> {
         this.patch({
           inventarioEfectivoData: data,
           inventarioEfectivoPagination: pagination,
+          filtersToApply: criteria // Guardar los filtros aplicados
         })
       }),
       finalize(async () => {
@@ -183,6 +188,11 @@ export class InventarioEfectivoStore extends SignalStore<IState> {
       }),
     ).subscribe();
   };
+
+  // Método público para buscar desde el componente
+  public searchByCriteria(criteria: any) {
+    this.loadSearch(criteria);
+  }
 
   public async loadOperacionTurnoWithDetails(operacionturno_id: any) {
     this._inventarioEfectivoRemoteReq.requestOperacionTurnoWithDetails(operacionturno_id).pipe(
@@ -588,6 +598,106 @@ export class InventarioEfectivoStore extends SignalStore<IState> {
     this.loadAllInvetarioEfectivoStore();
     this.patch({filtersToApply});
   };
+
+  // ===== MÉTODOS PARA GESTIONAR FILTROS =====
+
+  /**
+   * Inicializa los filtros con el rango de fechas por defecto (primer día del mes hasta hoy)
+   */
+  public initDefaultFilters() {
+    const now = new Date();
+    const firstDayOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+    const today = new Date();
+
+    const filtersToApply = {
+      ...this.vm().filtersToApply,
+      startDate: this.formatDateForAPI(firstDayOfMonth, true),
+      endDate: this.formatDateForAPI(today, false),
+      turno_id: PARAM.UNDEFINED,
+      sala_id: PARAM.UNDEFINED,
+    };
+
+    this.patch({filtersToApply});
+  }
+
+  /**
+   * Actualiza los filtros con los valores proporcionados
+   */
+  public setFilters(filters: {
+    startDate?: string | null,
+    endDate?: string | null,
+    turno_id?: number | null,
+    sala_id?: number | null
+  }) {
+    const filtersToApply = {
+      ...this.vm().filtersToApply,
+      ...filters
+    };
+
+    this.patch({filtersToApply});
+  }
+
+  /**
+   * Actualiza el rango de fechas desde un array de Date
+   */
+  public setDateRange(dateRange: [Date, Date]) {
+    const [startDate, endDate] = dateRange;
+
+    const filtersToApply = {
+      ...this.vm().filtersToApply,
+      startDate: this.formatDateForAPI(startDate, true),
+      endDate: this.formatDateForAPI(endDate, false),
+    };
+
+    this.patch({filtersToApply});
+  }
+
+  /**
+   * Limpia los filtros y los resetea a los valores por defecto
+   */
+  public clearFilters() {
+    this.initDefaultFilters();
+  }
+
+  /**
+   * Aplica los filtros actuales y ejecuta la búsqueda
+   */
+  public applyFilters() {
+    const filters = this.vm().filtersToApply;
+    this.loadSearch(filters);
+  }
+
+  /**
+   * Formatea una fecha para el API (YYYY-MM-DD HH:mm:ss)
+   */
+  private formatDateForAPI(date: Date, isStart: boolean): string {
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const day = String(date.getDate()).padStart(2, '0');
+    const time = isStart ? '00:00:00' : '23:59:59';
+
+    return `${year}-${month}-${day} ${time}`;
+  }
+
+  /**
+   * Obtiene el rango de fechas actual como array de Date para el componente
+   */
+  public getDateRangeForComponent(): [Date, Date] {
+    const filters = this.vm().filtersToApply;
+
+    if (filters.startDate && filters.endDate) {
+      const startDate = new Date(filters.startDate);
+      const endDate = new Date(filters.endDate);
+      return [startDate, endDate];
+    }
+
+    // Si no hay fechas, retornar el rango por defecto
+    const now = new Date();
+    const firstDayOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+    return [firstDayOfMonth, now];
+  }
+
+  // ===== FIN MÉTODOS PARA GESTIONAR FILTROS =====
 
   // Métodos para actualizar turno y tipo de operación
   public setSelectedTurnoId(turnoId: string | null) {

@@ -3,6 +3,13 @@ import {InventarioEfectivoStore} from "@app/inventario-efectivo/data-access/inve
 
 export const InventarioEfectivoListResolver = () => {
   const inventarioEfectivoStore = inject(InventarioEfectivoStore);
-  inventarioEfectivoStore.loadTurnos()
-  return inventarioEfectivoStore.loadAllInvetarioEfectivoStore()
+
+  // Inicializar filtros por defecto (primer día del mes hasta hoy, turno y sala en -1)
+  inventarioEfectivoStore.initDefaultFilters();
+
+  // Cargar turnos
+  inventarioEfectivoStore.loadTurnos();
+
+  // Cargar inventarios con los filtros ya inicializados
+  return inventarioEfectivoStore.loadAllInvetarioEfectivoStore();
 }

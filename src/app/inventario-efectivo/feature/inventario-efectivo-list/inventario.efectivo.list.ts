@@ -8,7 +8,7 @@ import {
   NgbOffcanvas, NgbPagination
 } from "@ng-bootstrap/ng-bootstrap";
 import {GlobalComponent} from "@app/global-component";
-import {FormsModule, UntypedFormBuilder, UntypedFormGroup} from "@angular/forms";
+import {FormControl, FormsModule, ReactiveFormsModule, UntypedFormBuilder, UntypedFormGroup} from "@angular/forms";
 import {PaginationService} from "@velzon/services/pagination.service";
 import {Store} from "@ngrx/store";
 import {RootReducerState} from "@velzon/store";
@@ -30,6 +30,7 @@ import {InventarioEfectivoStore} from "@app/inventario-efectivo/data-access/inve
     NgbDropdownMenu,
     NgbPagination,
     FormsModule,
+    ReactiveFormsModule,
     NgbDropdownToggle,
     FlatpickrModule,
     HotTableModule,
@@ -49,6 +50,13 @@ export class InventarioEfectivoList {
   Rating: any = [];
   discountRates: number[] = [];
   contactsForm!: UntypedFormGroup;
+
+  // FormControl para flatpickr
+  dateRangeControl: FormControl;
+
+  // Configuración de flatpickr
+  flatpickrOptions: any;
+
   total: any;
   totalbrand: any;
   totalrate: any;
@@ -172,6 +180,62 @@ export class InventarioEfectivoList {
               public inventarioEfectivoStore: InventarioEfectivoStore,
               private offcanvasService: NgbOffcanvas,
   ) {
+    // Inicializar FormControl con el rango de fechas del store
+    this.dateRangeControl = new FormControl(this.inventarioEfectivoStore.getDateRangeForComponent());
+
+    // Configurar flatpickr (los filtros ya están inicializados por el resolver)
+    this.configureFlatpickr();
+
+    // Escuchar cambios en el FormControl para actualizar el store
+    this.dateRangeControl.valueChanges.subscribe((value: any) => {
+      if (!value) {
+        return;
+      }
+
+      // Manejar diferentes formatos que puede devolver flatpickr
+      let dates: Date[] = [];
+
+      if (Array.isArray(value)) {
+        // Si es un array, convertir cada elemento a Date si es necesario
+        dates = value.map((item: any) => {
+          if (item instanceof Date) {
+            return item;
+          } else if (typeof item === 'string') {
+            // Convertir formato dd/mm/yyyy a Date
+            return this.parseDate(item);
+          }
+          return null;
+        }).filter((d): d is Date => d !== null && !isNaN(d.getTime()));
+
+      } else if (typeof value === 'string') {
+        // Si es un string, puede estar separado por " to "
+        const parts = value.split(' to ');
+        if (parts.length === 2) {
+          // Parsear fechas en formato dd/mm/yyyy
+          const parsedDates = parts.map(p => this.parseDate(p)).filter((d): d is Date => d !== null && !isNaN(d.getTime()));
+          dates = parsedDates;
+        } else if (parts.length === 1) {
+          // Solo se seleccionó una fecha
+          const singleDate = this.parseDate(parts[0]);
+          if (singleDate && !isNaN(singleDate.getTime())) {
+            // Usar el mismo día como inicio y fin
+            dates = [singleDate, singleDate];
+          }
+        }
+      }
+
+      // Verificar si se seleccionó el mismo día dos veces
+      if (dates.length === 2) {
+        const isSameDay = dates[0].getFullYear() === dates[1].getFullYear() &&
+                         dates[0].getMonth() === dates[1].getMonth() &&
+                         dates[0].getDate() === dates[1].getDate();
+        this.inventarioEfectivoStore.setDateRange([dates[0], dates[1]]);
+      } else if (dates.length === 1) {
+        // Si solo hay una fecha, usar el mismo día como inicio y fin
+        this.inventarioEfectivoStore.setDateRange([dates[0], dates[0]]);
+      }
+    });
+
     effect(() => {
       const data: any = this.inventarioEfectivoStore.vm().inventarioEfectivoData;
       const colHeaders = data?.header?.filter((h: any) => h.visible).map((h: any) => h.alias);
@@ -181,6 +245,65 @@ export class InventarioEfectivoList {
       };
       this.data = data?.body;
     });
+  }
+
+  private configureFlatpickr() {
+    this.flatpickrOptions = {
+      mode: 'range',
+      dateFormat: 'd/m/Y',
+      defaultDate: this.inventarioEfectivoStore.getDateRangeForComponent(),
+      locale: {
+        firstDayOfWeek: 1,
+        weekdays: {
+          shorthand: ['Dom', 'Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb'],
+          longhand: ['Domingo', 'Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado']
+        },
+        months: {
+          shorthand: ['Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun', 'Jul', 'Ago', 'Sep', 'Oct', 'Nov', 'Dic'],
+          longhand: ['Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio', 'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre']
+        }
+      },
+      // Callback onChange de flatpickr (se ejecuta directamente)
+      onChange: (selectedDates: Date[], dateStr: string, instance: any) => {
+        if (selectedDates && selectedDates.length >= 1) {
+          if (selectedDates.length === 1) {
+            // Solo se seleccionó una fecha, usar el mismo día como inicio y fin
+            this.inventarioEfectivoStore.setDateRange([selectedDates[0], selectedDates[0]]);
+          } else if (selectedDates.length === 2) {
+            // Verificar si es el mismo día
+            const isSameDay = selectedDates[0].getFullYear() === selectedDates[1].getFullYear() &&
+                             selectedDates[0].getMonth() === selectedDates[1].getMonth() &&
+                             selectedDates[0].getDate() === selectedDates[1].getDate();
+            this.inventarioEfectivoStore.setDateRange([selectedDates[0], selectedDates[1]]);
+          }
+        }
+      }
+    };
+  }
+
+  /**
+   * Convierte una fecha en formato dd/mm/yyyy a objeto Date
+   */
+  private parseDate(dateStr: string): Date | null {
+    if (!dateStr) return null;
+
+    // Formato esperado: dd/mm/yyyy
+    const parts = dateStr.trim().split('/');
+    if (parts.length === 3) {
+      const day = parseInt(parts[0], 10);
+      const month = parseInt(parts[1], 10) - 1; // Los meses en JS van de 0-11
+      const year = parseInt(parts[2], 10);
+
+      const date = new Date(year, month, day);
+
+      // Validar que la fecha sea válida
+      if (!isNaN(date.getTime())) {
+        return date;
+      }
+    }
+
+    console.warn(`⚠️ [parseDate] No se pudo parsear: "${dateStr}"`);
+    return null;
   }
 
   ngOnInit(): void {
@@ -516,6 +639,43 @@ export class InventarioEfectivoList {
 
   openFilters(content: TemplateRef<any>) {
     this.offcanvasService.open(content, {position: 'end'});
+  }
+
+  aplicarFiltros() {
+    // Los filtros ya están actualizados en el store gracias al binding
+    const filtros = this.inventarioEfectivoStore.vm().filtersToApply;
+    // Aplicar filtros
+    this.inventarioEfectivoStore.applyFilters();
+
+    // Cerrar offcanvas
+    this.offcanvasService.dismiss();
+  }
+
+  limpiarFiltros() {
+    // Resetear filtros en el store
+    this.inventarioEfectivoStore.clearFilters();
+
+    // Actualizar el FormControl con las nuevas fechas
+    const newDateRange = this.inventarioEfectivoStore.getDateRangeForComponent();
+    this.dateRangeControl.setValue(newDateRange);
+
+    // Actualizar la configuración de flatpickr con las nuevas fechas
+    this.flatpickrOptions = {
+      ...this.flatpickrOptions,
+      defaultDate: newDateRange
+    };
+  }
+
+  onTurnoChange(event: any) {
+    const value = event?.value;
+    const turnoId = value === 'null' || value === '' ? -1 : parseInt(value);
+    this.inventarioEfectivoStore.setFilters({ turno_id: turnoId });
+  }
+
+  onSalaChange(event: any) {
+    const value = event?.value;
+    const salaId = value === 'null' || value === '' ? -1 : parseInt(value);
+    this.inventarioEfectivoStore.setFilters({ sala_id: salaId });
   }
 
   gopublishdetail(id: any) {
