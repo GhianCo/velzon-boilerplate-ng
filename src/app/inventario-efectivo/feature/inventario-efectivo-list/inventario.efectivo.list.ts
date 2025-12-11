@@ -19,6 +19,7 @@ import {FlatpickrModule} from "angularx-flatpickr";
 import {HotTableComponent, HotTableModule} from "@handsontable/angular-wrapper";
 import Handsontable from "handsontable";
 import {InventarioEfectivoStore} from "@app/inventario-efectivo/data-access/inventario.efectivo.store";
+import {CommonModule} from "@angular/common";
 
 @Component({
   standalone: true,
@@ -35,6 +36,7 @@ import {InventarioEfectivoStore} from "@app/inventario-efectivo/data-access/inve
     FlatpickrModule,
     HotTableModule,
     RouterLink,
+    CommonModule
   ]
 })
 export class InventarioEfectivoList {
@@ -53,6 +55,13 @@ export class InventarioEfectivoList {
 
   // FormControl para flatpickr
   dateRangeControl: FormControl;
+
+  // Variable para el turno seleccionado en el modal
+  selectedTurnoId: number = -1;
+
+  // Variables para guardar el estado original de los filtros al abrir el modal
+  private originalFilters: any = null;
+  private originalDateRange: Date[] = [];
 
   // Configuración de flatpickr
   flatpickrOptions: any;
@@ -244,6 +253,14 @@ export class InventarioEfectivoList {
         colHeaders,
       };
       this.data = data?.body;
+    });
+
+    // Sincronizar selectedTurnoId con el store
+    effect(() => {
+      const turnoId = this.inventarioEfectivoStore.vm().filtersToApply?.turno_id;
+      if (turnoId !== undefined) {
+        this.selectedTurnoId = turnoId;
+      }
     });
   }
 
@@ -638,22 +655,91 @@ export class InventarioEfectivoList {
   }
 
   openFilters(content: TemplateRef<any>) {
-    this.offcanvasService.open(content, {position: 'end'});
+    // Guardar el estado original de los filtros ANTES de abrir el modal
+    const currentFilters = this.inventarioEfectivoStore.vm().filtersToApply;
+    this.originalFilters = {
+      turno_id: currentFilters?.turno_id ?? -1,
+      sala_id: currentFilters?.sala_id ?? -1,
+      startDate: currentFilters?.startDate ? new Date(currentFilters.startDate) : null,
+      endDate: currentFilters?.endDate ? new Date(currentFilters.endDate) : null,
+    };
+
+    // Guardar también el rango de fechas original
+    if (this.dateRangeControl.value) {
+      this.originalDateRange = Array.isArray(this.dateRangeControl.value)
+        ? [...this.dateRangeControl.value]
+        : [this.dateRangeControl.value];
+    }
+
+    // Sincronizar el valor del select con el store antes de abrir el modal
+    const currentTurnoId = currentFilters?.turno_id;
+    this.selectedTurnoId = currentTurnoId !== undefined ? currentTurnoId : -1;
+
+    // Abrir el offcanvas y escuchar cuando se cierre
+    const offcanvasRef = this.offcanvasService.open(content, {position: 'end'});
+
+    // Escuchar cuando se cierre el modal (por cualquier método: backdrop, ESC, botón X)
+    offcanvasRef.result.then(
+      // Cuando se cierra con un método específico (no se usa en este caso)
+      () => {},
+      // Cuando se cierra por dismiss (backdrop, ESC, botón X)
+      (reason) => {
+        // Si se cerró sin aplicar filtros, restaurar el estado original
+        if (reason !== 'apply') {
+          this.cancelarFiltros();
+        }
+      }
+    );
   }
 
   aplicarFiltros() {
-    // Los filtros ya están actualizados en el store gracias al binding
-    const filtros = this.inventarioEfectivoStore.vm().filtersToApply;
-    // Aplicar filtros
+    // Aplicar filtros (hace la llamada REST)
     this.inventarioEfectivoStore.applyFilters();
 
-    // Cerrar offcanvas
-    this.offcanvasService.dismiss();
+    // Cerrar offcanvas con razón 'apply' para indicar que se aplicaron los filtros
+    this.offcanvasService.dismiss('apply');
+
+    // Limpiar el estado original ya que se aplicaron los cambios
+    this.originalFilters = null;
+    this.originalDateRange = [];
+  }
+
+  cancelarFiltros() {
+    // Restaurar los filtros originales en el store (sin aplicar)
+    if (this.originalFilters) {
+      this.inventarioEfectivoStore.setFilters({
+        turno_id: this.originalFilters.turno_id,
+        sala_id: this.originalFilters.sala_id,
+      });
+
+      // Restaurar el rango de fechas si existe
+      if (this.originalFilters.startDate && this.originalFilters.endDate) {
+        this.inventarioEfectivoStore.setDateRange([
+          this.originalFilters.startDate,
+          this.originalFilters.endDate
+        ]);
+      }
+
+      // Restaurar el FormControl de fechas
+      if (this.originalDateRange.length > 0) {
+        this.dateRangeControl.setValue(this.originalDateRange, {emitEvent: false});
+      }
+
+      // Restaurar el turno seleccionado en el select
+      this.selectedTurnoId = this.originalFilters.turno_id;
+    }
+
+    // Limpiar el estado guardado
+    this.originalFilters = null;
+    this.originalDateRange = [];
   }
 
   limpiarFiltros() {
     // Resetear filtros en el store
     this.inventarioEfectivoStore.clearFilters();
+
+    // Resetear el turno seleccionado
+    this.selectedTurnoId = -1;
 
     // Actualizar el FormControl con las nuevas fechas
     const newDateRange = this.inventarioEfectivoStore.getDateRangeForComponent();
@@ -666,16 +752,26 @@ export class InventarioEfectivoList {
     };
   }
 
-  onTurnoChange(event: any) {
+  // Método para cambiar turno desde el modal (NO aplica filtros automáticamente)
+  onTurnoChangeFromModal(event: any) {
     const value = event?.value;
     const turnoId = value === 'null' || value === '' ? -1 : parseInt(value);
     this.inventarioEfectivoStore.setFilters({ turno_id: turnoId });
+    // NO aplicar filtros aquí - solo actualizar el estado
+  }
+
+  // Método para remover el badge de turno (SÍ aplica filtros automáticamente)
+  onTurnoRemove() {
+    this.inventarioEfectivoStore.setFilters({ turno_id: -1 });
+    // Aplicar filtros automáticamente (hace la llamada REST)
+    this.inventarioEfectivoStore.applyFilters();
   }
 
   onSalaChange(event: any) {
     const value = event?.value;
     const salaId = value === 'null' || value === '' ? -1 : parseInt(value);
     this.inventarioEfectivoStore.setFilters({ sala_id: salaId });
+    // NO aplicar filtros aquí - solo actualizar el estado
   }
 
   gopublishdetail(id: any) {

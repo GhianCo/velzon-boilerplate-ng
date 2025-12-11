@@ -7,9 +7,9 @@
       <div>
         <div class="card">
           <div class="card-header border-0">
-
-            <div class="row g-4 align-items-center">
-              <div class="col-sm-3">
+            <div class="row g-3 align-items-center">
+              <!-- Botones de operaciones y filtros alineados -->
+              <div class="col-auto">
                 <div class="btn-group" role="group" ngbDropdown>
                   <button id="btnGroupDrop1" type="button"
                           class="btn btn-info dropdown-toggle arrow-none" data-bs-toggle="dropdown"
@@ -31,12 +31,58 @@
                   </ul>
                 </div>
               </div>
-              <div class="col-sm-auto ms-auto">
-                <div class="hstack gap-2">
-                  <button type="button" class="btn btn-info" data-bs-toggle="offcanvas"
-                          href="javascript:void(0);" (click)="openFilters(filterscontent)"><i
-                    class="ri-filter-3-line align-bottom me-1"></i> Filtros
-                  </button>
+
+              <!-- Card de Filtros -->
+              <div class="col">
+                <div class="card mb-0 shadow-none border">
+                  <div class="card-body py-2">
+                    <div class="d-flex align-items-center justify-content-between">
+                      <div class="flex-grow-1">
+                        <div class="d-flex align-items-center flex-wrap gap-2">
+                          <!-- Filtro de Fecha (no removible, solo editable) -->
+                          <span class="badge bg-light text-body border d-flex align-items-center gap-2 py-2 px-3"
+                                style="cursor: pointer;"
+                                (click)="openFilters(filterscontent)">
+                            <i class="ri-calendar-line"></i>
+                            @if (inventarioEfectivoStore.vm().filtersToApply?.startDate && inventarioEfectivoStore.vm().filtersToApply?.endDate) {
+                              <span>
+                                <strong>Rango de fechas:</strong>
+                                {{ inventarioEfectivoStore.vm().filtersToApply.startDate | date: 'dd/MM/yyyy' }} -
+                                {{ inventarioEfectivoStore.vm().filtersToApply.endDate | date: 'dd/MM/yyyy' }}
+                              </span>
+                            } @else {
+                              <span><strong>Rango de fechas:</strong> Seleccionar</span>
+                            }
+                          </span>
+
+                          <!-- Filtro de Turno (removible) -->
+                          @if (inventarioEfectivoStore.vm().filtersToApply?.turno_id &&
+                               inventarioEfectivoStore.vm().filtersToApply.turno_id !== -1) {
+                            @for (turno of inventarioEfectivoStore.vm().turnosData; track turno.turno_id) {
+                              @if (turno.turno_id === inventarioEfectivoStore.vm().filtersToApply.turno_id) {
+                                <span class="badge bg-primary-subtle text-primary border border-primary d-flex align-items-center gap-2 py-2 px-3">
+                                  <i class="ri-time-line"></i>
+                                  <span><strong>Turno:</strong> {{ turno.turno_nombre }}</span>
+                                  <button type="button"
+                                          class="btn-close btn-close-sm"
+                                          style="font-size: 0.65rem; padding: 0; margin: 0;"
+                                          (click)="$event.stopPropagation(); onTurnoRemove()"></button>
+                                </span>
+                              }
+                            }
+                          }
+                        </div>
+                      </div>
+
+                      <!-- Botón de filtros -->
+                      <div class="flex-shrink-0">
+                        <button type="button" class="btn btn-info btn-sm" data-bs-toggle="offcanvas"
+                                href="javascript:void(0);" (click)="openFilters(filterscontent)">
+                          <i class="ri-filter-3-line align-bottom me-1"></i> Filtros
+                        </button>
+                      </div>
+                    </div>
+                  </div>
                 </div>
               </div>
             </div>
@@ -227,8 +273,9 @@
       <div class="mb-4">
         <label class="form-label text-muted text-uppercase fw-semibold mb-3">Turno</label>
         <select class="form-control"
-                [value]="inventarioEfectivoStore.vm().filtersToApply?.turno_id"
-                (change)="onTurnoChange($event.target)">
+                [(ngModel)]="selectedTurnoId"
+                [ngModelOptions]="{standalone: true}"
+                (ngModelChange)="onTurnoChangeFromModal({value: $event})">
           <option [value]="-1">Todos los turnos</option>
           @for (turno of inventarioEfectivoStore.vm().turnosData; track turno.turno_id) {
             <option [value]="turno.turno_id">{{ turno.turno_nombre }}</option>
