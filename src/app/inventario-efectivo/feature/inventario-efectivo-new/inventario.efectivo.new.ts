@@ -2,10 +2,10 @@ import {Component, inject, OnInit} from '@angular/core';
 import {BreadcrumbsComponent} from "@velzon/components/breadcrumbs/breadcrumbs.component";
 import {InventarioEfectivoStore} from "@app/inventario-efectivo/data-access/inventario.efectivo.store";
 import {FormsModule} from "@angular/forms";
-import Swal from "sweetalert2";
 import {NgClass} from "@angular/common";
 import {ActivatedRoute} from "@angular/router";
 import {CountUpModule} from "ngx-countup";
+import {ConfirmationService} from "@sothy/services/confirmation.service";
 
 @Component({
     selector: 'app-inventario-efectivo-new',
@@ -47,6 +47,7 @@ export class InventarioEfectivoNew implements OnInit {
     submitted = false;
     inventarioEfectivoStore = inject(InventarioEfectivoStore);
     private route = inject(ActivatedRoute);
+    private confirmationService = inject(ConfirmationService);
 
     // Propiedades para modo cierre
     isCerrarMode: boolean = false;
@@ -154,20 +155,18 @@ export class InventarioEfectivoNew implements OnInit {
 
         // Validar que se haya seleccionado turno y operación
         if (!vm.selectedTurnoId || !vm.selectedOperacion) {
-            Swal.fire({
-                title: 'Faltan datos',
-                text: 'Por favor selecciona un turno y el tipo de operación antes de guardar.',
-                icon: 'warning',
-                confirmButtonText: 'Entendido'
-            });
+            this.confirmationService.warning(
+                '⚠️ Faltan datos',
+                'Por favor selecciona un turno y el tipo de operación antes de guardar.'
+            ).subscribe();
             return;
         }
 
         // En modo cierre usar turnoData, en apertura usar getSelectedTurno()
         const turnoInfo = this.isCerrarMode ? this.turnoData : this.getSelectedTurno();
 
-        Swal.fire({
-            title: 'Todos los datos son correctos?',
+        this.confirmationService.open({
+            title: '✅ ¿Todos los datos son correctos?',
             html: `
                 <div class="text-start">
                     <p>He revisado que los datos sean los correctos!</p>
@@ -177,14 +176,25 @@ export class InventarioEfectivoNew implements OnInit {
                     </div>
                 </div>
             `,
-            icon: 'warning',
-            showCancelButton: true,
-            confirmButtonColor: '#3cd188',
-            cancelButtonColor: 'rgb(243, 78, 78)',
-            confirmButtonText: 'Si, guardar inventario!',
-            cancelButtonText: 'No, cerrar'
-        }).then(result => {
-            if (result.value) {
+            icon: {
+                show: true,
+                name: 'warning',
+                color: 'warn'
+            },
+            actions: {
+                confirm: {
+                    show: true,
+                    label: '💾 Si, guardar inventario!',
+                    color: 'success'
+                },
+                cancel: {
+                    show: true,
+                    label: '❌ No, cerrar'
+                }
+            },
+            dismissible: false
+        }).subscribe(result => {
+            if (result.isConfirmed) {
                 // Obtener turno_id desde turnoData (si está en modo cierre) o desde selectedTurnoId
                 const turnoId = this.turnoData?.turno_id || vm.selectedTurnoId;
 
