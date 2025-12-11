@@ -1,6 +1,7 @@
 import { HttpInterceptorFn, HttpErrorResponse } from '@angular/common/http';
+import { inject } from '@angular/core';
 import { catchError, throwError } from 'rxjs';
-import Swal from 'sweetalert2';
+import { ConfirmationService } from '@sothy/services/confirmation.service';
 
 /**
  * Flag global para evitar mostrar múltiples alertas SSL
@@ -12,6 +13,8 @@ let sslAlertShown = false;
  * Detecta errores SSL en URLs con IPs locales y ofrece opciones al usuario
  */
 export const sslErrorHandlerInterceptor: HttpInterceptorFn = (req, next) => {
+  const confirmationService = inject(ConfirmationService);
+
   return next(req).pipe(
     catchError((error: HttpErrorResponse) => {
       // Verificar si es un error de SSL/Certificate
@@ -19,7 +22,7 @@ export const sslErrorHandlerInterceptor: HttpInterceptorFn = (req, next) => {
         // Solo mostrar la alerta si no se ha mostrado ya
         if (!sslAlertShown) {
           sslAlertShown = true;
-          showSslErrorAlert(req.url);
+          showSslErrorAlert(req.url, confirmationService);
         }
 
         // Retornar el error original sin retry
@@ -95,10 +98,10 @@ function checkSSLErrorTypes(error: HttpErrorResponse): boolean {
 
 
 /**
- * Muestra una alerta SweetAlert2 con opciones para manejar el error SSL
+ * Muestra una alerta usando el servicio de confirmación
  */
-function showSslErrorAlert(problematicUrl: string): void {
-  Swal.fire({
+function showSslErrorAlert(problematicUrl: string, confirmationService: ConfirmationService): void {
+  confirmationService.open({
     title: '⚠️ Error de Certificado SSL',
     html: `
       <div class="text-start">
@@ -113,27 +116,31 @@ function showSslErrorAlert(problematicUrl: string): void {
         </ul>
       </div>
     `,
-    icon: 'warning',
-    showCancelButton: true,
-    showDenyButton: true,
-    confirmButtonText: '<i class="ri-external-link-line"></i> Abrir en nueva pestaña',
-    denyButtonText: '<i class="ri-refresh-line"></i> Refrescar página',
-    cancelButtonText: '<i class="ri-close-line"></i> Cerrar',
-    confirmButtonColor: '#3085d6',
-    denyButtonColor: '#f39c12',
-    cancelButtonColor: '#6c757d',
-    allowOutsideClick: false,
-    allowEscapeKey: true,
-    customClass: {
-      popup: 'ssl-error-popup',
-      confirmButton: 'btn btn-primary',
-      denyButton: 'btn btn-warning',
-      cancelButton: 'btn btn-secondary'
-    }
-  }).then((result) => {
+    icon: {
+      show: true,
+      name: 'warning',
+      color: 'warn'
+    },
+    actions: {
+      confirm: {
+        show: true,
+        label: '🔗 Abrir en nueva pestaña',
+        color: 'primary'
+      },
+      cancel: {
+        show: false,
+      },
+      deny: {
+        show: true,
+        label: '🔄 Refrescar página',
+        color: 'warning'
+      }
+    },
+    dismissible: false
+  }).subscribe((result) => {
     if (result.isConfirmed) {
       // Usuario eligió abrir en nueva pestaña
-      openUrlInNewTab(problematicUrl);
+      openUrlInNewTab(problematicUrl, confirmationService);
       resetSslAlertFlag();
     } else if (result.isDenied) {
       // Usuario eligió refrescar página
@@ -148,13 +155,13 @@ function showSslErrorAlert(problematicUrl: string): void {
 /**
  * Abre la URL problemática en una nueva pestaña
  */
-function openUrlInNewTab(url: string): void {
+function openUrlInNewTab(url: string, confirmationService: ConfirmationService): void {
   try {
     const newTab = window.open(url, '_blank', 'noopener,noreferrer');
 
     if (!newTab) {
       // Si el navegador bloquea pop-ups
-      Swal.fire({
+      confirmationService.open({
         title: '🚫 Bloqueador de Pop-ups Detectado',
         html: `
           <div class="text-start">
@@ -166,18 +173,28 @@ function openUrlInNewTab(url: string): void {
             <small class="text-muted mt-2 d-block">Haga click en el campo para seleccionar y copiar</small>
           </div>
         `,
-        icon: 'info',
-        confirmButtonText: 'Entendido',
-        customClass: {
-          popup: 'ssl-error-popup',
-          confirmButton: 'btn btn-primary'
-        }
-      });
+        icon: {
+          show: true,
+          name: 'info',
+          color: 'info'
+        },
+        actions: {
+          confirm: {
+            show: true,
+            label: '✅ Entendido',
+            color: 'primary'
+          },
+          cancel: {
+            show: false
+          }
+        },
+        dismissible: true
+      }).subscribe();
     }
   } catch (error) {
     console.error('Error al abrir nueva pestaña:', error);
 
-    Swal.fire({
+    confirmationService.open({
       title: '❌ Error al Abrir Nueva Pestaña',
       html: `
         <div class="text-start">
@@ -188,13 +205,23 @@ function openUrlInNewTab(url: string): void {
           </div>
         </div>
       `,
-      icon: 'error',
-      confirmButtonText: 'Entendido',
-      customClass: {
-        popup: 'ssl-error-popup',
-        confirmButton: 'btn btn-primary'
-      }
-    });
+      icon: {
+        show: true,
+        name: 'error',
+        color: 'error'
+      },
+      actions: {
+        confirm: {
+          show: true,
+          label: '✅ Entendido',
+          color: 'primary'
+        },
+        cancel: {
+          show: false
+        }
+      },
+      dismissible: true
+    }).subscribe();
   }
 }
 
