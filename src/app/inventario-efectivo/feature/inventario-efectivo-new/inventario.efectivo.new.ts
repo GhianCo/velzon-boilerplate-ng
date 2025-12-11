@@ -163,7 +163,8 @@ export class InventarioEfectivoNew implements OnInit {
             return;
         }
 
-        const turnoInfo = this.getSelectedTurno();
+        // En modo cierre usar turnoData, en apertura usar getSelectedTurno()
+        const turnoInfo = this.isCerrarMode ? this.turnoData : this.getSelectedTurno();
 
         Swal.fire({
             title: 'Todos los datos son correctos?',
@@ -171,7 +172,7 @@ export class InventarioEfectivoNew implements OnInit {
                 <div class="text-start">
                     <p>He revisado que los datos sean los correctos!</p>
                     <div class="mt-3 p-3 bg-light rounded">
-                        <strong>Turno:</strong> ${turnoInfo?.turno_nombre}<br>
+                        <strong>Turno:</strong> ${turnoInfo?.turno_nombre || 'No especificado'}<br>
                         <strong>Operación:</strong> <span class="badge ${vm.selectedOperacion === 'apertura' ? 'bg-success' : 'bg-danger'}">${vm.selectedOperacion}</span><br>
                     </div>
                 </div>
