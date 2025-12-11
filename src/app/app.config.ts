@@ -5,9 +5,10 @@ import {
   withInMemoryScrolling,
   withPreloading
 } from "@angular/router";
-import {HttpClient, provideHttpClient} from "@angular/common/http";
+import {HttpClient, provideHttpClient, withInterceptors} from "@angular/common/http";
 import {ErrorInterceptor} from "@velzon/core/helpers/error.interceptor";
 import {FakeBackendInterceptor} from "@velzon/core/helpers/fake-backend";
+import {sslErrorHandlerInterceptor} from "@sothy/interceptors/ssl-error-handler.interceptor";
 import {NgPipesModule} from "ngx-pipes";
 import {BrowserAnimationsModule} from "@angular/platform-browser/animations";
 import {TranslateLoader, TranslateModule} from "@ngx-translate/core";
@@ -73,9 +74,12 @@ export const appConfig: ApplicationConfig = {
       withInMemoryScrolling({scrollPositionRestoration: 'enabled'})
     ),
     {provide: HOT_GLOBAL_CONFIG, useValue: globalHotConfig},
-    provideHttpClient(),
+    // Configuración de HttpClient con interceptores funcionales
+    provideHttpClient(
+      withInterceptors([sslErrorHandlerInterceptor])
+    ),
     provideAuth(),
-    // Interceptores HTTP
+    // Interceptores HTTP (clase legacy - mantener solo si son necesarios)
     {provide: 'HTTP_INTERCEPTORS', useClass: ErrorInterceptor, multi: true},
     {provide: 'HTTP_INTERCEPTORS', useClass: FakeBackendInterceptor, multi: true},
     {provide: HttpService,useFactory: httpServiceCreator,deps: [HttpClient]},
