@@ -1,12 +1,10 @@
 import {Component, inject, OnInit} from '@angular/core';
-import {NgbModal} from '@ng-bootstrap/ng-bootstrap';
 import {BreadcrumbsComponent} from "@velzon/components/breadcrumbs/breadcrumbs.component";
 import {InventarioEfectivoStore} from "@app/inventario-efectivo/data-access/inventario.efectivo.store";
 import {FormsModule} from "@angular/forms";
 import Swal from "sweetalert2";
-import {PersistenceService} from "@sothy/services/persistence.service";
 import {NgClass} from "@angular/common";
-import {ActivatedRoute, Router} from "@angular/router";
+import {ActivatedRoute} from "@angular/router";
 import {CountUpModule} from "ngx-countup";
 
 @Component({
@@ -48,9 +46,7 @@ export class InventarioEfectivoNew implements OnInit {
     breadCrumbItems!: Array<{}>;
     submitted = false;
     inventarioEfectivoStore = inject(InventarioEfectivoStore);
-    persistenceService = inject(PersistenceService);
     private route = inject(ActivatedRoute);
-    private router = inject(Router);
 
     // Propiedades para modo cierre
     isCerrarMode: boolean = false;
@@ -66,7 +62,8 @@ export class InventarioEfectivoNew implements OnInit {
       duration: 0.5,
       decimalPlaces: 2,
     };
-    constructor(private modalService: NgbModal) {
+
+    constructor() {
     }
 
     ngOnInit(): void {
@@ -100,17 +97,11 @@ export class InventarioEfectivoNew implements OnInit {
                     setTimeout(() => {
                         this.loadTurnoData(this.operacionTurnoId as string);
                     }, 500);
-
-                    // Inicializar movimientos para suma diaria
-                    this.initializeMovimientos();
                 } else if (this.operacionTurnoId) {
                     // Modo REPLICAR: cargar datos del turno anterior como plantilla para apertura
-                    // Inicializar movimientos para suma diaria
-                    this.initializeMovimientos();
                 } else {
                     // Modo APERTURA normal: inicializar desde cero
                     this.initializeAllCajas();
-                    this.initializeMovimientos();
                 }
             });
         });
@@ -152,13 +143,6 @@ export class InventarioEfectivoNew implements OnInit {
         console.log('Datos del turno cargados:', this.turnoData);
     }
 
-    // Método para simular datos de turnos - después reemplazarás con request real
-
-    // Getter que asegura que las cajas estén inicializadas
-    getCajas(denominacion: any) {
-        this.initializeCajas(denominacion);
-        return denominacion.cajas;
-    }
 
     // Inicializar cajas para todas las denominaciones
     initializeAllCajas() {
@@ -179,8 +163,7 @@ export class InventarioEfectivoNew implements OnInit {
             return;
         }
 
-        const selectionInfo = this.getSelectionInfo();
-        const turnoInfo = selectionInfo?.turno;
+        const turnoInfo = this.getSelectedTurno();
 
         Swal.fire({
             title: 'Todos los datos son correctos?',
@@ -244,7 +227,13 @@ export class InventarioEfectivoNew implements OnInit {
         this.inventarioEfectivoStore.onCantidadMovimientoChange(detail, event);
     }
 
+    // ===== MÉTODOS DELEGADOS AL STORE - TIPO DE CAMBIO =====
+
+    onTipoCambioChange(valorDetail: any, nuevoTipoCambio: number) {
+        this.inventarioEfectivoStore.onTipoCambioChange(valorDetail, nuevoTipoCambio);
     }
+
+    // ===== FIN MÉTODOS DELEGADOS =====
 
     // Método para obtener el turno seleccionado
     getSelectedTurno(): any {
@@ -412,15 +401,5 @@ export class InventarioEfectivoNew implements OnInit {
     // ===== FIN MÉTODOS PARA ACTUALIZAR TURNO Y OPERACIÓN ====
 
     // ===== FIN MÉTODOS TURNO Y OPERACIÓN =====
-
-    /**
-     * Open modal
-     * @param content modal content
-     */
-
-    openModal(content: any) {
-        this.submitted = false;
-        this.modalService.open(content, {size: 'md', centered: true});
-    }
 
 }

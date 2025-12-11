@@ -988,6 +988,75 @@ export class InventarioEfectivoStore extends SignalStore<IState> {
     );
   }
 
+  /**
+   * Actualiza el tipo de cambio de una categoría de valor y recalcula totales
+   */
+  onTipoCambioChange(valorDetail: any, nuevoTipoCambio: number) {
+    const state = this.vm();
+
+    // Actualizar el tipo de cambio del valorDetail
+    valorDetail.current_tc = Number(nuevoTipoCambio) || 1;
+
+    // Recalcular acumuladoConvertido para este valorDetail
+    if (valorDetail.denominaciones) {
+      let totalAcumuladoLocal = 0;
+      let totalAcumuladoConvertido = 0;
+
+      valorDetail.denominaciones.forEach((denom: any) => {
+        const importeLocal = Number(denom.importeLocal) || 0;
+        denom.importeConvertido = importeLocal * valorDetail.current_tc;
+
+        totalAcumuladoLocal += importeLocal;
+        totalAcumuladoConvertido += denom.importeConvertido;
+      });
+
+      valorDetail.acumuladoLocal = totalAcumuladoLocal;
+      valorDetail.acumuladoConvertido = totalAcumuladoConvertido;
+    }
+
+    // Recalcular totales generales
+    const valoresActualizados = state.valoresWithDetailsData?.map((v: any) => {
+      if (v === valorDetail || v.valor_id === valorDetail.valor_id) {
+        return valorDetail;
+      }
+      return v;
+    });
+
+    // Calcular el nuevo total convertido
+    const totalConvertido = valoresActualizados?.reduce(
+      (sum: number, v: any) => sum + (Number(v.acumuladoConvertido) || 0),
+      0
+    ) || 0;
+
+    // Calcular porcentajes
+    const valoresConPorcentaje = valoresActualizados?.map((valor: any) => {
+      const porcentaje = totalConvertido > 0
+        ? ((Number(valor.acumuladoConvertido) || 0) / totalConvertido) * 100
+        : 0;
+      return { ...valor, porcentaje };
+    });
+
+    // Actualizar summary
+    const valoresSummary = {
+      ...state.valoresSummary,
+      totalConvertido
+    };
+
+    // Actualizar chart
+    const valoresConDatos = valoresConPorcentaje?.filter((v: any) => (Number(v.acumuladoConvertido) || 0) > 0) || [];
+    const chartSummary = {
+      ...state.chartSummary,
+      series: valoresConDatos.map((v: any) => Number(v.acumuladoConvertido) || 0),
+      labels: valoresConDatos.map((v: any) => v.name || 'Sin nombre')
+    };
+
+    this.patch({
+      valoresWithDetailsData: valoresConPorcentaje,
+      valoresSummary,
+      chartSummary
+    });
+  }
+
   // ===== FIN MÉTODOS PARA GESTIONAR MOVIMIENTOS =====
 
 }
