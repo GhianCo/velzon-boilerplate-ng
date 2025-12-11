@@ -708,4 +708,286 @@ export class InventarioEfectivoStore extends SignalStore<IState> {
     this.patch({selectedOperacion: operacion});
   }
 
+  // ===== MÉTODOS PARA GESTIONAR CAJAS =====
+
+  /**
+   * Inicializa todas las cajas para todas las denominaciones
+   */
+  public initializeAllCajas() {
+    const state = this.vm();
+    const cajasData = state.cajasData;
+
+    if (!cajasData || cajasData.length === 0) {
+      return;
+    }
+
+    const valoresActualizados = state.valoresWithDetailsData?.map((valorDetail: any) => {
+      const denominacionesActualizadas = valorDetail.denominaciones?.map((denominacion: any) => {
+        if (!denominacion.cajas || Object.keys(denominacion.cajas).length === 0) {
+          const cajasObj: any = {};
+          cajasData.forEach((caja: any) => {
+            cajasObj[caja.caja_nombre] = 0;
+          });
+          return { ...denominacion, cajas: cajasObj };
+        }
+        return denominacion;
+      });
+
+      return { ...valorDetail, denominaciones: denominacionesActualizadas };
+    });
+
+    this.patch({ valoresWithDetailsData: valoresActualizados });
+  }
+
+  /**
+   * Incrementa la cantidad de una denominación en una caja específica
+   */
+  public incrementCantidadByCaja(denominacion: any, cajaNombre: string) {
+    const cantidadActual = denominacion.cajas?.[cajaNombre] || 0;
+    this.updateCantidadByCaja(denominacion, cajaNombre, cantidadActual + 1);
+  }
+
+  /**
+   * Decrementa la cantidad de una denominación en una caja específica
+   */
+  public decrementCantidadByCaja(denominacion: any, cajaNombre: string) {
+    const cantidadActual = denominacion.cajas?.[cajaNombre] || 0;
+    if (cantidadActual > 0) {
+      this.updateCantidadByCaja(denominacion, cajaNombre, cantidadActual - 1);
+    }
+  }
+
+  /**
+   * Actualiza la cantidad de una denominación en una caja específica
+   */
+  public onCantidadCajaChange(denominacion: any, cajaNombre: string, event: any) {
+    let nuevaCantidad = parseInt(event, 10);
+    if (isNaN(nuevaCantidad) || nuevaCantidad < 0) {
+      nuevaCantidad = 0;
+    }
+    this.updateCantidadByCaja(denominacion, cajaNombre, nuevaCantidad);
+  }
+
+  /**
+   * Actualiza la cantidad de una denominación en una caja y recalcula totales
+   */
+  private updateCantidadByCaja(denominacion: any, cajaNombre: string, nuevaCantidad: number) {
+    const state = this.vm();
+    const isCerrarMode = state.selectedOperacion === 'cierre';
+
+    const valoresActualizados = state.valoresWithDetailsData?.map((valorDetail: any) => {
+      const tipoCambio = valorDetail.current_tc || 1;
+      let acumuladoLocal = 0;
+      let acumuladoConvertido = 0;
+
+      const denominacionesActualizadas = valorDetail.denominaciones?.map((denom: any) => {
+        if (denom === denominacion || denom.denominacion_id === denominacion.denominacion_id) {
+          const cajasActualizadas = {
+            ...denom.cajas,
+            [cajaNombre]: Math.max(0, nuevaCantidad)
+          };
+
+          const cantidadTotal = Object.values(cajasActualizadas).reduce(
+            (sum: number, cant: any) => sum + (parseFloat(cant) || 0),
+            0
+          );
+
+          const valorUnitario = parseFloat(denom.valor) || 0;
+          const importeLocal = valorUnitario * cantidadTotal;
+          const importeConvertido = importeLocal * tipoCambio;
+
+          acumuladoLocal += importeLocal;
+          acumuladoConvertido += importeConvertido;
+
+          return {
+            ...denom,
+            cajas: cajasActualizadas,
+            cantidad: cantidadTotal,
+            cantidadTotal,
+            importeLocal,
+            importeConvertido
+          };
+        } else {
+          acumuladoLocal += denom.importeLocal || 0;
+          acumuladoConvertido += denom.importeConvertido || 0;
+          return denom;
+        }
+      });
+
+      return {
+        ...valorDetail,
+        denominaciones: denominacionesActualizadas,
+        acumuladoLocal,
+        acumuladoConvertido
+      };
+    });
+
+    // Calcular totales globales y porcentajes
+    const totalConvertido = valoresActualizados?.reduce(
+      (sum: number, v: any) => sum + (v.acumuladoConvertido || 0),
+      0
+    ) || 0;
+
+    const valoresConPorcentaje = valoresActualizados?.map((valor: any) => {
+      const porcentaje = totalConvertido > 0
+        ? ((valor.acumuladoConvertido || 0) / totalConvertido) * 100
+        : 0;
+      return { ...valor, porcentaje };
+    });
+
+    // Calcular total_real_turno basado en el modo
+    let totalRealTurno = totalConvertido;
+    if (isCerrarMode) {
+      const turnoData = this.getTurnoData();
+      const montoInicial = turnoData?.monto_inicial || 0;
+      const subtotalMovimientos = this.calculateSubtotalMovimientos();
+      totalRealTurno = montoInicial + subtotalMovimientos;
+    }
+
+    // Actualizar summary
+    const valoresSummary = {
+      ...state.valoresSummary,
+      totalConvertido,
+      total_real_turno: totalRealTurno,
+      suma_diaria_efectivo: totalRealTurno
+    };
+
+    // Actualizar chart
+    const valoresConDatos = valoresConPorcentaje?.filter((v: any) => v.acumuladoConvertido > 0) || [];
+    const chartSummary = {
+      ...state.chartSummary,
+      series: valoresConDatos.map((v: any) => v.acumuladoConvertido),
+      labels: valoresConDatos.map((v: any) => v.name || 'Sin nombre')
+    };
+
+    this.patch({
+      valoresWithDetailsData: valoresConPorcentaje,
+      valoresSummary,
+      chartSummary
+    });
+  }
+
+  // ===== MÉTODOS PARA GESTIONAR MOVIMIENTOS =====
+
+  /**
+   * Incrementa la cantidad de un movimiento
+   */
+  public incrementCantidadMovimiento(detail: any) {
+    const cantidadActual = parseFloat(detail.cantidad) || 0;
+    this.updateCantidadMovimiento(detail, cantidadActual + 1);
+  }
+
+  /**
+   * Decrementa la cantidad de un movimiento
+   */
+  public decrementCantidadMovimiento(detail: any) {
+    const cantidadActual = parseFloat(detail.cantidad) || 0;
+    this.updateCantidadMovimiento(detail, cantidadActual - 1);
+  }
+
+  /**
+   * Actualiza la cantidad de un movimiento desde el input
+   */
+  public onCantidadMovimientoChange(detail: any, event: any) {
+    let nuevaCantidad = parseFloat(event);
+    if (isNaN(nuevaCantidad)) {
+      nuevaCantidad = 0;
+    }
+    this.updateCantidadMovimiento(detail, nuevaCantidad);
+  }
+
+  /**
+   * Actualiza la cantidad de un movimiento y recalcula totales
+   */
+  private updateCantidadMovimiento(detail: any, nuevaCantidad: number) {
+    const state = this.vm();
+    const isCerrarMode = state.selectedOperacion === 'cierre';
+
+    const catMovActualizado = state.catMovWithDetailsData?.map((catMov: any) => {
+      const detailsActualizados = catMov.details?.map((d: any) => {
+        if (d === detail || d.sumdiamovimiento_id === detail.sumdiamovimiento_id) {
+          return { ...d, cantidad: nuevaCantidad };
+        }
+        return d;
+      });
+
+      const acumuladoLocal = detailsActualizados?.reduce(
+        (sum: number, d: any) => sum + (parseFloat(d.cantidad) || 0),
+        0
+      ) || 0;
+
+      return {
+        ...catMov,
+        details: detailsActualizados,
+        acumuladoLocal,
+        acumuladoConvertido: acumuladoLocal
+      };
+    });
+
+    // Recalcular total_real_turno si está en modo cierre
+    let totalRealTurno = state.valoresSummary.totalConvertido;
+    if (isCerrarMode) {
+      const turnoData = this.getTurnoData();
+      const montoInicial = turnoData?.monto_inicial || 0;
+      const subtotalMovimientos = this.calculateSubtotalMovimientos(catMovActualizado);
+      totalRealTurno = montoInicial + subtotalMovimientos;
+    }
+
+    const valoresSummary = {
+      ...state.valoresSummary,
+      total_real_turno: totalRealTurno,
+      suma_diaria_efectivo: totalRealTurno
+    };
+
+    this.patch({
+      catMovWithDetailsData: catMovActualizado,
+      valoresSummary
+    });
+  }
+
+  /**
+   * Calcula el subtotal de movimientos considerando operadores
+   */
+  private calculateSubtotalMovimientos(catMovData?: any[]): number {
+    const catMov = catMovData || this.vm().catMovWithDetailsData;
+    if (!catMov) return 0;
+
+    return catMov.reduce((total: number, catMovItem: any) => {
+      const subtotal = catMovItem.acumuladoLocal || 0;
+      const operador = catMovItem.operador;
+
+      if (operador === '+') {
+        return total + subtotal;
+      } else if (operador === '-') {
+        return total - subtotal;
+      } else if (operador === 'diff') {
+        // Para diff, sumar/restar según el signo de cada detail
+        const diffTotal = catMovItem.details?.reduce((sum: number, d: any) => {
+          return sum + (parseFloat(d.cantidad) || 0);
+        }, 0) || 0;
+        return total + diffTotal;
+      }
+      return total;
+    }, 0);
+  }
+
+  /**
+   * Obtiene los datos del turno desde inventarioEfectivoData
+   */
+  private getTurnoData(): any {
+    const state = this.vm();
+    const operacionTurnoId = state.selectedTurnoId;
+    const inventarioData = state.inventarioEfectivoData?.body;
+
+    if (!inventarioData || !operacionTurnoId) {
+      return null;
+    }
+
+    return inventarioData.find(
+      (item: any) => item.operacionturno_id === parseInt(operacionTurnoId)
+    );
+  }
+
+  // ===== FIN MÉTODOS PARA GESTIONAR MOVIMIENTOS =====
+
 }

@@ -162,26 +162,7 @@ export class InventarioEfectivoNew implements OnInit {
 
     // Inicializar cajas para todas las denominaciones
     initializeAllCajas() {
-        const vm = this.inventarioEfectivoStore.vm();
-        if (vm?.valoresWithDetailsData) {
-            vm.valoresWithDetailsData.forEach((valorDetail: any) => {
-                // Inicializar porcentaje en 0 para evitar NaN
-                if (!valorDetail.porcentaje || isNaN(valorDetail.porcentaje)) {
-                    valorDetail.porcentaje = 0;
-                }
-
-                if (valorDetail.denominaciones) {
-                    valorDetail.denominaciones.forEach((denominacion: any) => {
-                        this.initializeCajas(denominacion);
-                        // Calcular totales para cada denominación inicializada
-                        this.updateTotales(denominacion);
-                    });
-                }
-            });
-
-            // Asegurar que el chart se inicialice después de cargar los datos
-            this.updateTotalesGenerales();
-        }
+        this.inventarioEfectivoStore.initializeAllCajas();
     }
 
     saveInventario() {
@@ -231,230 +212,38 @@ export class InventarioEfectivoNew implements OnInit {
         });
     }
 
-    // Métodos para manejar cantidades por caja
+    // ===== MÉTODOS DELEGADOS AL STORE - CAJAS =====
+
+    getCajas(denominacion: any): any {
+        return denominacion.cajas || {};
+    }
+
     incrementCantidadByCaja(denominacion: any, caja: string) {
-        const cajas = this.getCajas(denominacion);
-        // Convertir a número antes de incrementar
-        const cantidadActual = Number(cajas[caja]) || 0;
-        cajas[caja] = cantidadActual + 1;
-        this.updateTotales(denominacion);
+        this.inventarioEfectivoStore.incrementCantidadByCaja(denominacion, caja);
     }
 
     decrementCantidadByCaja(denominacion: any, caja: string) {
-        const cajas = this.getCajas(denominacion);
-        // Convertir a número antes de decrementar
-        const cantidadActual = Number(cajas[caja]) || 0;
-        if (cantidadActual > 0) {
-            cajas[caja] = cantidadActual - 1;
-            this.updateTotales(denominacion);
-        }
+        this.inventarioEfectivoStore.decrementCantidadByCaja(denominacion, caja);
     }
 
-    onCantidadCajaChange(denominacion: any, caja: string, cantidad: number) {
-        const cajas = this.getCajas(denominacion);
-        // Convertir explícitamente a número para evitar concatenación
-        cajas[caja] = Math.max(0, Number(cantidad) || 0);
-        this.updateTotales(denominacion);
+    onCantidadCajaChange(denominacion: any, caja: string, event: any) {
+        this.inventarioEfectivoStore.onCantidadCajaChange(denominacion, caja, event);
     }
 
-    // Inicializar el objeto cajas si no existe
-    initializeCajas(denominacion: any) {
-        if (!denominacion.cajas) {
-            denominacion.cajas = {};
-        }
+    // ===== MÉTODOS DELEGADOS AL STORE - MOVIMIENTOS =====
 
-        // Obtener cajas dinámicas desde el store
-        const vm = this.inventarioEfectivoStore.vm();
-        if (vm?.cajasData) {
-            vm.cajasData.forEach((caja: any) => {
-                const cajaNombre = caja.caja_nombre;
-                if (denominacion.cajas[cajaNombre] === undefined) {
-                    denominacion.cajas[cajaNombre] = 0;
-                }
-            });
-        }
+    incrementCantidadMovimiento(detail: any) {
+        this.inventarioEfectivoStore.incrementCantidadMovimiento(detail);
     }
 
-    updateTotales(denominacion: any) {
-        // Asegurar que las cajas estén inicializadas
-        const cajas = this.getCajas(denominacion);
-
-        // Calcular total de cantidad por denominación dinámicamente
-        const vm = this.inventarioEfectivoStore.vm();
-        let cantidadTotal = 0;
-
-        if (vm?.cajasData) {
-            vm.cajasData.forEach((caja: any) => {
-                const cajaNombre = caja.caja_nombre;
-                // Convertir a número al sumar para evitar concatenación
-                cantidadTotal += Number(cajas[cajaNombre]) || 0;
-            });
-        }
-
-        // Asegurar que sean números
-        denominacion.cantidadTotal = Number(cantidadTotal) || 0;
-        const valor = Number(denominacion.valor) || 0;
-
-        // Calcular importe local
-        denominacion.importeLocal = denominacion.cantidadTotal * valor;
-
-
-        // Actualizar totales de la categoría completa
-        this.updateValorDetailTotales(denominacion);
+    decrementCantidadMovimiento(detail: any) {
+        this.inventarioEfectivoStore.decrementCantidadMovimiento(detail);
     }
 
-    // Nuevo método para calcular totales de toda la categoría de valor
-    updateValorDetailTotales(denominacionChanged: any) {
-        const vm = this.inventarioEfectivoStore.vm();
-        if (!vm?.valoresWithDetailsData) return;
-
-        // Buscar el valorDetail que contiene esta denominación
-        let valorDetailFound: any = null;
-
-        for (const valorDetail of vm.valoresWithDetailsData) {
-            if (valorDetail.denominaciones && valorDetail.denominaciones.length > 0) {
-                const found = valorDetail.denominaciones.find((denom: any) => denom === denominacionChanged);
-                if (found) {
-                    valorDetailFound = valorDetail;
-                    break;
-                }
-            }
-        }
-
-        if (valorDetailFound && valorDetailFound.denominaciones) {
-            // Convertir tipoCambio a número explícitamente
-            const tipoCambio = Number(valorDetailFound.current_tc) || 1;
-
-            // Recalcular totales sumando desde las denominaciones
-            let totalAcumuladoLocal = 0;
-            let totalAcumuladoConvertido = 0;
-
-            valorDetailFound.denominaciones.forEach((denominacion: any) => {
-                // Asegurar que importeLocal sea número
-                const importeLocal = Number(denominacion.importeLocal) || 0;
-
-                // Recalcular importeConvertido de cada denominación
-                denominacion.importeConvertido = importeLocal * tipoCambio;
-
-                totalAcumuladoLocal += importeLocal;
-                totalAcumuladoConvertido += denominacion.importeConvertido;
-            });
-
-            valorDetailFound.acumuladoLocal = totalAcumuladoLocal;
-            valorDetailFound.acumuladoConvertido = totalAcumuladoConvertido;
-
-
-            // Recalcular totales generales del store
-            this.updateTotalesGenerales();
-        }
+    onCantidadMovimientoChange(detail: any, event: any) {
+        this.inventarioEfectivoStore.onCantidadMovimientoChange(detail, event);
     }
 
-    // Método para manejar cambios en la diferencia
-    onDiferenciaChange(nuevaDiferencia: number) {
-        const vm = this.inventarioEfectivoStore.vm();
-        if (vm?.valoresSummary) {
-            vm.valoresSummary.diferencia = nuevaDiferencia || 0;
-
-            // Recalcular total real del turno
-            const totalConvertido = vm.valoresSummary.totalConvertido || 0;
-            const totalMovimientos = vm.valoresSummary.totalMovimientos || 0;
-            vm.valoresSummary.total_real_turno = totalConvertido + totalMovimientos + vm.valoresSummary.diferencia;
-            vm.valoresSummary.suma_diaria_efectivo = vm.valoresSummary.total_real_turno;
-
-            console.log('Diferencia actualizada:', {
-                diferencia: vm.valoresSummary.diferencia,
-                totalConvertido: totalConvertido,
-                totalMovimientos: totalMovimientos,
-                total_real_turno: vm.valoresSummary.total_real_turno
-            });
-        }
-    }
-
-    // Nuevo método para actualizar totales generales
-    updateTotalesGenerales() {
-        const vm = this.inventarioEfectivoStore.vm();
-        if (!vm?.valoresWithDetailsData) return;
-
-        // Calcular el total convertido general
-        let totalConvertido = 0;
-
-        vm.valoresWithDetailsData.forEach((valorDetail: any) => {
-            const acumulado = Number(valorDetail.acumuladoConvertido) || 0;
-            totalConvertido += acumulado;
-        });
-
-        // Actualizar el summary
-        if (vm.valoresSummary) {
-            vm.valoresSummary.totalConvertido = totalConvertido;
-
-            // Calcular porcentajes
-            vm.valoresWithDetailsData.forEach((valorDetail: any) => {
-                const acumulado = Number(valorDetail.acumuladoConvertido) || 0;
-                if (totalConvertido > 0) {
-                    valorDetail.porcentaje = (acumulado / totalConvertido) * 100;
-                } else {
-                    valorDetail.porcentaje = 0;
-                }
-            });
-
-            // Calcular suma diaria de efectivo (total + diferencia)
-            const diferencia = Number(vm.valoresSummary.diferencia) || 0;
-            vm.valoresSummary.suma_diaria_efectivo = totalConvertido + diferencia;
-
-            // 🔄 RECALCULAR total_real_turno según el modo
-            const totalMovimientos = Number(vm.valoresSummary.totalMovimientos) || 0;
-
-            if (vm.selectedOperacion === 'cierre' && this.turnoData?.monto_inicial) {
-                // Modo CIERRE: total_real_turno = monto_inicial + movimientos
-                const montoInicial = Number(this.turnoData.monto_inicial) || 0;
-                vm.valoresSummary.total_real_turno = montoInicial + totalMovimientos;
-            } else {
-                // Modo APERTURA: total_real_turno = totalConvertido + movimientos + diferencia
-                vm.valoresSummary.total_real_turno = totalConvertido + totalMovimientos + diferencia;
-            }
-
-            // Actualizar chartSummary solo con valores > 0
-            const valoresConDatos = vm.valoresWithDetailsData.filter((v: any) => {
-                const acumulado = Number(v.acumuladoConvertido) || 0;
-                return acumulado > 0;
-            });
-
-            vm.chartSummary = {
-                ...vm.chartSummary,
-                series: valoresConDatos.map((v: any) => Number(v.acumuladoConvertido) || 0),
-                labels: valoresConDatos.map((v: any) => v.name || 'Sin nombre')
-            };
-        }
-    }
-
-
-    // Método para manejar cambios en el tipo de cambio
-    onTipoCambioChange(valorDetail: any, nuevoTipoCambio: number) {
-        valorDetail.current_tc = nuevoTipoCambio;
-
-        // Recalcular el acumuladoConvertido
-        valorDetail.acumuladoConvertido = (valorDetail.acumuladoLocal || 0) * nuevoTipoCambio;
-
-        // Actualizar totales generales
-        this.updateTotalesGenerales();
-    }
-
-    getTotalByCaja(valorDetail: any, cajaNombre: string): number {
-        if (!valorDetail.denominaciones) return 0;
-
-        return valorDetail.denominaciones.reduce((total: number, denominacion: any) => {
-            const cajas = this.getCajas(denominacion);
-            return total + (cajas[cajaNombre] || 0);
-        }, 0);
-    }
-
-    // Nuevo método para obtener la cantidad total de todas las cajas de una categoría
-    getCantidadTotalGeneral(valorDetail: any): number {
-        if (!valorDetail.denominaciones) return 0;
-
-        return valorDetail.denominaciones.reduce((total: number, denominacion: any) => {
-            return total + (denominacion.cantidadTotal || 0);
-        }, 0);
     }
 
     // Método para obtener el turno seleccionado
@@ -480,182 +269,6 @@ export class InventarioEfectivoNew implements OnInit {
         };
     }
 
-    // ===== MÉTODOS PARA MANEJAR CATEGORÍAS DE MOVIMIENTO =====
-
-    // Métodos para manejar cantidades de movimientos (catMovWithDetailsData)
-    incrementCantidadMovimiento(detail: any) {
-        detail.cantidad = (detail.cantidad || 0) + 1;
-        this.updateTotalesMovimiento(detail);
-    }
-
-    decrementCantidadMovimiento(detail: any) {
-        const categoriaMovimiento = this.getCategoriaMovimientoByDetail(detail);
-        const operador = categoriaMovimiento?.tipo_operacion || categoriaMovimiento?.operador;
-
-        // Si es diferencia, permitir valores negativos
-        if (operador === 'diff' || operador === 'diferencia') {
-            detail.cantidad = (detail.cantidad || 0) - 1;
-        } else {
-            // Para otros tipos, solo decrementar si es mayor a 0
-            if (detail.cantidad && detail.cantidad > 0) {
-                detail.cantidad--;
-            }
-        }
-        this.updateTotalesMovimiento(detail);
-    }
-
-    onCantidadMovimientoChange(detail: any, cantidad: number) {
-        const categoriaMovimiento = this.getCategoriaMovimientoByDetail(detail);
-        const operador = categoriaMovimiento?.tipo_operacion || categoriaMovimiento?.operador;
-
-        // Si es diferencia, permitir valores negativos
-        if (operador === 'diff' || operador === 'diferencia') {
-            detail.cantidad = cantidad || 0;
-        } else {
-            // Para otros tipos, solo valores positivos
-            detail.cantidad = Math.max(0, cantidad || 0);
-        }
-        this.updateTotalesMovimiento(detail);
-    }
-
-    // Método auxiliar para obtener la categoría padre de un detail
-    getCategoriaMovimientoByDetail(detail: any): any {
-        const vm = this.inventarioEfectivoStore.vm();
-        if (vm?.catMovWithDetailsData) {
-            return vm.catMovWithDetailsData.find((cat: any) =>
-                cat.details && cat.details.includes(detail)
-            );
-        }
-        return null;
-    }
-
-    // Inicializar cantidades para movimientos
-    initializeMovimientos() {
-        const vm = this.inventarioEfectivoStore.vm();
-        if (vm?.catMovWithDetailsData) {
-            vm.catMovWithDetailsData.forEach((catMovimiento: any) => {
-                if (catMovimiento.details) {
-                    catMovimiento.details.forEach((detail: any) => {
-                        if (detail.cantidad === undefined || detail.cantidad === null) {
-                            detail.cantidad = 0;
-                        }
-                    });
-                }
-                // Inicializar totales
-                this.updateTotalesCategoriaMovimiento(catMovimiento);
-            });
-        }
-    }
-
-    // Actualizar totales para un detail específico
-    updateTotalesMovimiento(detail: any) {
-        // Buscar la categoría padre de este detail
-        const vm = this.inventarioEfectivoStore.vm();
-        if (vm?.catMovWithDetailsData) {
-            const categoriaMovimiento = vm.catMovWithDetailsData.find((cat: any) =>
-                cat.details && cat.details.includes(detail)
-            );
-
-            if (categoriaMovimiento) {
-                this.updateTotalesCategoriaMovimiento(categoriaMovimiento);
-            }
-        }
-    }
-
-    // Actualizar totales de toda la categoría de movimiento
-    updateTotalesCategoriaMovimiento(categoriaMovimiento: any) {
-        if (categoriaMovimiento && categoriaMovimiento.details) {
-            // Calcular acumuladoLocal sumando todas las cantidades
-            categoriaMovimiento.acumuladoLocal = categoriaMovimiento.details.reduce((total: number, detail: any) => {
-                return total + (detail.cantidad || 0);
-            }, 0);
-
-            // Para movimientos, acumuladoConvertido es igual a acumuladoLocal (en soles)
-            categoriaMovimiento.acumuladoConvertido = categoriaMovimiento.acumuladoLocal;
-
-            console.log(`Totales actualizados para ${categoriaMovimiento.nombre}:`, {
-                acumuladoLocal: categoriaMovimiento.acumuladoLocal,
-                acumuladoConvertido: categoriaMovimiento.acumuladoConvertido,
-                details: categoriaMovimiento.details.map((d: any) => ({
-                    nombre: d.nombre,
-                    cantidad: d.cantidad
-                }))
-            });
-
-            // Actualizar totales generales de movimientos
-            this.updateTotalesGeneralesMovimientos();
-        }
-    }
-
-    // Actualizar totales generales de todas las categorías de movimiento
-    updateTotalesGeneralesMovimientos() {
-        const vm = this.inventarioEfectivoStore.vm();
-        if (vm?.catMovWithDetailsData) {
-            // Calcular total general de movimientos con operadores
-            let totalMovimientos = 0;
-
-            vm.catMovWithDetailsData.forEach((categoriaMovimiento: any) => {
-                const montoCategoria = categoriaMovimiento.acumuladoConvertido || 0;
-
-                // Determinar el operador de la categoría
-                const operador = categoriaMovimiento.tipo_operacion || categoriaMovimiento.operador || '+';
-
-                switch (operador) {
-                    case '+':
-                        totalMovimientos += montoCategoria;
-                        break;
-                    case '-':
-                        totalMovimientos -= montoCategoria;
-                        break;
-                    case 'diff':
-                    case 'diferencia':
-                        // Para diferencias, sumamos el valor tal como está (puede ser positivo o negativo)
-                        totalMovimientos += montoCategoria;
-                        break;
-                    default:
-                        // Si no tiene operador, se considera neutro (no afecta el total)
-                        break;
-                }
-
-                console.log(`Categoría ${categoriaMovimiento.nombre}: ${operador}${montoCategoria} = ${totalMovimientos}`);
-            });
-
-            // Actualizar el summary de movimientos
-            if (vm.valoresSummary) {
-                vm.valoresSummary.totalMovimientos = totalMovimientos;
-
-                // 🔄 SOLO EN MODO CIERRE: calcular total_real_turno desde monto_inicial
-                if (vm.selectedOperacion === 'cierre' && this.turnoData?.monto_inicial) {
-                    // En modo cierre: base es monto_inicial + movimientos
-                    const montoInicial = Number(this.turnoData.monto_inicial) || 0;
-                    vm.valoresSummary.total_real_turno = montoInicial + totalMovimientos;
-                } else {
-                    // En modo apertura: base es totalConvertido + movimientos + diferencia
-                    const totalInventario = vm.valoresSummary.totalConvertido || 0;
-                    const diferencia = vm.valoresSummary.diferencia || 0;
-                    vm.valoresSummary.total_real_turno = totalInventario + totalMovimientos + diferencia;
-                }
-
-                vm.valoresSummary.suma_diaria_efectivo = vm.valoresSummary.total_real_turno;
-            }
-
-            console.log('Totales generales de movimientos actualizados:', {
-                modo: vm.selectedOperacion,
-                baseAmount: vm.selectedOperacion === 'cierre' ? this.turnoData?.monto_inicial : vm.valoresSummary?.totalConvertido,
-                totalMovimientos: totalMovimientos,
-                totalRealTurno: vm.valoresSummary?.total_real_turno
-            });
-        }
-    }
-
-    // Método para obtener la cantidad total de una categoría de movimiento
-    getCantidadTotalMovimiento(categoriaMovimiento: any): number {
-        if (!categoriaMovimiento.details) return 0;
-
-        return categoriaMovimiento.details.reduce((total: number, detail: any) => {
-            return total + (detail.cantidad || 0);
-        }, 0);
-    }
 
     // Método para obtener clases CSS según el tipo de operación
     getOperacionClass(tipoOperacion: string): string {
