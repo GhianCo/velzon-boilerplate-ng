@@ -83,9 +83,42 @@ export class ConfirmationService {
   /**
    * Abre un diálogo de confirmación con SweetAlert2
    * @param config Configuración del diálogo
-   * @returns Observable con el resultado
+   * @returns Observable con el resultado (requiere .subscribe() para capturar respuesta)
    */
   open(config: ConfirmationConfig = {}): Observable<ConfirmationResult> {
+    const swalPromise = this.createSwalPromise(config);
+    return from(swalPromise) as Observable<ConfirmationResult>;
+  }
+
+  /**
+   * Abre un diálogo de confirmación y ejecuta callback automáticamente
+   * NO requiere .subscribe() - útil para confirmaciones simples
+   * @param config Configuración del diálogo
+   * @param onConfirm Callback a ejecutar si el usuario confirma
+   * @param onCancel Callback opcional a ejecutar si el usuario cancela
+   * @param onDeny Callback opcional a ejecutar si el usuario deniega
+   */
+  openAndHandle(
+    config: ConfirmationConfig = {},
+    onConfirm?: () => void,
+    onCancel?: () => void,
+    onDeny?: () => void
+  ): void {
+    this.createSwalPromise(config).then((result) => {
+      if (result.isConfirmed && onConfirm) {
+        onConfirm();
+      } else if (result.isDenied && onDeny) {
+        onDeny();
+      } else if (result.isDismissed && onCancel) {
+        onCancel();
+      }
+    });
+  }
+
+  /**
+   * Método privado para crear la promesa de SweetAlert2
+   */
+  private createSwalPromise(config: ConfirmationConfig = {}): Promise<any> {
     // Merge de configuración por defecto con la del usuario
     const mergedConfig = this.mergeConfig(this._defaultConfig, config);
 
@@ -100,7 +133,7 @@ export class ConfirmationService {
     const cancelButtonColor = '#6c757d'; // Color secundario por defecto
 
     // Configurar SweetAlert2
-    const swalPromise = Swal.fire({
+    return Swal.fire({
       title: mergedConfig.title,
       text: mergedConfig.html ? undefined : mergedConfig.message,
       html: mergedConfig.html || undefined,
@@ -124,11 +157,6 @@ export class ConfirmationService {
       },
       buttonsStyling: true // Usar estilos de SweetAlert2 que funcionan mejor con HTML
     });
-
-    // Convertir la promesa a Observable y mapear el resultado
-    return from(swalPromise).pipe(
-      // map para transformar SweetAlertResult a ConfirmationResult si es necesario
-    ) as Observable<ConfirmationResult>;
   }
 
   /**
@@ -138,62 +166,178 @@ export class ConfirmationService {
     Swal.close();
   }
 
+  // ===== MÉTODOS SIMPLES (NO REQUIEREN SUBSCRIBE) =====
+
   /**
-   * Muestra un mensaje de éxito
+   * Muestra un mensaje de éxito - NO requiere .subscribe()
+   * @param title Título del mensaje
+   * @param message Mensaje opcional
+   * @param onConfirm Callback opcional cuando el usuario confirma
    */
-  success(title: string, message?: string): Observable<ConfirmationResult> {
+  success(title: string, message?: string, onConfirm?: () => void): void {
+    this.openAndHandle({
+      title,
+      message,
+      icon: { show: true, name: 'success' },
+      actions: {
+        confirm: { show: true, label: '✅ Aceptar', color: 'success' },
+        cancel: { show: false }
+      }
+    }, onConfirm);
+  }
+
+  /**
+   * Muestra un mensaje de error - NO requiere .subscribe()
+   * @param title Título del mensaje
+   * @param message Mensaje opcional
+   * @param onConfirm Callback opcional cuando el usuario confirma
+   */
+  error(title: string, message?: string, onConfirm?: () => void): void {
+    this.openAndHandle({
+      title,
+      message,
+      icon: { show: true, name: 'error' },
+      actions: {
+        confirm: { show: true, label: '✅ Aceptar', color: 'danger' },
+        cancel: { show: false }
+      }
+    }, onConfirm);
+  }
+
+  /**
+   * Muestra un mensaje de advertencia - NO requiere .subscribe()
+   * @param title Título del mensaje
+   * @param message Mensaje opcional
+   * @param onConfirm Callback opcional cuando el usuario confirma
+   */
+  warning(title: string, message?: string, onConfirm?: () => void): void {
+    this.openAndHandle({
+      title,
+      message,
+      icon: { show: true, name: 'warning' },
+      actions: {
+        confirm: { show: true, label: '✅ Aceptar', color: 'warning' },
+        cancel: { show: false }
+      }
+    }, onConfirm);
+  }
+
+  /**
+   * Muestra un mensaje de información - NO requiere .subscribe()
+   * @param title Título del mensaje
+   * @param message Mensaje opcional
+   * @param onConfirm Callback opcional cuando el usuario confirma
+   */
+  info(title: string, message?: string, onConfirm?: () => void): void {
+    this.openAndHandle({
+      title,
+      message,
+      icon: { show: true, name: 'info' },
+      actions: {
+        confirm: { show: true, label: '✅ Aceptar', color: 'info' },
+        cancel: { show: false }
+      }
+    }, onConfirm);
+  }
+
+  /**
+   * Confirmación simple de SI/NO - NO requiere .subscribe()
+   * @param title Título del mensaje
+   * @param message Mensaje de confirmación
+   * @param onConfirm Callback cuando el usuario confirma
+   * @param onCancel Callback opcional cuando el usuario cancela
+   */
+  confirm(
+    title: string,
+    message: string,
+    onConfirm: () => void,
+    onCancel?: () => void
+  ): void {
+    this.openAndHandle({
+      title,
+      message,
+      icon: { show: true, name: 'question' },
+      actions: {
+        confirm: { show: true, label: '✅ Sí', color: 'success' },
+        cancel: { show: true, label: '❌ No' }
+      }
+    }, onConfirm, onCancel);
+  }
+
+  // ===== VERSIONES OBSERVABLE (CUANDO NECESITAS CAPTURAR LA RESPUESTA) =====
+
+  /**
+   * Versión Observable de success - requiere .subscribe()
+   * Útil cuando necesitas hacer algo específico con la respuesta
+   */
+  success$(title: string, message?: string): Observable<ConfirmationResult> {
     return this.open({
       title,
       message,
       icon: { show: true, name: 'success' },
       actions: {
-        confirm: { show: true, label: 'Aceptar', color: 'success' },
+        confirm: { show: true, label: '✅ Aceptar', color: 'success' },
         cancel: { show: false }
       }
     });
   }
 
   /**
-   * Muestra un mensaje de error
+   * Versión Observable de error - requiere .subscribe()
    */
-  error(title: string, message?: string): Observable<ConfirmationResult> {
+  error$(title: string, message?: string): Observable<ConfirmationResult> {
     return this.open({
       title,
       message,
       icon: { show: true, name: 'error' },
       actions: {
-        confirm: { show: true, label: 'Aceptar', color: 'danger' },
+        confirm: { show: true, label: '✅ Aceptar', color: 'danger' },
         cancel: { show: false }
       }
     });
   }
 
   /**
-   * Muestra un mensaje de advertencia
+   * Versión Observable de warning - requiere .subscribe()
    */
-  warning(title: string, message?: string): Observable<ConfirmationResult> {
+  warning$(title: string, message?: string): Observable<ConfirmationResult> {
     return this.open({
       title,
       message,
       icon: { show: true, name: 'warning' },
       actions: {
-        confirm: { show: true, label: 'Aceptar', color: 'warning' },
+        confirm: { show: true, label: '✅ Aceptar', color: 'warning' },
         cancel: { show: false }
       }
     });
   }
 
   /**
-   * Muestra un mensaje de información
+   * Versión Observable de info - requiere .subscribe()
    */
-  info(title: string, message?: string): Observable<ConfirmationResult> {
+  info$(title: string, message?: string): Observable<ConfirmationResult> {
     return this.open({
       title,
       message,
       icon: { show: true, name: 'info' },
       actions: {
-        confirm: { show: true, label: 'Aceptar', color: 'info' },
+        confirm: { show: true, label: '✅ Aceptar', color: 'info' },
         cancel: { show: false }
+      }
+    });
+  }
+
+  /**
+   * Versión Observable de confirm - requiere .subscribe()
+   */
+  confirm$(title: string, message: string): Observable<ConfirmationResult> {
+    return this.open({
+      title,
+      message,
+      icon: { show: true, name: 'question' },
+      actions: {
+        confirm: { show: true, label: '✅ Sí', color: 'success' },
+        cancel: { show: true, label: '❌ No' }
       }
     });
   }

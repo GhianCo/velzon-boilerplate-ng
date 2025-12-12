@@ -101,7 +101,7 @@ function checkSSLErrorTypes(error: HttpErrorResponse): boolean {
  * Muestra una alerta usando el servicio de confirmación
  */
 function showSslErrorAlert(problematicUrl: string, confirmationService: ConfirmationService): void {
-  confirmationService.open({
+  confirmationService.openAndHandle({
     title: '⚠️ Error de Certificado SSL',
     html: `
       <div class="text-start">
@@ -137,18 +137,17 @@ function showSslErrorAlert(problematicUrl: string, confirmationService: Confirma
       }
     },
     dismissible: false
-  }).subscribe((result) => {
-    if (result.isConfirmed) {
-      // Usuario eligió abrir en nueva pestaña
-      openUrlInNewTab(problematicUrl, confirmationService);
-      resetSslAlertFlag();
-    } else if (result.isDenied) {
-      // Usuario eligió refrescar página
-      refreshPage();
-    } else {
-      // Usuario cerró el diálogo
-      resetSslAlertFlag();
-    }
+  },
+  // onConfirm - Abrir en nueva pestaña
+  () => {
+    openUrlInNewTab(problematicUrl, confirmationService);
+    resetSslAlertFlag();
+  },
+  // onCancel - No aplica (botón oculto)
+  undefined,
+  // onDeny - Refrescar página
+  () => {
+    refreshPage();
   });
 }
 
@@ -160,68 +159,33 @@ function openUrlInNewTab(url: string, confirmationService: ConfirmationService):
     const newTab = window.open(url, '_blank', 'noopener,noreferrer');
 
     if (!newTab) {
-      // Si el navegador bloquea pop-ups
-      confirmationService.open({
-        title: '🚫 Bloqueador de Pop-ups Detectado',
-        html: `
-          <div class="text-start">
-            <p class="mb-3">No se pudo abrir la nueva pestaña automáticamente.</p>
-            <p class="mb-2">Por favor, copie y pegue esta URL en una nueva pestaña:</p>
-            <div class="p-3 bg-light rounded">
-              <input type="text" class="form-control" value="${url}" readonly onclick="this.select()">
-            </div>
-            <small class="text-muted mt-2 d-block">Haga click en el campo para seleccionar y copiar</small>
+      // Si el navegador bloquea pop-ups - NO requiere .subscribe()
+      confirmationService.info(
+        '🚫 Bloqueador de Pop-ups Detectado',
+        `<div class="text-start">
+          <p class="mb-3">No se pudo abrir la nueva pestaña automáticamente.</p>
+          <p class="mb-2">Por favor, copie y pegue esta URL en una nueva pestaña:</p>
+          <div class="p-3 bg-light rounded">
+            <input type="text" class="form-control" value="${url}" readonly onclick="this.select()">
           </div>
-        `,
-        icon: {
-          show: true,
-          name: 'info',
-          color: 'info'
-        },
-        actions: {
-          confirm: {
-            show: true,
-            label: '✅ Entendido',
-            color: 'primary'
-          },
-          cancel: {
-            show: false
-          }
-        },
-        dismissible: true
-      }).subscribe();
+          <small class="text-muted mt-2 d-block">Haga click en el campo para seleccionar y copiar</small>
+        </div>`
+      );
     }
   } catch (error) {
     console.error('Error al abrir nueva pestaña:', error);
 
-    confirmationService.open({
-      title: '❌ Error al Abrir Nueva Pestaña',
-      html: `
-        <div class="text-start">
-          <p class="mb-3">Error al abrir nueva pestaña.</p>
-          <p class="mb-2">Por favor, copie y pegue esta URL manualmente:</p>
-          <div class="p-3 bg-light rounded">
-            <input type="text" class="form-control" value="${url}" readonly onclick="this.select()">
-          </div>
+    // NO requiere .subscribe()
+    confirmationService.error(
+      '❌ Error al Abrir Nueva Pestaña',
+      `<div class="text-start">
+        <p class="mb-3">Error al abrir nueva pestaña.</p>
+        <p class="mb-2">Por favor, copie y pegue esta URL manualmente:</p>
+        <div class="p-3 bg-light rounded">
+          <input type="text" class="form-control" value="${url}" readonly onclick="this.select()">
         </div>
-      `,
-      icon: {
-        show: true,
-        name: 'error',
-        color: 'error'
-      },
-      actions: {
-        confirm: {
-          show: true,
-          label: '✅ Entendido',
-          color: 'primary'
-        },
-        cancel: {
-          show: false
-        }
-      },
-      dismissible: true
-    }).subscribe();
+      </div>`
+    );
   }
 }
 

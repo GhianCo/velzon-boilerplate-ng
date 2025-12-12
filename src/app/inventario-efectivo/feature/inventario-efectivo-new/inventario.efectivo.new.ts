@@ -155,17 +155,19 @@ export class InventarioEfectivoNew implements OnInit {
 
         // Validar que se haya seleccionado turno y operación
         if (!vm.selectedTurnoId || !vm.selectedOperacion) {
+            // ✅ NO requiere .subscribe()
             this.confirmationService.warning(
                 '⚠️ Faltan datos',
                 'Por favor selecciona un turno y el tipo de operación antes de guardar.'
-            ).subscribe();
+            );
             return;
         }
 
         // En modo cierre usar turnoData, en apertura usar getSelectedTurno()
         const turnoInfo = this.isCerrarMode ? this.turnoData : this.getSelectedTurno();
 
-        this.confirmationService.open({
+        // ✅ Usar openAndHandle para NO requerir .subscribe()
+        this.confirmationService.openAndHandle({
             title: '✅ ¿Todos los datos son correctos?',
             html: `
                 <div class="text-start">
@@ -193,16 +195,11 @@ export class InventarioEfectivoNew implements OnInit {
                 }
             },
             dismissible: false
-        }).subscribe(result => {
-            if (result.isConfirmed) {
-                // Obtener turno_id desde turnoData (si está en modo cierre) o desde selectedTurnoId
-                const turnoId = this.turnoData?.turno_id || vm.selectedTurnoId;
-
-                // Pasar operacionturno_id solo si está en modo cierre
-                const operacionTurnoId = this.operacionTurnoId || null;
-
-                this.inventarioEfectivoStore.saveInventarioEfectivoWithDetils(turnoId, operacionTurnoId);
-            }
+        }, () => {
+            // onConfirm callback
+            const turnoId = this.turnoData?.turno_id || vm.selectedTurnoId;
+            const operacionTurnoId = this.operacionTurnoId || null;
+            this.inventarioEfectivoStore.saveInventarioEfectivoWithDetils(turnoId, operacionTurnoId);
         });
     }
 
