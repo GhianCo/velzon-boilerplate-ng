@@ -105,9 +105,10 @@
                 <div class="table-responsive" style="overflow-x: auto;">
                     <table class="table table-bordered mb-0" style="min-width: 100%;">
                         <thead>
+                        <!-- Fila 1: Agrupadores principales -->
                         <tr>
                             <!-- Columna Descripción (sticky) -->
-                            <th rowspan="2" class="text-center align-middle"
+                            <th rowspan="3" class="text-center align-middle"
                                 style="min-width: 200px; position: sticky; left: 0; background-color: white; z-index: 12; border-right: 2px solid #dee2e6;">
                                 Descripción
                             </th>
@@ -119,13 +120,28 @@
                             </th>
 
                             <!-- Grupo: Suma Diaria -->
-                            <th rowspan="2" class="text-center align-middle"
+                            <th rowspan="3" class="text-center align-middle"
                                 style="min-width: 250px; border-left: 2px solid #dee2e6;">
                                 <i class="ri-calculator-line me-2"></i>Suma Diaria de Efectivo
                             </th>
                         </tr>
+
+                        <!-- Fila 2: Inventario Apertura e Inventario Cierre -->
                         <tr>
-                            <!-- Sub-headers: Apertura -->
+                            <!-- Inventario de Apertura -->
+                            <th [attr.colspan]="resumenData.inventario_apertura.cajas.length + 1"
+                                class="text-center" style="border-bottom: 1px solid #dee2e6; background-color: #f8f9fa;">Apertura
+                            </th>
+
+                            <!-- Inventario de Cierre -->
+                            <th [attr.colspan]="resumenData.inventario_cierre.cajas.length + 1"
+                                class="text-center" style="border-bottom: 1px solid #dee2e6; background-color: #f8f9fa; border-right: 2px solid #dee2e6;">Cierre
+                            </th>
+                        </tr>
+
+                        <!-- Fila 3: Cajas individuales -->
+                        <tr>
+                            <!-- Cajas Apertura -->
                             @for (caja of resumenData.inventario_apertura.cajas; track caja.caja_id) {
                                 <th class="text-center"
                                     style="min-width: 100px; font-size: 0.85rem;">{{ caja.caja_nombre }}
@@ -133,7 +149,7 @@
                             }
                             <th class="text-center" style="min-width: 100px; background-color: #f8f9fa;">Total</th>
 
-                            <!-- Sub-headers: Cierre -->
+                            <!-- Cajas Cierre -->
                             @for (caja of resumenData.inventario_cierre.cajas; track caja.caja_id) {
                                 <th class="text-center"
                                     style="min-width: 100px; font-size: 0.85rem;">{{ caja.caja_nombre }}
