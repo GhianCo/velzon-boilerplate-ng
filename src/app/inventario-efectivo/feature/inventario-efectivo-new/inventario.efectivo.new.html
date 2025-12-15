@@ -259,7 +259,7 @@
                                       (click)="decrementCantidadByCaja(denominacion, caja.caja_nombre); $event.stopPropagation()">
                                 <i class="ri-subtract-line"></i>
                               </button>
-                              <input type="number" class="form-control text-center" min="0"
+                              <input type="number" class="form-control text-center" min="0" step="0.01"
                                      [(ngModel)]="getCajas(denominacion)[caja.caja_nombre]"
                                      (ngModelChange)="onCantidadCajaChange(denominacion, caja.caja_nombre, $event)"
                                      (click)="$event.stopPropagation()"
@@ -350,7 +350,7 @@
                                       (click)="decrementCantidadMovimiento(detail)">
                                 <i class="ri-subtract-line"></i>
                               </button>
-                              <input type="number" class="form-control text-center"
+                              <input type="number" class="form-control text-center" min="0" step="0.01"
                                      [(ngModel)]="detail.cantidad"
                                      (ngModelChange)="onCantidadMovimientoChange(detail, $event)"
                                      style="max-width: 80px;">

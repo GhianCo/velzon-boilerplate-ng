@@ -761,7 +761,8 @@ export class InventarioEfectivoStore extends SignalStore<IState> {
    * Actualiza la cantidad de una denominación en una caja específica
    */
   public onCantidadCajaChange(denominacion: any, cajaNombre: string, event: any) {
-    let nuevaCantidad = parseInt(event, 10);
+    // Usar parseFloat en lugar de parseInt para soportar decimales
+    let nuevaCantidad = parseFloat(event);
     if (isNaN(nuevaCantidad) || nuevaCantidad < 0) {
       nuevaCantidad = 0;
     }
