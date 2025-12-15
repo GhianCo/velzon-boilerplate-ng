@@ -1,242 +1,269 @@
 <div class="container-fluid">
-  <app-breadcrumbs [title]="'Resumen de Turno'" [breadcrumbItems]="breadCrumbItems"></app-breadcrumbs>
+    <app-breadcrumbs [title]="'Resumen de Turno'" [breadcrumbItems]="breadCrumbItems"></app-breadcrumbs>
 
-  @if (isLoading) {
-    <div class="text-center py-5">
-      <div class="spinner-border text-primary" role="status">
-        <span class="visually-hidden">Cargando...</span>
-      </div>
-      <p class="mt-3">Cargando resumen...</p>
-    </div>
-  } @else if (hasError) {
-    <div class="card border-danger">
-      <div class="card-body text-center py-5">
-        <i class="ri-error-warning-line text-danger" style="font-size: 72px;"></i>
-        <h4 class="text-danger mt-3">Error al cargar</h4>
-        <button class="btn btn-primary mt-3" (click)="loadResumen(operacionTurnoId!)">
-          Reintentar
-        </button>
-      </div>
-    </div>
-  } @else if (resumenData) {
-    <!-- Header Turno -->
-    <div class="card mb-4">
-      <div class="card-body">
-        <div class="row">
-          <div class="col-md-3">
-            <p class="text-muted mb-1">Turno</p>
-            <h5>{{ resumenData.turno_nombre }}</h5>
-          </div>
-          <div class="col-md-3">
-            <p class="text-muted mb-1">Apertura</p>
-            <p>{{ resumenData.apertura }}</p>
-          </div>
-          <div class="col-md-3">
-            <p class="text-muted mb-1">Cierre</p>
-            <p>{{ resumenData.cierre }}</p>
-          </div>
-          <div class="col-md-3">
-            <p class="text-muted mb-1">Sala</p>
-            <p>{{ resumenData.sala }}</p>
-          </div>
+    @if (isLoading) {
+        <div class="text-center py-5">
+            <div class="spinner-border text-primary" role="status">
+                <span class="visually-hidden">Cargando...</span>
+            </div>
+            <p class="mt-3">Cargando resumen...</p>
         </div>
-      </div>
-    </div>
+    } @else if (hasError) {
+        <div class="card border-danger">
+            <div class="card-body text-center py-5">
+                <i class="ri-error-warning-line text-danger" style="font-size: 72px;"></i>
+                <h4 class="text-danger mt-3">Error al cargar</h4>
+                <button class="btn btn-primary mt-3" (click)="loadResumen(operacionTurnoId!)">
+                    Reintentar
+                </button>
+            </div>
+        </div>
+    } @else if (resumenData) {
+        <!-- Resumen del Turno -->
+        <div class="row mb-4">
+            <!-- Card: Información del Turno (3 columnas visuales) -->
+            <div class="col-md-5">
+                <div class="card h-100">
+                    <div class="card-body">
+                        <h6 class="text-muted mb-3 fs-13">
+                            <i class="ri-time-line me-1"></i>Información del Turno
+                        </h6>
+                        <div class="row g-3">
+                            <div class="col-4">
+                                <div class="p-3 border border-dashed rounded">
+                                    <p class="text-muted mb-2 fs-12">
+                                        {{ resumenData.turno_nombre }}
+                                    </p>
+                                    <h6 class="mb-0">{{ resumenData.sala }}</h6>
+                                </div>
+                            </div>
+                            <div class="col-4">
+                                <div class="p-3 border border-dashed rounded">
+                                    <p class="text-muted mb-2 fs-12">
+                                        <i class="ri-login-circle-line me-1"></i>Apertura
+                                    </p>
+                                    <h6 class="mb-0">{{ resumenData.apertura }}</h6>
+                                </div>
+                            </div>
+                            <div class="col-4">
+                                <div class="p-3 border border-dashed rounded">
+                                    <p class="text-muted mb-2 fs-12">
+                                        <i class="ri-logout-circle-line me-1"></i>Cierre
+                                    </p>
+                                    <h6 class="mb-0">{{ resumenData.cierre }}</h6>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
 
-    <!-- TABLA UNIFICADA HORIZONTAL -->
-    <div class="card">
-      <div class="card-body p-0">
-        <div class="table-responsive" style="overflow-x: auto;">
-          <table class="table table-bordered mb-0" style="min-width: 100%;">
-            <thead>
-              <tr>
-                <!-- Columna Descripción (sticky) -->
-                <th rowspan="2" class="text-center align-middle"
-                    style="min-width: 200px; position: sticky; left: 0; background-color: white; z-index: 12; border-right: 2px solid #dee2e6;">
-                  Descripción
-                </th>
+            <!-- Card: Resumen Financiero (4 columnas visuales) -->
+            <div class="col-md-7">
+                <div class="card h-100">
+                    <div class="card-body">
+                        <h6 class="text-muted mb-3 fs-13">
+                            <i class="ri-money-dollar-circle-line me-1"></i>Resumen Financiero
+                        </h6>
+                        <div class="row g-3">
+                            <div class="col-3">
+                                <div class="p-3 border border-dashed rounded text-center">
+                                    <p class="text-muted mb-2 fs-12">Total Apertura</p>
+                                    <h5 class="mb-0">{{ resumenData.simbolo_moneda }} {{ resumenData.inventario_apertura.total.toFixed(2) }}</h5>
+                                </div>
+                            </div>
+                            <div class="col-3">
+                                <div class="p-3 border border-dashed rounded text-center">
+                                    <p class="text-muted mb-2 fs-12">Total Cierre</p>
+                                    <h5 class="mb-0">{{ resumenData.simbolo_moneda }} {{ resumenData.inventario_cierre.total.toFixed(2) }}</h5>
+                                </div>
+                            </div>
+                            <div class="col-3">
+                                <div class="p-3 border border-dashed border-success rounded text-center">
+                                    <p class="text-success mb-2 fs-12">
+                                        <i class="ri-arrow-up-circle-fill me-1"></i>Ingresos
+                                    </p>
+                                    <h5 class="mb-0 text-success">{{ resumenData.simbolo_moneda }} {{ resumenData.suma_diaria.subtotales.ingresos.toFixed(2) }}</h5>
+                                </div>
+                            </div>
+                            <div class="col-3">
+                                <div class="p-3 border border-dashed border-danger rounded text-center">
+                                    <p class="text-danger mb-2 fs-12">
+                                        <i class="ri-arrow-down-circle-fill me-1"></i>Egresos
+                                    </p>
+                                    <h5 class="mb-0 text-danger">{{ resumenData.simbolo_moneda }} {{ resumenData.suma_diaria.subtotales.egresos.toFixed(2) }}</h5>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!-- TABLA UNIFICADA HORIZONTAL -->
+        <div class="card">
+            <div class="card-body p-0">
+                <div class="table-responsive" style="overflow-x: auto;">
+                    <table class="table table-bordered mb-0" style="min-width: 100%;">
+                        <thead>
+                        <tr>
+                            <!-- Columna Descripción (sticky) -->
+                            <th rowspan="2" class="text-center align-middle"
+                                style="min-width: 200px; position: sticky; left: 0; background-color: white; z-index: 12; border-right: 2px solid #dee2e6;">
+                                Descripción
+                            </th>
 
-                <!-- Grupo: Inventario de Efectivo -->
-                <th [attr.colspan]="(resumenData.inventario_apertura.cajas.length * 2) + 2"
-                    class="text-center" style="border-bottom: 2px solid #dee2e6;">
-                  <i class="ri-inbox-line me-2"></i>Inventario de Efectivo
-                </th>
+                            <!-- Grupo: Inventario de Efectivo -->
+                            <th [attr.colspan]="(resumenData.inventario_apertura.cajas.length * 2) + 2"
+                                class="text-center" style="border-bottom: 2px solid #dee2e6;">
+                                <i class="ri-inbox-line me-2"></i>Inventario de Efectivo
+                            </th>
 
-                <!-- Grupo: Suma Diaria -->
-                <th rowspan="2" class="text-center align-middle" style="min-width: 250px; border-left: 2px solid #dee2e6;">
-                  <i class="ri-calculator-line me-2"></i>Suma Diaria de Efectivo
-                </th>
-              </tr>
-              <tr>
-                <!-- Sub-headers: Apertura -->
-                @for (caja of resumenData.inventario_apertura.cajas; track caja.caja_id) {
-                  <th class="text-center" style="min-width: 100px; font-size: 0.85rem;">{{ caja.caja_nombre }}</th>
-                }
-                <th class="text-center" style="min-width: 100px; background-color: #f8f9fa;">Total</th>
+                            <!-- Grupo: Suma Diaria -->
+                            <th rowspan="2" class="text-center align-middle"
+                                style="min-width: 250px; border-left: 2px solid #dee2e6;">
+                                <i class="ri-calculator-line me-2"></i>Suma Diaria de Efectivo
+                            </th>
+                        </tr>
+                        <tr>
+                            <!-- Sub-headers: Apertura -->
+                            @for (caja of resumenData.inventario_apertura.cajas; track caja.caja_id) {
+                                <th class="text-center"
+                                    style="min-width: 100px; font-size: 0.85rem;">{{ caja.caja_nombre }}
+                                </th>
+                            }
+                            <th class="text-center" style="min-width: 100px; background-color: #f8f9fa;">Total</th>
 
-                <!-- Sub-headers: Cierre -->
-                @for (caja of resumenData.inventario_cierre.cajas; track caja.caja_id) {
-                  <th class="text-center" style="min-width: 100px; font-size: 0.85rem;">{{ caja.caja_nombre }}</th>
-                }
-                <th class="text-center" style="min-width: 100px; background-color: #f8f9fa; border-right: 2px solid #dee2e6;">Total</th>
-              </tr>
-            </thead>
-            <tbody>
-              <!-- Iterar por valores (Fichas, Soles, Dólares) -->
-              @for (valor of resumenData.inventario_apertura.valores; track valor.valor_id; let vIdx = $index) {
-                <!-- Header de grupo -->
-                <tr style="background-color: #f8f9fa;">
-                  <td class="fw-bold" style="position: sticky; left: 0; background-color: #f8f9fa; z-index: 10; border-right: 2px solid #dee2e6;">
-                    <i class="ri-checkbox-blank-circle-fill me-2" style="font-size: 8px;"></i>
-                    {{ valor.nombre }}
-                  </td>
-                  <td [attr.colspan]="(resumenData.inventario_apertura.cajas.length * 2) + 2"></td>
-                  <td style="background-color: #f8f9fa; border-left: 2px solid #dee2e6;"></td>
-                </tr>
+                            <!-- Sub-headers: Cierre -->
+                            @for (caja of resumenData.inventario_cierre.cajas; track caja.caja_id) {
+                                <th class="text-center"
+                                    style="min-width: 100px; font-size: 0.85rem;">{{ caja.caja_nombre }}
+                                </th>
+                            }
+                            <th class="text-center"
+                                style="min-width: 100px; background-color: #f8f9fa; border-right: 2px solid #dee2e6;">
+                                Total
+                            </th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        <!-- Iterar por valores (Fichas, Soles, Dólares) -->
+                            @for (valor of resumenData.inventario_apertura.valores; track valor.valor_id; let vIdx = $index) {
+                                <!-- Header de grupo -->
+                                <tr style="background-color: #f8f9fa;">
+                                    <td class="fw-bold"
+                                        style="position: sticky; left: 0; background-color: #f8f9fa; z-index: 10; border-right: 2px solid #dee2e6;">
+                                        <i class="ri-checkbox-blank-circle-fill me-2" style="font-size: 8px;"></i>
+                                        {{ valor.nombre }}
+                                    </td>
+                                    <td [attr.colspan]="(resumenData.inventario_apertura.cajas.length * 2) + 2"></td>
+                                    <td style="background-color: #f8f9fa; border-left: 2px solid #dee2e6;"></td>
+                                </tr>
 
-                <!-- Filas de denominaciones -->
-                @for (denominacion of valor.denominaciones; track denominacion.denominacion_id; let dIdx = $index) {
-                  <tr>
-                    <!-- Denominación (sticky) -->
-                    <td style="position: sticky; left: 0; background-color: white; z-index: 10; border-right: 2px solid #dee2e6;">
-                      {{ denominacion.descripcion }}
-                    </td>
+                                <!-- Filas de denominaciones -->
+                                @for (denominacion of valor.denominaciones; track denominacion.denominacion_id; let dIdx = $index) {
+                                    <tr>
+                                        <!-- Denominación (sticky) -->
+                                        <td style="position: sticky; left: 0; background-color: white; z-index: 10; border-right: 2px solid #dee2e6;">
+                                            {{ denominacion.descripcion }}
+                                        </td>
 
-                    <!-- Cantidades Apertura -->
-                    @for (cajaData of denominacion.cajas; track cajaData.caja_id) {
-                      <td class="text-center align-middle">
-                        @if (cajaData.cantidad > 0) {
-                          <div class="d-flex align-items-center justify-content-center gap-1">
-                            <button class="btn btn-sm btn-outline-secondary"
-                                    style="width: 28px; height: 28px; padding: 0; font-size: 16px; line-height: 1;">
-                              −
-                            </button>
-                            <span class="fw-medium mx-1" style="min-width: 35px; display: inline-block;">
+                                        <!-- Cantidades Apertura -->
+                                        @for (cajaData of denominacion.cajas; track cajaData.caja_id) {
+                                            <td class="text-center align-middle">
+                                                @if (cajaData.cantidad > 0) {
+                                                    <div class="d-flex align-items-center justify-content-center gap-1">
+                                                        <button class="btn btn-sm btn-outline-secondary"
+                                                                style="width: 28px; height: 28px; padding: 0; font-size: 16px; line-height: 1;">
+                                                            −
+                                                        </button>
+                                                        <span class="fw-medium mx-1"
+                                                              style="min-width: 35px; display: inline-block;">
                               {{ cajaData.cantidad }}
                             </span>
-                            <button class="btn btn-sm btn-outline-primary"
-                                    style="width: 28px; height: 28px; padding: 0; font-size: 16px; line-height: 1;">
-                              +
-                            </button>
-                          </div>
-                        } @else {
-                          <span class="text-muted">−</span>
-                        }
-                      </td>
-                    }
-                    <!-- Total Apertura -->
-                    <td class="text-center align-middle" style="background-color: #f8f9fa;">
-                      <strong>{{ resumenData.simbolo_moneda }} {{ denominacion.total_importe.toFixed(2) }}</strong>
-                    </td>
+                                                        <button class="btn btn-sm btn-outline-primary"
+                                                                style="width: 28px; height: 28px; padding: 0; font-size: 16px; line-height: 1;">
+                                                            +
+                                                        </button>
+                                                    </div>
+                                                } @else {
+                                                    <span class="text-muted">−</span>
+                                                }
+                                            </td>
+                                        }
+                                        <!-- Total Apertura -->
+                                        <td class="text-center align-middle" style="background-color: #f8f9fa;">
+                                            <strong>{{ resumenData.simbolo_moneda }} {{ denominacion.total_importe.toFixed(2) }}</strong>
+                                        </td>
 
-                    <!-- Cantidades Cierre -->
-                    @if (resumenData.inventario_cierre.valores[vIdx]?.denominaciones[dIdx]) {
-                      @for (cajaData of resumenData.inventario_cierre.valores[vIdx].denominaciones[dIdx].cajas; track cajaData.caja_id) {
-                        <td class="text-center align-middle">
-                          @if (cajaData.cantidad > 0) {
-                            <div class="d-flex align-items-center justify-content-center gap-1">
-                              <button class="btn btn-sm btn-outline-secondary"
-                                      style="width: 28px; height: 28px; padding: 0; font-size: 16px; line-height: 1;">
-                                −
-                              </button>
-                              <span class="fw-medium mx-1" style="min-width: 35px; display: inline-block;">
+                                        <!-- Cantidades Cierre -->
+                                        @if (resumenData.inventario_cierre.valores[vIdx]?.denominaciones[dIdx]) {
+                                            @for (cajaData of resumenData.inventario_cierre.valores[vIdx].denominaciones[dIdx].cajas; track cajaData.caja_id) {
+                                                <td class="text-center align-middle">
+                                                    @if (cajaData.cantidad > 0) {
+                                                        <div class="d-flex align-items-center justify-content-center gap-1">
+                                                            <button class="btn btn-sm btn-outline-secondary"
+                                                                    style="width: 28px; height: 28px; padding: 0; font-size: 16px; line-height: 1;">
+                                                                −
+                                                            </button>
+                                                            <span class="fw-medium mx-1"
+                                                                  style="min-width: 35px; display: inline-block;">
                                 {{ cajaData.cantidad }}
                               </span>
-                              <button class="btn btn-sm btn-outline-primary"
-                                      style="width: 28px; height: 28px; padding: 0; font-size: 16px; line-height: 1;">
-                                +
-                              </button>
-                            </div>
-                          } @else {
-                            <span class="text-muted">−</span>
-                          }
-                        </td>
-                      }
-                      <!-- Total Cierre -->
-                      <td class="text-center align-middle" style="background-color: #f8f9fa; border-right: 2px solid #dee2e6;">
-                        <strong>{{ resumenData.simbolo_moneda }} {{ resumenData.inventario_cierre.valores[vIdx].denominaciones[dIdx].total_importe.toFixed(2) }}</strong>
-                      </td>
-                    } @else {
-                      @for (caja of resumenData.inventario_cierre.cajas; track caja.caja_id) {
-                        <td class="text-center"><span class="text-muted">−</span></td>
-                      }
-                      <td class="text-center" style="background-color: #f8f9fa; border-right: 2px solid #dee2e6;">
-                        <span class="text-muted">−</span>
-                      </td>
-                    }
+                                                            <button class="btn btn-sm btn-outline-primary"
+                                                                    style="width: 28px; height: 28px; padding: 0; font-size: 16px; line-height: 1;">
+                                                                +
+                                                            </button>
+                                                        </div>
+                                                    } @else {
+                                                        <span class="text-muted">−</span>
+                                                    }
+                                                </td>
+                                            }
+                                            <!-- Total Cierre -->
+                                            <td class="text-center align-middle"
+                                                style="background-color: #f8f9fa; border-right: 2px solid #dee2e6;">
+                                                <strong>{{ resumenData.simbolo_moneda }} {{ resumenData.inventario_cierre.valores[vIdx].denominaciones[dIdx].total_importe.toFixed(2) }}</strong>
+                                            </td>
+                                        } @else {
+                                            @for (caja of resumenData.inventario_cierre.cajas; track caja.caja_id) {
+                                                <td class="text-center"><span class="text-muted">−</span></td>
+                                            }
+                                            <td class="text-center"
+                                                style="background-color: #f8f9fa; border-right: 2px solid #dee2e6;">
+                                                <span class="text-muted">−</span>
+                                            </td>
+                                        }
 
-                    <!-- Suma Diaria (items alineados con denominaciones) -->
-                    <td class="align-middle" style="border-left: 2px solid #dee2e6;">
-                      <!-- Aquí va el item correspondiente de suma diaria si existe -->
-                      @if (resumenData.suma_diaria.categorias[0]?.items[dIdx + (vIdx * 10)]) {
-                        <div class="d-flex align-items-center justify-content-between px-2">
-                          <span class="text-truncate me-2" style="max-width: 150px; font-size: 0.9rem;">
-                            {{ resumenData.suma_diaria.categorias[0].items[dIdx + (vIdx * 10)].nombre }}
-                          </span>
-                          <div class="d-flex align-items-center gap-1">
-                            <button class="btn btn-sm btn-outline-secondary"
-                                    style="width: 28px; height: 28px; padding: 0; font-size: 16px; line-height: 1;">
-                              −
-                            </button>
-                            <button class="btn btn-sm btn-outline-primary"
-                                    style="width: 28px; height: 28px; padding: 0; font-size: 16px; line-height: 1;">
-                              +
-                            </button>
-                          </div>
-                        </div>
-                      }
-                    </td>
-                  </tr>
-                }
-              }
+                                        <!-- Suma Diaria (items alineados con denominaciones) -->
+                                        <td class="align-middle" style="border-left: 2px solid #dee2e6;">
+                                            <!-- Espacio vacío para mantener estructura -->
+                                        </td>
+                                    </tr>
+                                }
+                            }
 
-              <!-- Fila de TOTALES -->
-              <tr style="background-color: #e9ecef; font-weight: bold;">
-                <td style="position: sticky; left: 0; background-color: #e9ecef; z-index: 10; border-right: 2px solid #dee2e6;">
-                  TOTAL
-                </td>
-                <td [attr.colspan]="resumenData.inventario_apertura.cajas.length" class="text-end"></td>
-                <td class="text-center">
-                  {{ resumenData.simbolo_moneda }} {{ resumenData.inventario_apertura.total.toFixed(2) }}
-                </td>
-                <td [attr.colspan]="resumenData.inventario_cierre.cajas.length" class="text-end"></td>
-                <td class="text-center" style="border-right: 2px solid #dee2e6;">
-                  {{ resumenData.simbolo_moneda }} {{ resumenData.inventario_cierre.total.toFixed(2) }}
-                </td>
-                <td class="text-center" style="border-left: 2px solid #dee2e6;">
-                  {{ resumenData.simbolo_moneda }} {{ resumenData.suma_diaria.total.toFixed(2) }}
-                </td>
-              </tr>
-            </tbody>
-          </table>
+                        <!-- Fila de TOTALES -->
+                        <tr style="background-color: #e9ecef; font-weight: bold;">
+                            <td style="position: sticky; left: 0; background-color: #e9ecef; z-index: 10; border-right: 2px solid #dee2e6;">
+                                TOTAL
+                            </td>
+                            <td [attr.colspan]="resumenData.inventario_apertura.cajas.length" class="text-end"></td>
+                            <td class="text-center">
+                                {{ resumenData.simbolo_moneda }} {{ resumenData.inventario_apertura.total.toFixed(2) }}
+                            </td>
+                            <td [attr.colspan]="resumenData.inventario_cierre.cajas.length" class="text-end"></td>
+                            <td class="text-center" style="border-right: 2px solid #dee2e6;">
+                                {{ resumenData.simbolo_moneda }} {{ resumenData.inventario_cierre.total.toFixed(2) }}
+                            </td>
+                            <td class="text-center" style="border-left: 2px solid #dee2e6;">
+                                {{ resumenData.simbolo_moneda }} {{ resumenData.suma_diaria.total.toFixed(2) }}
+                            </td>
+                        </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
         </div>
-      </div>
-    </div>
-
-    <!-- Subtotales de Suma Diaria -->
-    <div class="card mt-4">
-      <div class="card-body">
-        <div class="row text-center">
-          <div class="col-md-3">
-            <h6 class="text-muted">Ingresos</h6>
-            <h4 class="text-success">{{ resumenData.simbolo_moneda }} {{ resumenData.suma_diaria.subtotales.ingresos.toFixed(2) }}</h4>
-          </div>
-          <div class="col-md-3">
-            <h6 class="text-muted">Egresos</h6>
-            <h4 class="text-danger">{{ resumenData.simbolo_moneda }} {{ resumenData.suma_diaria.subtotales.egresos.toFixed(2) }}</h4>
-          </div>
-          <div class="col-md-3">
-            <h6 class="text-muted">Diferencias</h6>
-            <h4 class="text-warning">{{ resumenData.simbolo_moneda }} {{ resumenData.suma_diaria.subtotales.diferencias.toFixed(2) }}</h4>
-          </div>
-          <div class="col-md-3">
-            <h6 class="text-muted">Total</h6>
-            <h4 class="text-primary">{{ resumenData.simbolo_moneda }} {{ resumenData.suma_diaria.total.toFixed(2) }}</h4>
-          </div>
-        </div>
-      </div>
-    </div>
-
-  }
+    }
 </div>
 
