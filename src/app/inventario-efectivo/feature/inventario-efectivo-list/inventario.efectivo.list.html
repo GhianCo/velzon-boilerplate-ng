@@ -44,11 +44,11 @@
                                 style="cursor: pointer;"
                                 (click)="openFilters(filterscontent)">
                             <i class="ri-calendar-line"></i>
-                            @if (inventarioEfectivoStore.vm().filtersToApply?.startDate && inventarioEfectivoStore.vm().filtersToApply?.endDate) {
+                            @if (vm.filtersToApply?.startDate && vm.filtersToApply?.endDate) {
                               <span>
                                 <strong>Rango de fechas:</strong>
-                                {{ inventarioEfectivoStore.vm().filtersToApply.startDate | date: 'dd/MM/yyyy' }} -
-                                {{ inventarioEfectivoStore.vm().filtersToApply.endDate | date: 'dd/MM/yyyy' }}
+                                {{ vm.filtersToApply.startDate | date: 'dd/MM/yyyy' }} -
+                                {{ vm.filtersToApply.endDate | date: 'dd/MM/yyyy' }}
                               </span>
                             } @else {
                               <span><strong>Rango de fechas:</strong> Seleccionar</span>
@@ -56,10 +56,10 @@
                           </span>
 
                           <!-- Filtro de Turno (removible) -->
-                          @if (inventarioEfectivoStore.vm().filtersToApply?.turno_id &&
-                               inventarioEfectivoStore.vm().filtersToApply.turno_id !== -1) {
-                            @for (turno of inventarioEfectivoStore.vm().turnosData; track turno.turno_id) {
-                              @if (turno.turno_id === inventarioEfectivoStore.vm().filtersToApply.turno_id) {
+                          @if (vm.filtersToApply?.turno_id &&
+                               vm.filtersToApply.turno_id !== -1) {
+                            @for (turno of vm.turnosData; track turno.turno_id) {
+                              @if (turno.turno_id === vm.filtersToApply.turno_id) {
                                 <span class="badge bg-primary-subtle text-primary border border-primary d-flex align-items-center gap-2 py-2 px-3">
                                   <i class="ri-time-line"></i>
                                   <span><strong>Turno:</strong> {{ turno.turno_nombre }}</span>
@@ -87,134 +87,142 @@
               </div>
             </div>
           </div>
-
-          <div class="card-body">
-            <div class="my-3">
-              <div class="table-card gridjs-border-none">
-                <div class="table-responsive">
-                  <table class="table align-middle custom-datatable" id="datatableexample">
-                    <thead>
-                    <tr class="bg-light text-muted">
-                      @for (header of vm.inventarioEfectivoData?.header; track $index) {
-                        <th scope="col">
-                          {{ header.alias }}
-                        </th>
-                      }
-                      <th class="text-center">Acciones</th>
-                    </tr>
-                    </thead>
-                    <tbody>
-                      @for (inventarioEfectivo of vm.inventarioEfectivoData?.body; track $index) {
-                        <tr>
-                          <td>{{ inventarioEfectivo.apertura }}</td>
-                          <td>
-                            @if (inventarioEfectivo.abierta === 1 || inventarioEfectivo.abierta === '1') {
-                              <span class="badge bg-danger">
+          @if (!vm.inventarioEfectivoLoading){
+            <div class="card-body">
+              <div class="my-3">
+                <div class="table-card gridjs-border-none">
+                  <div class="table-responsive">
+                    <table class="table align-middle custom-datatable" id="datatableexample">
+                      <thead>
+                      <tr class="bg-light text-muted">
+                        @for (header of vm.inventarioEfectivoData?.header; track $index) {
+                          <th scope="col">
+                            {{ header.alias }}
+                          </th>
+                        }
+                        <th class="text-center">Acciones</th>
+                      </tr>
+                      </thead>
+                      <tbody>
+                        @for (inventarioEfectivo of vm.inventarioEfectivoData?.body; track $index) {
+                          <tr>
+                            <td>{{ inventarioEfectivo.apertura }}</td>
+                            <td>
+                              @if (inventarioEfectivo.abierta === 1 || inventarioEfectivo.abierta === '1') {
+                                <span class="badge bg-danger">
                                 <i class="ri-time-line align-middle me-1"></i>Turno aperturado
                               </span>
-                            } @else {
-                              {{ inventarioEfectivo.cierre }}
-                            }
-                          </td>
-                          <td>
-                            <div class="d-flex align-items-center">
-                              <div class="flex-grow-1">
-                                <h5 class="fs-14 mb-1">{{ inventarioEfectivo.gerente }}</h5>
+                              } @else {
+                                {{ inventarioEfectivo.cierre }}
+                              }
+                            </td>
+                            <td>
+                              <div class="d-flex align-items-center">
+                                <div class="flex-grow-1">
+                                  <h5 class="fs-14 mb-1">{{ inventarioEfectivo.gerente }}</h5>
+                                </div>
                               </div>
-                            </div>
-                          </td>
-                          <td>
-                            <div class="d-flex align-items-center">
-                              <div class="flex-grow-1">
-                                <h5 class="fs-14 mb-1">{{ inventarioEfectivo.supervisor }}</h5>
+                            </td>
+                            <td>
+                              <div class="d-flex align-items-center">
+                                <div class="flex-grow-1">
+                                  <h5 class="fs-14 mb-1">{{ inventarioEfectivo.supervisor }}</h5>
+                                </div>
                               </div>
-                            </div>
-                          </td>
-                          <td>{{ inventarioEfectivo.totalinventario }}</td>
-                          <td>
-                            @if (inventarioEfectivo.abierta == 1) {
-                              -
-                            } @else {
-                              {{ inventarioEfectivo.sumadiaria }}
-                            }
-                          </td>
-                          <td>{{ inventarioEfectivo.sala }}</td>
-                          <td>{{ inventarioEfectivo.turno }}</td>
-                          <td class="text-center">
-                            <div class="dropdown" ngbDropdown>
-                              <button class="btn btn-soft-secondary btn-sm dropdown arrow-none" type="button"
-                                      data-bs-toggle="dropdown" aria-expanded="false" ngbDropdownToggle>
-                                <i class="ri-more-fill"></i>
-                              </button>
-                              <ul class="dropdown-menu dropdown-menu-end" ngbDropdownMenu>
-                                @if (inventarioEfectivo.abierta == 1) {
-                                  <li>
-                                    <a class="dropdown-item"
-                                       (click)="cerrarTurno(inventarioEfectivo.operacionturno_id)"><i
-                                      class="ri-lock-2-fill align-bottom me-2 text-muted"></i> Cerrar </a>
-                                  </li>
-                                } @else {
-                                  @if (inventarioEfectivo.operacionturno_id_aperturada == null) {
+                            </td>
+                            <td>{{ inventarioEfectivo.totalinventario }}</td>
+                            <td>
+                              @if (inventarioEfectivo.abierta == 1) {
+                                -
+                              } @else {
+                                {{ inventarioEfectivo.sumadiaria }}
+                              }
+                            </td>
+                            <td>{{ inventarioEfectivo.sala }}</td>
+                            <td>{{ inventarioEfectivo.turno }}</td>
+                            <td class="text-center">
+                              <div class="dropdown" ngbDropdown>
+                                <button class="btn btn-soft-secondary btn-sm dropdown arrow-none" type="button"
+                                        data-bs-toggle="dropdown" aria-expanded="false" ngbDropdownToggle>
+                                  <i class="ri-more-fill"></i>
+                                </button>
+                                <ul class="dropdown-menu dropdown-menu-end" ngbDropdownMenu>
+                                  @if (inventarioEfectivo.abierta == 1) {
                                     <li>
                                       <a class="dropdown-item"
-                                         (click)="replicarInventario(inventarioEfectivo.operacionturno_id)"><i
-                                        class="ri-lock-unlock-fill align-bottom me-2 text-muted"></i> Abrir de este
-                                        inventario </a>
+                                         (click)="cerrarTurno(inventarioEfectivo.operacionturno_id)"><i
+                                        class="ri-lock-2-fill align-bottom me-2 text-muted"></i> Cerrar </a>
                                     </li>
+                                  } @else {
+                                    @if (inventarioEfectivo.operacionturno_id_aperturada == null) {
+                                      <li>
+                                        <a class="dropdown-item"
+                                           (click)="replicarInventario(inventarioEfectivo.operacionturno_id)"><i
+                                          class="ri-lock-unlock-fill align-bottom me-2 text-muted"></i> Abrir de este
+                                          inventario </a>
+                                      </li>
+                                    }
                                   }
-                                }
-                                <li>
-                                  <a class="dropdown-item" routerLink="/ecommerce/add-product"><i
-                                    class="ri-pencil-fill align-bottom me-2 text-muted"></i> Editar</a>
-                                </li>
-                              </ul>
-                            </div>
-                          </td>
-                        </tr>
-                      }
-                    </tbody>
-                  </table>
-                </div>
-                @if (vm.inventarioEfectivoData?.body.length == 0) {
-                  <div class="tab-pane" id="productnav-draft" role="tabpanel">
-                    <div class="py-4 text-center">
-                      <div>
-                        <!--lord-icon src="https://cdn.lordicon.com/msoeawqm.json" trigger="loop" colors="primary:#405189,secondary:#0ab39c" style="width:72px;height:72px">
-                        </lord-icon-->
-                      </div>
-                      <div class="mt-4">
-                        <h5>No se encontraron resultados!!!</h5>
+                                  <li>
+                                    <a class="dropdown-item" routerLink="/ecommerce/add-product"><i
+                                      class="ri-pencil-fill align-bottom me-2 text-muted"></i> Editar</a>
+                                  </li>
+                                </ul>
+                              </div>
+                            </td>
+                          </tr>
+                        }
+                      </tbody>
+                    </table>
+                  </div>
+                  @if (vm.inventarioEfectivoData?.body.length == 0) {
+                    <div class="tab-pane" id="productnav-draft" role="tabpanel">
+                      <div class="py-4 text-center">
+                        <div>
+                          <!--lord-icon src="https://cdn.lordicon.com/msoeawqm.json" trigger="loop" colors="primary:#405189,secondary:#0ab39c" style="width:72px;height:72px">
+                          </lord-icon-->
+                        </div>
+                        <div class="mt-4">
+                          <h5>No se encontraron resultados!!!</h5>
+                        </div>
                       </div>
                     </div>
+                  }
+                </div>
+              </div>
+              <div class="px-3 ">
+                <div class="row justify-content-md-between align-items-md-center g-0 pagination">
+                  <div class="col-sm-12 col-md-5">
+                    <div class="dataTables_info mb-2" id="tickets-table_info" role="status" aria-live="polite">
+                      Mostrando
+                      {{ vm.inventarioEfectivoPagination?.currentPage }} a
+                      {{ vm.inventarioEfectivoPagination?.totalPages }}
+                      de {{ vm.inventarioEfectivoPagination?.totalRows }}
+                      registros
+                    </div>
                   </div>
-                }
+                  <!-- Pagination -->
+                  <div class="col-sm-12 col-md-5">
+                    <div class="text-md-right float-md-end pagination-rounded gridjs-pagination mb-3">
+                      <ngb-pagination [collectionSize]="vm.inventarioEfectivoPagination?.totalRows"
+                                      [pageSize]="vm.inventarioEfectivoPagination?.perPage"
+                                      (pageChange)="changePage($event)">
+                      </ngb-pagination>
+                    </div>
+                  </div>
+                  <!-- End Pagination -->
+                </div>
               </div>
             </div>
-            <div class="px-3 ">
-              <div class="row justify-content-md-between align-items-md-center g-0 pagination">
-                <div class="col-sm-12 col-md-5">
-                  <div class="dataTables_info mb-2" id="tickets-table_info" role="status" aria-live="polite">
-                    Mostrando
-                    {{ vm.inventarioEfectivoPagination?.currentPage }} a
-                    {{ vm.inventarioEfectivoPagination?.totalPages }}
-                    de {{ vm.inventarioEfectivoPagination?.totalRows }}
-                    registros
-                  </div>
+          } @else {
+            <ngx-simplebar class="message-list-content mx-n4 px-4 message-list-scroll">
+              <div id="elmLoader">
+                <div class="spinner-border text-primary avatar-sm" role="status">
+                  <span class="visually-hidden">Cargando...</span>
                 </div>
-                <!-- Pagination -->
-                <div class="col-sm-12 col-md-5">
-                  <div class="text-md-right float-md-end pagination-rounded gridjs-pagination mb-3">
-                    <ngb-pagination [collectionSize]="vm.inventarioEfectivoPagination?.totalRows"
-                                    [pageSize]="vm.inventarioEfectivoPagination?.perPage"
-                                    (pageChange)="changePage($event)">
-                    </ngb-pagination>
-                  </div>
-                </div>
-                <!-- End Pagination -->
               </div>
-            </div>
-
-          </div>
+            </ngx-simplebar>
+          }
         </div>
         <!-- end card -->
       </div>
@@ -222,8 +230,6 @@
     <!-- end col -->
   </div>
   <!-- end row -->
-}
-
 
 <!-- removeItemModal -->
 <ng-template #content let-modal>
@@ -277,7 +283,7 @@
                 [ngModelOptions]="{standalone: true}"
                 (ngModelChange)="onTurnoChangeFromModal({value: $event})">
           <option [value]="-1">Todos los turnos</option>
-          @for (turno of inventarioEfectivoStore.vm().turnosData; track turno.turno_id) {
+          @for (turno of vm.turnosData; track turno.turno_id) {
             <option [value]="turno.turno_id">{{ turno.turno_nombre }}</option>
           }
         </select>
@@ -291,3 +297,4 @@
     <!--end offcanvas-footer-->
   </form>
 </ng-template>
+}
