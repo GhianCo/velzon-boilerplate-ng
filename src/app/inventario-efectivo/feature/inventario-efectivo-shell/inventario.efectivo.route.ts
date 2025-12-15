@@ -47,6 +47,13 @@ export default [
           data: InventarioEfectivoReplicarResolver,
         },
       },
+      {
+        path: "visualizar/:id",
+        component: InventarioEfectivoNew,
+        resolve: {
+          data: InventarioEfectivoReplicarResolver,
+        },
+      },
     ]
   }
 ] as Routes;

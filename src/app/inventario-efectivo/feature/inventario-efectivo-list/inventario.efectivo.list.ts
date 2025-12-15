@@ -660,6 +660,10 @@ export class InventarioEfectivoList {
     this.router.navigate(['/inventario-efectivo/replicar/' + id])
   }
 
+  visualizarInventario(id: any) {
+    this.router.navigate(['/inventario-efectivo/visualizar/' + id])
+  }
+
   openFilters(content: TemplateRef<any>) {
     // Guardar el estado original de los filtros ANTES de abrir el modal
     const currentFilters = this.inventarioEfectivoStore.vm().filtersToApply;
