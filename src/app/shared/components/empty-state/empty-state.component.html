@@ -1,0 +1,18 @@
+<div class="empty-state-container py-4 text-center" [ngClass]="customClass">
+  <div>
+    @if (showIcon && iconSrc) {
+      <!-- lord-icon puede ser agregado dinámicamente si se necesita -->
+      <div class="empty-state-icon mb-3">
+        <i class="ri-inbox-line" style="font-size: 72px; color: #405189; opacity: 0.5;"></i>
+      </div>
+    }
+  </div>
+
+  <div class="mt-4">
+    <h5 class="mb-2">{{ title }}</h5>
+    @if (message) {
+      <p class="text-muted mb-0">{{ message }}</p>
+    }
+  </div>
+</div>
+

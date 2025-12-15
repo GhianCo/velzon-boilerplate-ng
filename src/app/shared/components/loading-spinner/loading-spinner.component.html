@@ -1,0 +1,22 @@
+@if (useSimplebar) {
+  <ngx-simplebar class="message-list-content mx-n4 px-4 message-list-scroll" [ngClass]="containerClass">
+    <div [id]="elementId" class="text-center py-4">
+      <div class="spinner-border text-{{ color }} {{ sizeClass }}" role="status">
+        <span class="visually-hidden">{{ message }}</span>
+      </div>
+      @if (message) {
+        <p class="mt-3 text-muted">{{ message }}</p>
+      }
+    </div>
+  </ngx-simplebar>
+} @else {
+  <div [id]="elementId" class="text-center py-4" [ngClass]="containerClass">
+    <div class="spinner-border text-{{ color }} {{ sizeClass }}" role="status">
+      <span class="visually-hidden">{{ message }}</span>
+    </div>
+    @if (message) {
+      <p class="mt-3 text-muted">{{ message }}</p>
+    }
+  </div>
+}
+

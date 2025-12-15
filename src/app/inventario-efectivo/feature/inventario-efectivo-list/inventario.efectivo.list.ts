@@ -4,7 +4,7 @@ import {BreadcrumbsComponent} from "@velzon/components/breadcrumbs/breadcrumbs.c
 import {
   NgbDropdown, NgbDropdownMenu, NgbDropdownToggle,
   NgbModal,
-  NgbNavChangeEvent, NgbNavOutlet,
+  NgbNavChangeEvent,
   NgbOffcanvas, NgbPagination
 } from "@ng-bootstrap/ng-bootstrap";
 import {GlobalComponent} from "@app/global-component";
@@ -21,6 +21,8 @@ import Handsontable from "handsontable";
 import {InventarioEfectivoStore} from "@app/inventario-efectivo/data-access/inventario.efectivo.store";
 import {CommonModule} from "@angular/common";
 import {SimplebarAngularModule} from "simplebar-angular";
+import {EmptyStateComponent} from "@shared/components/empty-state/empty-state.component";
+import {LoadingSpinnerComponent} from "@shared/components/loading-spinner/loading-spinner.component";
 
 @Component({
   standalone: true,
@@ -39,7 +41,8 @@ import {SimplebarAngularModule} from "simplebar-angular";
     RouterLink,
     CommonModule,
     SimplebarAngularModule,
-    NgbNavOutlet
+    EmptyStateComponent,
+    LoadingSpinnerComponent
   ]
 })
 export class InventarioEfectivoList {
