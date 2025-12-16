@@ -6,6 +6,7 @@ import {NgClass} from "@angular/common";
 import {ActivatedRoute} from "@angular/router";
 import {CountUpModule} from "ngx-countup";
 import {ConfirmationService} from "@sothy/services/confirmation.service";
+import {EmptyStateComponent} from "@shared/components/empty-state/empty-state.component";
 
 @Component({
     selector: 'app-inventario-efectivo-new',
@@ -15,6 +16,7 @@ import {ConfirmationService} from "@sothy/services/confirmation.service";
     FormsModule,
     NgClass,
     CountUpModule,
+    EmptyStateComponent,
   ],
     standalone: true,
     styles: [`
@@ -494,7 +496,6 @@ export class InventarioEfectivoNew implements OnInit {
 
     onTurnoChange(operacionTurnoId: string) {
         this.inventarioEfectivoStore.setSelectedTurnoId(operacionTurnoId);
-        console.log('Turno seleccionado:', operacionTurnoId);
     }
 
     // ===== FIN MÉTODOS PARA ACTUALIZAR TURNO Y OPERACIÓN ====

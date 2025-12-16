@@ -4,7 +4,7 @@ import {SignalStore} from "@shared/data-access/signal.store";
 import {InventarioEfectivoRemoteReq} from "@app/inventario-efectivo/data-access/inventario.efectivo.remote.req";
 import {catchError, finalize, tap} from "rxjs/operators";
 import {Observable, of} from "rxjs";
-import {PARAM} from "@shared/constants/app.const";
+import {ORDEN, PARAM} from "@shared/constants/app.const";
 import {PersistenceService} from "@sothy/services/persistence.service";
 
 export type IState = {
@@ -347,9 +347,9 @@ export class InventarioEfectivoStore extends SignalStore<IState> {
     ).subscribe();
   };
 
-  public async loadCajas() {
+  public async loadCajas(de_apertura = PARAM.UNDEFINED) {
     this.patch({cajasLoading: true, cajasError: null});
-    this._inventarioEfectivoRemoteReq.requestAllCajasBySala(this._persistenceService.getSalaId()).pipe(
+    this._inventarioEfectivoRemoteReq.requestAllCajasBySala(this._persistenceService.getSalaId(), de_apertura).pipe(
       tap(async ({data, pagination}) => {
         this.patch({
           cajasData: data,
@@ -717,6 +717,19 @@ export class InventarioEfectivoStore extends SignalStore<IState> {
   // Métodos para actualizar turno y tipo de operación
   public setSelectedTurnoId(turnoId: string | null) {
     this.patch({selectedTurnoId: turnoId});
+    const state = this.vm();
+    const turno = state.turnosData.find(
+      (turno: any) => turno.turno_id == turnoId
+    );
+    if (state.selectedOperacion == 'apertura') {
+      if (turno.turno_orden == ORDEN.PRIMERO){
+        this.loadCajas(PARAM.SI);
+      }else {
+        this.loadCajas(PARAM.UNDEFINED);
+      }
+    } else {
+      this.loadCajas(PARAM.NO);
+    }
   }
 
   public setSelectedOperacion(operacion: string | null) {

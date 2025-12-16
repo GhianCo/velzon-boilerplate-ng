@@ -182,241 +182,207 @@
       </div><!-- end card -->
     </div><!-- end col -->
   </div><!-- end row -->
-  <div class="row">
+    <div class="row">
     <div class="col-xl-12">
       <!-- Tabla Unificada con colspan -->
       <div class="card">
-        <div class="card-body p-0">
-          <!-- Contenedor con dos tablas side-by-side -->
-          <!-- Contenedor responsivo con Grid CSS -->
-          <div [ngClass]="{'table-container-dual': isCerrarMode, 'table-container-single': !isCerrarMode}">
+        @if(vm.cajasData?.length){
+          <div class="card-body p-0">
+            <!-- Contenedor con dos tablas side-by-side -->
+            <!-- Contenedor responsivo con Grid CSS -->
+            <div [ngClass]="{'table-container-dual': isCerrarMode, 'table-container-single': !isCerrarMode}">
 
-            <!-- TABLA 1: INVENTARIO DE EFECTIVO (Izquierda) -->
-            <div class="table-wrapper inventario-wrapper">
-              <table class="table table-bordered table-hover align-middle mb-0">
-                <thead class="table-light sticky-top" style="z-index: 10;">
-                  @if (isCerrarMode) {
-                    <tr>
-                      <th colspan="100%" class="text-center bg-light">
-                        <i class="ri-stack-line me-2"></i>Inventario de Efectivo
-                      </th>
-                    </tr>
-                  }
-                <tr class="table-light">
-                  <th style="min-width: 180px;">Descripción</th>
-                  @for (caja of vm.cajasData; track $index) {
-                    <th style="min-width: 150px;">{{ caja.caja_nombre }}</th>
-                  }
-                  <th class="text-end" style="min-width: 120px;">Total</th>
-                </tr>
-                </thead>
-                <tbody>
-                <!-- Solo denominaciones de inventario -->
-                  @for (valorDetail of vm.valoresWithDetailsData; track $index) {
-                    <!-- Header de categoría -->
-                    <tr class="table-active">
-                      <td [attr.colspan]="(vm.cajasData?.length || 0) + 2" class="fw-bold">
-                        <div class="d-flex justify-content-between align-items-center">
-                          <span><i class="ri-checkbox-circle-line me-2"></i>{{ valorDetail.name }}</span>
-                          <span
-                            class="text-success">S/. {{ valorDetail.acumuladoConvertido?.toFixed(2) || '0.00' }}</span>
-                        </div>
-                      </td>
-                    </tr>
-
-                    <!-- Tipo de cambio USD -->
-                    @if (valorDetail.codigo == 'USD') {
-                      <tr>
-                        <td [attr.colspan]="(vm.cajasData?.length || 0) + 2" class="p-2">
-                          <label class="form-label fw-medium mb-1 me-2">Tipo de cambio:</label>
-                          <input type="number" class="form-control form-control-sm d-inline-block"
-                                 style="width: 100px;" min="1"
-                                 [(ngModel)]="valorDetail.current_tc"
-                                 (ngModelChange)="onTipoCambioChange(valorDetail, $event)">
-                        </td>
-                      </tr>
-                    }
-
-                    <!-- Filas de denominaciones -->
-                    @for (denominacion of valorDetail.denominaciones; track $index) {
-                      <tr [class]="getRowClass(valorDetail, denominacion)"
-                          (click)="toggleRowSelection(valorDetail, denominacion)"
-                          style="cursor: pointer; transition: background-color 0.2s ease;">
-                        <!-- Denominación -->
-                        <td class="align-middle">
-                          <div class="d-flex align-items-center">
-                            <span class="fw-medium">{{ denominacion.descripcion }}</span>
-                            @if (isRowSelected(valorDetail, denominacion)) {
-                              <i class="ri-check-line ms-2 text-primary"></i>
-                            }
-                          </div>
-                        </td>
-
-                        <!-- Cajas -->
-                        @for (caja of vm.cajasData; track $index) {
-                          <td class="text-center">
-                            <div class="input-group input-group-sm">
-                              <button class="btn btn-outline-primary btn-sm" type="button"
-                                      (click)="decrementCantidadByCaja(denominacion, caja.caja_nombre); $event.stopPropagation()">
-                                <i class="ri-subtract-line"></i>
-                              </button>
-                              <input type="number" class="form-control text-center" min="0" step="0.01"
-                                     [(ngModel)]="getCajas(denominacion)[caja.caja_nombre]"
-                                     (ngModelChange)="onCantidadCajaChange(denominacion, caja.caja_nombre, $event)"
-                                     (click)="$event.stopPropagation()"
-                                     style="max-width: 80px;">
-                              <button class="btn btn-outline-primary btn-sm" type="button"
-                                      (click)="incrementCantidadByCaja(denominacion, caja.caja_nombre); $event.stopPropagation()">
-                                <i class="ri-add-line"></i>
-                              </button>
-                            </div>
-                          </td>
-                        }
-
-                        <!-- Total -->
-                        <td class="text-end">
-                          <span class="fw-bold">
-                            {{ valorDetail.simbolo }} {{ denominacion.importeLocal?.toFixed(2) || '0.00' }}
-                          </span>
-                        </td>
-                      </tr>
-                    }
-
-                    <!-- Espacio -->
-                    <tr style="height: 10px;">
-                      <td [attr.colspan]="(vm.cajasData?.length || 0) + 2" class="p-0 bg-light"></td>
-                    </tr>
-                  }
-                </tbody>
-              </table>
-            </div>
-
-            <!-- TABLA 2: SUMA DIARIA DE EFECTIVO (Derecha) -->
-            @if (isCerrarMode) {
-              <div class="table-wrapper suma-diaria-wrapper">
+              <!-- TABLA 1: INVENTARIO DE EFECTIVO (Izquierda) -->
+              <div class="table-wrapper inventario-wrapper">
                 <table class="table table-bordered table-hover align-middle mb-0">
                   <thead class="table-light sticky-top" style="z-index: 10;">
-                  <tr>
-                    <th colspan="2" class="text-center bg-light">
-                      <i class="ri-calculator-line me-2"></i>Suma Diaria de Efectivo
-                    </th>
+                    @if (isCerrarMode) {
+                      <tr>
+                        <th colspan="100%" class="text-center bg-light">
+                          <i class="ri-stack-line me-2"></i>Inventario de Efectivo
+                        </th>
+                      </tr>
+                    }
+                  <tr class="table-light">
+                    <th style="min-width: 180px;">Descripción</th>
+                    @for (caja of vm.cajasData; track $index) {
+                      <th style="min-width: 150px;">{{ caja.caja_nombre }}</th>
+                    }
+                    <th class="text-end" style="min-width: 120px;">Total</th>
                   </tr>
                   </thead>
-
                   <tbody>
-                  <!-- Solo items de suma diaria -->
-                    @for (catMovimiento of vm.catMovWithDetailsData; track $index) {
+                  <!-- Solo denominaciones de inventario -->
+                    @for (valorDetail of vm.valoresWithDetailsData; track $index) {
                       <!-- Header de categoría -->
                       <tr class="table-active">
-                        <td colspan="2" class="fw-bold">
+                        <td [attr.colspan]="(vm.cajasData?.length || 0) + 2" class="fw-bold">
                           <div class="d-flex justify-content-between align-items-center">
-                          <span>
-                            @if (catMovimiento.tipo_operacion === '+') {
-                              <i class="ri-add-circle-line me-2 text-success"></i>
-                            } @else if (catMovimiento.tipo_operacion === '-') {
-                              <i class="ri-subtract-circle-line me-2 text-danger"></i>
-                            } @else if (catMovimiento.tipo_operacion === 'diff' || catMovimiento.tipo_operacion === 'diferencia') {
-                              <i class="ri-exchange-line me-2 text-warning"></i>
-                            } @else {
-                              <i class="ri-checkbox-circle-line me-2"></i>
-                            }
-                            {{ catMovimiento.nombre }}
-                          </span>
-                            <span [ngClass]="getOperacionClass(catMovimiento.tipo_operacion)">
-                            @if (catMovimiento.tipo_operacion === '-') {
-                              - S/. {{ catMovimiento.acumuladoConvertido?.toFixed(2) || '0.00' }}
-                            } @else if (catMovimiento.tipo_operacion === '+') {
-                              + S/. {{ catMovimiento.acumuladoConvertido?.toFixed(2) || '0.00' }}
-                            } @else {
-                              S/. {{ catMovimiento.acumuladoConvertido?.toFixed(2) || '0.00' }}
-                            }
-                          </span>
+                            <span><i class="ri-checkbox-circle-line me-2"></i>{{ valorDetail.name }}</span>
+                            <span
+                              class="text-success">S/. {{ valorDetail.acumuladoConvertido?.toFixed(2) || '0.00' }}</span>
                           </div>
                         </td>
                       </tr>
 
-                      <!-- Items -->
-                      @for (detail of catMovimiento.details; track $index) {
+                      <!-- Tipo de cambio USD -->
+                      @if (valorDetail.codigo == 'USD') {
                         <tr>
-                          <!-- Nombre del item -->
-                          <td class="align-middle">
-                            <span class="fw-medium">{{ detail.nombre }}</span>
+                          <td [attr.colspan]="(vm.cajasData?.length || 0) + 2" class="p-2">
+                            <label class="form-label fw-medium mb-1 me-2">Tipo de cambio:</label>
+                            <input type="number" class="form-control form-control-sm d-inline-block"
+                                   style="width: 100px;" min="1"
+                                   [(ngModel)]="valorDetail.current_tc"
+                                   (ngModelChange)="onTipoCambioChange(valorDetail, $event)">
                           </td>
-                          <td>
-                            <div class="input-group input-group-sm justify-content-end">
-                              <button class="btn btn-outline-primary btn-sm" type="button"
-                                      (click)="decrementCantidadMovimiento(detail)">
-                                <i class="ri-subtract-line"></i>
-                              </button>
-                              <input type="number" class="form-control text-center" min="0" step="0.01"
-                                     [(ngModel)]="detail.cantidad"
-                                     (ngModelChange)="onCantidadMovimientoChange(detail, $event)"
-                                     style="max-width: 80px;">
-                              <button class="btn btn-outline-primary btn-sm" type="button"
-                                      (click)="incrementCantidadMovimiento(detail)">
-                                <i class="ri-add-line"></i>
-                              </button>
+                        </tr>
+                      }
+
+                      <!-- Filas de denominaciones -->
+                      @for (denominacion of valorDetail.denominaciones; track $index) {
+                        <tr [class]="getRowClass(valorDetail, denominacion)"
+                            (click)="toggleRowSelection(valorDetail, denominacion)"
+                            style="cursor: pointer; transition: background-color 0.2s ease;">
+                          <!-- Denominación -->
+                          <td class="align-middle">
+                            <div class="d-flex align-items-center">
+                              <span class="fw-medium">{{ denominacion.descripcion }}</span>
+                              @if (isRowSelected(valorDetail, denominacion)) {
+                                <i class="ri-check-line ms-2 text-primary"></i>
+                              }
                             </div>
+                          </td>
+
+                          <!-- Cajas -->
+                          @for (caja of vm.cajasData; track $index) {
+                            <td class="text-center">
+                              <div class="input-group input-group-sm">
+                                <button class="btn btn-outline-primary btn-sm" type="button"
+                                        (click)="decrementCantidadByCaja(denominacion, caja.caja_nombre); $event.stopPropagation()">
+                                  <i class="ri-subtract-line"></i>
+                                </button>
+                                <input type="number" class="form-control text-center" min="0" step="0.01"
+                                       [(ngModel)]="getCajas(denominacion)[caja.caja_nombre]"
+                                       (ngModelChange)="onCantidadCajaChange(denominacion, caja.caja_nombre, $event)"
+                                       (click)="$event.stopPropagation()"
+                                       style="max-width: 80px;">
+                                <button class="btn btn-outline-primary btn-sm" type="button"
+                                        (click)="incrementCantidadByCaja(denominacion, caja.caja_nombre); $event.stopPropagation()">
+                                  <i class="ri-add-line"></i>
+                                </button>
+                              </div>
+                            </td>
+                          }
+
+                          <!-- Total -->
+                          <td class="text-end">
+                            <span class="fw-bold">
+                              {{ valorDetail.simbolo }} {{ denominacion.importeLocal?.toFixed(2) || '0.00' }}
+                            </span>
                           </td>
                         </tr>
                       }
 
                       <!-- Espacio -->
                       <tr style="height: 10px;">
-                        <td colspan="2" class="p-0 bg-light"></td>
+                        <td [attr.colspan]="(vm.cajasData?.length || 0) + 2" class="p-0 bg-light"></td>
                       </tr>
                     }
                   </tbody>
                 </table>
               </div>
-            }
+
+              <!-- TABLA 2: SUMA DIARIA DE EFECTIVO (Derecha) -->
+              @if (isCerrarMode) {
+                <div class="table-wrapper suma-diaria-wrapper">
+                  <table class="table table-bordered table-hover align-middle mb-0">
+                    <thead class="table-light sticky-top" style="z-index: 10;">
+                    <tr>
+                      <th colspan="2" class="text-center bg-light">
+                        <i class="ri-calculator-line me-2"></i>Suma Diaria de Efectivo
+                      </th>
+                    </tr>
+                    </thead>
+
+                    <tbody>
+                    <!-- Solo items de suma diaria -->
+                      @for (catMovimiento of vm.catMovWithDetailsData; track $index) {
+                        <!-- Header de categoría -->
+                        <tr class="table-active">
+                          <td colspan="2" class="fw-bold">
+                            <div class="d-flex justify-content-between align-items-center">
+                            <span>
+                              @if (catMovimiento.tipo_operacion === '+') {
+                                <i class="ri-add-circle-line me-2 text-success"></i>
+                              } @else if (catMovimiento.tipo_operacion === '-') {
+                                <i class="ri-subtract-circle-line me-2 text-danger"></i>
+                              } @else if (catMovimiento.tipo_operacion === 'diff' || catMovimiento.tipo_operacion === 'diferencia') {
+                                <i class="ri-exchange-line me-2 text-warning"></i>
+                              } @else {
+                                <i class="ri-checkbox-circle-line me-2"></i>
+                              }
+                              {{ catMovimiento.nombre }}
+                            </span>
+                              <span [ngClass]="getOperacionClass(catMovimiento.tipo_operacion)">
+                              @if (catMovimiento.tipo_operacion === '-') {
+                                - S/. {{ catMovimiento.acumuladoConvertido?.toFixed(2) || '0.00' }}
+                              } @else if (catMovimiento.tipo_operacion === '+') {
+                                + S/. {{ catMovimiento.acumuladoConvertido?.toFixed(2) || '0.00' }}
+                              } @else {
+                                S/. {{ catMovimiento.acumuladoConvertido?.toFixed(2) || '0.00' }}
+                              }
+                            </span>
+                            </div>
+                          </td>
+                        </tr>
+
+                        <!-- Items -->
+                        @for (detail of catMovimiento.details; track $index) {
+                          <tr>
+                            <!-- Nombre del item -->
+                            <td class="align-middle">
+                              <span class="fw-medium">{{ detail.nombre }}</span>
+                            </td>
+                            <td>
+                              <div class="input-group input-group-sm justify-content-end">
+                                <button class="btn btn-outline-primary btn-sm" type="button"
+                                        (click)="decrementCantidadMovimiento(detail)">
+                                  <i class="ri-subtract-line"></i>
+                                </button>
+                                <input type="number" class="form-control text-center" min="0" step="0.01"
+                                       [(ngModel)]="detail.cantidad"
+                                       (ngModelChange)="onCantidadMovimientoChange(detail, $event)"
+                                       style="max-width: 80px;">
+                                <button class="btn btn-outline-primary btn-sm" type="button"
+                                        (click)="incrementCantidadMovimiento(detail)">
+                                  <i class="ri-add-line"></i>
+                                </button>
+                              </div>
+                            </td>
+                          </tr>
+                        }
+
+                        <!-- Espacio -->
+                        <tr style="height: 10px;">
+                          <td colspan="2" class="p-0 bg-light"></td>
+                        </tr>
+                      }
+                    </tbody>
+                  </table>
+                </div>
+              }
+            </div>
           </div>
-        </div>
+        }
+        @else {
+          <app-empty-state
+            title="Selecciona el turno de operacion"
+            message="Debes seleccionar el turno de operacion para cargar las cajas asociadas.">
+          </app-empty-state>
+        }
       </div>
       <!--end card-->
     </div>
   </div>
   <!--end row-->
 }
-
-<ng-template #addressModal role="document" let-modal>
-  <div class="modal-header">
-    <h5 class="modal-title" id="addAddressModalLabel">Address</h5>
-    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"
-            (click)="modal.dismiss('Cross click')"></button>
-  </div>
-  <div class="modal-body">
-    <div>
-      <div class="mb-3">
-        <label for="addaddress-Name" class="form-label">Name</label>
-        <input type="text" class="form-control" id="addaddress-Name" placeholder="Enter Name">
-      </div>
-
-      <div class="mb-3">
-        <label for="addaddress-textarea" class="form-label">Address</label>
-        <textarea class="form-control" id="addaddress-textarea" placeholder="Enter Address" rows="2"></textarea>
-      </div>
-
-      <div class="mb-3">
-        <label for="addaddress-Phone" class="form-label">Phone</label>
-        <input type="text" class="form-control" id="addaddress-Phone" placeholder="Enter Phone No.">
-      </div>
-
-      <div class="mb-3">
-        <label for="state" class="form-label">Address Type</label>
-        <select class="form-select" id="state" data-plugin="choices">
-          <option value="homeAddress">Home (7am to 10pm)</option>
-          <option value="officeAddress">Office (11am to 7pm)</option>
-        </select>
-      </div>
-    </div>
-  </div>
-  <div class="modal-footer">
-    <button type="button" class="btn btn-light" data-bs-dismiss="modal"
-            (click)="modal.close('Close click')">Close
-    </button>
-    <button type="button" class="btn btn-success" data-bs-dismiss="modal"
-            (click)="modal.dismiss('Cross click')">Save
-    </button>
-  </div>
-</ng-template>

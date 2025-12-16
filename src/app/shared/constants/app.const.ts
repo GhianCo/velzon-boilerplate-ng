@@ -37,3 +37,7 @@ export enum ORDER_ARRAY {
     ASC = 0,
     DESC = 1,
 }
+
+export const ORDEN = {
+  PRIMERO: '1',
+};

@@ -66,8 +66,8 @@ export class InventarioEfectivoRemoteReq {
     return this.http.post(this.REMOTE_API_URI + 'inventario/saveWithDetails', inventarioWithDetails)
   }
 
-  requestAllCajasBySala(sala_id: number): Observable<IResponse> {
-    return this._controlActivosApiService.get(this.REMOTE_API_URI + 'caja?sala='+sala_id)
+  requestAllCajasBySala(sala_id: number, de_apertura: any): Observable<IResponse> {
+    return this._controlActivosApiService.get(this.REMOTE_API_URI + 'caja?sala='+sala_id+'&de_apertura='+de_apertura)
   }
 
   requestGetTurnos(sala_id: number): Observable<IResponse> {
