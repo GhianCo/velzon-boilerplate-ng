@@ -89,6 +89,7 @@
           </div>
           @if (!vm.inventarioEfectivoLoading){
             <div class="card-body">
+              @if (vm.inventarioEfectivoData?.body.length) {
               <div class="my-3">
                 <div class="table-card gridjs-border-none">
                   <div class="table-responsive">
@@ -175,12 +176,6 @@
                       </tbody>
                     </table>
                   </div>
-                  @if (vm.inventarioEfectivoData?.body.length == 0) {
-                    <app-empty-state
-                      title="No se encontraron resultados"
-                      message="No hay registros de apertura y cierre de turno con los filtros aplicados">
-                    </app-empty-state>
-                  }
                 </div>
               </div>
               <div class="px-3 ">
@@ -206,6 +201,12 @@
                   <!-- End Pagination -->
                 </div>
               </div>
+              } @else {
+                <app-empty-state
+                  title="No se encontraron resultados"
+                  message="No hay registros de apertura y cierre de turno con los filtros aplicados">
+                </app-empty-state>
+              }
             </div>
           } @else {
             <app-loading-spinner message="Cargando operaciones..."></app-loading-spinner>
