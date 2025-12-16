@@ -114,5 +114,49 @@ export class InventarioEfectivoVisualizar implements OnInit {
   get hasError() {
     return !!this.inventarioEfectivoStore.vm().resumenOperacionError;
   }
+
+  /**
+   * Obtener el total de denominaciones antes de un índice de valor
+   * Esto ayuda a alinear los items de suma diaria con las denominaciones correctas
+   */
+  getTotalDenominacionesAntes(valorIndex: number): number {
+    if (!this.resumenData || !this.resumenData.inventario_apertura) return 0;
+
+    let total = 0;
+    for (let i = 0; i < valorIndex; i++) {
+      const valor = this.resumenData.inventario_apertura.valores[i];
+      if (valor && valor.denominaciones) {
+        total += valor.denominaciones.length;
+      }
+    }
+    return total;
+  }
+
+  /**
+   * Obtener el item de suma diaria correspondiente a una fila de denominación
+   * Esto distribuye los items de suma diaria de manera uniforme entre las denominaciones
+   */
+  getSumaDiariaItem(rowIndex: number, resumenData: any): any {
+    if (!resumenData || !resumenData.suma_diaria || !resumenData.suma_diaria.categorias) {
+      return null;
+    }
+
+    // Aplanar todos los items de todas las categorías en un solo array
+    const allItems: any[] = [];
+    resumenData.suma_diaria.categorias.forEach((categoria: any) => {
+      if (categoria.items && Array.isArray(categoria.items)) {
+        categoria.items.forEach((item: any) => {
+          allItems.push({
+            ...item,
+            tipo_operacion: categoria.tipo_operacion,
+            categoria_nombre: categoria.nombre
+          });
+        });
+      }
+    });
+
+    // Retornar el item correspondiente al índice de fila
+    return allItems[rowIndex] || null;
+  }
 }
 

@@ -234,9 +234,33 @@
                                             </td>
                                         }
 
-                                        <!-- Suma Diaria (items alineados con denominaciones) -->
-                                        <td class="align-middle" style="border-left: 2px solid #dee2e6;">
-                                            <!-- Espacio vacío para mantener estructura -->
+                                        <!-- Suma Diaria: Mostrar item correspondiente -->
+                                        <td class="align-middle" style="border-left: 2px solid #dee2e6; min-width: 250px;">
+                                            @if (getSumaDiariaItem(dIdx + getTotalDenominacionesAntes(vIdx), resumenData)) {
+                                                @let item = getSumaDiariaItem(dIdx + getTotalDenominacionesAntes(vIdx), resumenData);
+                                                <div class="d-flex align-items-center justify-content-between px-2">
+                                                    <div class="d-flex align-items-center gap-2 flex-grow-1">
+                                                        @if (item.tipo_operacion === '+') {
+                                                            <i class="ri-arrow-up-circle-fill text-success"></i>
+                                                        } @else if (item.tipo_operacion === '-') {
+                                                            <i class="ri-arrow-down-circle-fill text-danger"></i>
+                                                        } @else {
+                                                            <i class="ri-alert-line text-warning"></i>
+                                                        }
+                                                        <span class="text-truncate" style="max-width: 140px; font-size: 0.85rem;">
+                                                            {{ item.nombre }}
+                                                        </span>
+                                                    </div>
+                                                    <span class="fw-medium ms-2"
+                                                          [ngClass]="{
+                                                            'text-success': item.tipo_operacion === '+',
+                                                            'text-danger': item.tipo_operacion === '-',
+                                                            'text-warning': !item.tipo_operacion || item.tipo_operacion === 'diff'
+                                                          }">
+                                                        {{ resumenData.simbolo_moneda }} {{ item.importe.toFixed(2) }}
+                                                    </span>
+                                                </div>
+                                            }
                                         </td>
                                     </tr>
                                 }
