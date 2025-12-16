@@ -34,6 +34,99 @@ import {ConfirmationService} from "@sothy/services/confirmation.service";
         .selected-row td {
             border-color: rgba(13, 110, 253, 0.2) !important;
         }
+
+        /* Contenedor Grid para dos tablas side-by-side */
+        .table-container-dual {
+            display: grid;
+            grid-template-columns: 1fr auto;
+            max-height: 75vh;
+            width: 100%;
+        }
+
+        .table-container-single {
+            display: block;
+            max-height: 75vh;
+            overflow: auto;
+        }
+
+        /* Wrapper para cada tabla */
+        .table-wrapper {
+            overflow: auto;
+            height: 75vh;
+        }
+
+        .inventario-wrapper {
+            border-right: 2px solid #dee2e6;
+            min-width: 0; /* Permite que el grid funcione correctamente */
+        }
+
+        .suma-diaria-wrapper {
+            width: 450px;
+            min-width: 350px;
+            max-width: 500px;
+        }
+
+        /* Scrollbar personalizado */
+        .table-wrapper::-webkit-scrollbar {
+            height: 8px;
+            width: 8px;
+        }
+
+        .table-wrapper::-webkit-scrollbar-track {
+            background: #f1f1f1;
+            border-radius: 4px;
+        }
+
+        .table-wrapper::-webkit-scrollbar-thumb {
+            background: #888;
+            border-radius: 4px;
+        }
+
+        .table-wrapper::-webkit-scrollbar-thumb:hover {
+            background: #555;
+        }
+
+        /* Sticky header */
+        .sticky-top {
+            position: sticky !important;
+            top: 0 !important;
+            z-index: 10 !important;
+            background-color: #f8f9fa !important;
+        }
+
+        /* Responsive para móviles y tablets */
+        @media (max-width: 991.98px) {
+            .table-container-dual {
+                grid-template-columns: 1fr;
+                grid-template-rows: auto auto;
+            }
+
+            .inventario-wrapper {
+                border-right: none;
+                border-bottom: 2px solid #dee2e6;
+            }
+
+            .suma-diaria-wrapper {
+                width: 100%;
+                max-width: 100%;
+            }
+
+            .table-wrapper {
+                height: auto;
+                max-height: 50vh;
+            }
+        }
+
+        /* Mejorar inputs en tablas */
+        .input-group-sm .btn {
+            padding: 0.25rem 0.5rem;
+            font-size: 0.875rem;
+        }
+
+        .input-group-sm input {
+            padding: 0.25rem 0.5rem;
+            font-size: 0.875rem;
+        }
     `]
 })
 

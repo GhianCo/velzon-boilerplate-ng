@@ -188,10 +188,11 @@
       <div class="card">
         <div class="card-body p-0">
           <!-- Contenedor con dos tablas side-by-side -->
-          <div [ngClass]="{'d-flex': isCerrarMode}" style="max-height: 75vh; overflow: auto;">
+          <!-- Contenedor responsivo con Grid CSS -->
+          <div [ngClass]="{'table-container-dual': isCerrarMode, 'table-container-single': !isCerrarMode}">
 
             <!-- TABLA 1: INVENTARIO DE EFECTIVO (Izquierda) -->
-            <div class="flex-shrink-0" style="overflow-x: auto;">
+            <div class="table-wrapper inventario-wrapper">
               <table class="table table-bordered table-hover align-middle mb-0">
                 <thead class="table-light sticky-top" style="z-index: 10;">
                   @if (isCerrarMode) {
@@ -290,12 +291,9 @@
               </table>
             </div>
 
-            <!-- SEPARADOR VISUAL -->
-            <div class="border-end" style="width: 2px; background-color: #dee2e6;"></div>
-
             <!-- TABLA 2: SUMA DIARIA DE EFECTIVO (Derecha) -->
             @if (isCerrarMode) {
-              <div class="flex-grow-1" style="overflow-x: auto;">
+              <div class="table-wrapper suma-diaria-wrapper">
                 <table class="table table-bordered table-hover align-middle mb-0">
                   <thead class="table-light sticky-top" style="z-index: 10;">
                   <tr>
