@@ -993,7 +993,10 @@ export class InventarioEfectivoStore extends SignalStore<IState> {
   private getTurnoData(): any {
     const state = this.vm();
     const operacionTurnoId = state.selectedTurnoId;
-    const inventarioData = state.inventarioEfectivoData?.body;
+    const inventarioData = state.inventarioEfectivoData?.body.map((operacionturno: any) => {
+      const monto_inicial = Number(operacionturno.totalinventario);
+      return { ...operacionturno, monto_inicial };
+    });;
 
     if (!inventarioData || !operacionTurnoId) {
       return null;
