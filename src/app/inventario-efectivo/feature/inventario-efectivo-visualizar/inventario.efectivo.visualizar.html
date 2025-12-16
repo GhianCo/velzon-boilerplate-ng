@@ -69,13 +69,13 @@
                             <div class="col-3">
                                 <div class="p-3 border border-dashed rounded text-center">
                                     <p class="text-muted mb-2 fs-12">Total Apertura</p>
-                                    <h5 class="mb-0">{{ resumenData.simbolo_moneda }} {{ resumenData.inventario_apertura.total.toFixed(2) }}</h5>
+                                    <h5 class="mb-0">{{ resumenData.simbolo_moneda }} {{ resumenData.inventario_apertura.total }}</h5>
                                 </div>
                             </div>
                             <div class="col-3">
                                 <div class="p-3 border border-dashed rounded text-center">
                                     <p class="text-muted mb-2 fs-12">Total Cierre</p>
-                                    <h5 class="mb-0">{{ resumenData.simbolo_moneda }} {{ resumenData.inventario_cierre.total.toFixed(2) }}</h5>
+                                    <h5 class="mb-0">{{ resumenData.simbolo_moneda }} {{ resumenData.inventario_cierre.total }}</h5>
                                 </div>
                             </div>
                             <div class="col-3">
@@ -83,7 +83,7 @@
                                     <p class="text-success mb-2 fs-12">
                                         <i class="ri-arrow-up-circle-fill me-1"></i>Ingresos
                                     </p>
-                                    <h5 class="mb-0 text-success">{{ resumenData.simbolo_moneda }} {{ resumenData.suma_diaria.subtotales.ingresos.toFixed(2) }}</h5>
+                                    <h5 class="mb-0 text-success">{{ resumenData.simbolo_moneda }} {{ resumenData.suma_diaria.subtotales.ingresos }}</h5>
                                 </div>
                             </div>
                             <div class="col-3">
@@ -91,7 +91,7 @@
                                     <p class="text-danger mb-2 fs-12">
                                         <i class="ri-arrow-down-circle-fill me-1"></i>Egresos
                                     </p>
-                                    <h5 class="mb-0 text-danger">{{ resumenData.simbolo_moneda }} {{ resumenData.suma_diaria.subtotales.egresos.toFixed(2) }}</h5>
+                                    <h5 class="mb-0 text-danger">{{ resumenData.simbolo_moneda }} {{ resumenData.suma_diaria.subtotales.egresos }}</h5>
                                 </div>
                             </div>
                         </div>
@@ -180,32 +180,24 @@
                                             <!-- Cantidades Apertura -->
                                             @for (cajaData of denominacion.cajas; track cajaData.caja_id) {
                                                 <td class="text-center align-middle">
-                                                    @if (cajaData.cantidad > 0) {
-                                                        <span class="fw-medium">{{ cajaData.cantidad }}</span>
-                                                    } @else {
-                                                        <span class="text-muted">−</span>
-                                                    }
+                                                    <span class="fw-medium">{{ cajaData.cantidad }}</span>
                                                 </td>
                                             }
                                             <!-- Total Apertura -->
                                             <td class="text-center align-middle" style="background-color: #e3f2fd;">
-                                                <strong>{{ resumenData.simbolo_moneda }} {{ denominacion.total_importe.toFixed(2) }}</strong>
+                                                <strong>{{ resumenData.simbolo_moneda }} {{ denominacion.total_importe }}</strong>
                                             </td>
 
                                             <!-- Cantidades Cierre -->
                                             @if (resumenData.inventario_cierre.valores[vIdx]?.denominaciones[dIdx]) {
                                                 @for (cajaData of resumenData.inventario_cierre.valores[vIdx].denominaciones[dIdx].cajas; track cajaData.caja_id) {
                                                     <td class="text-center align-middle">
-                                                        @if (cajaData.cantidad > 0) {
-                                                            <span class="fw-medium">{{ cajaData.cantidad }}</span>
-                                                        } @else {
-                                                            <span class="text-muted">−</span>
-                                                        }
+                                                        <span class="fw-medium">{{ cajaData.cantidad }}</span>
                                                     </td>
                                                 }
                                                 <!-- Total Cierre -->
                                                 <td class="text-center align-middle" style="background-color: #fce4ec;">
-                                                    <strong>{{ resumenData.simbolo_moneda }} {{ resumenData.inventario_cierre.valores[vIdx].denominaciones[dIdx].total_importe.toFixed(2) }}</strong>
+                                                    <strong>{{ resumenData.simbolo_moneda }} {{ resumenData.inventario_cierre.valores[vIdx].denominaciones[dIdx].total_importe }}</strong>
                                                 </td>
                                             } @else {
                                                 @for (caja of resumenData.inventario_cierre.cajas; track caja.caja_id) {
@@ -226,11 +218,11 @@
                                     </td>
                                     <td [attr.colspan]="resumenData.inventario_apertura.cajas.length" class="text-end"></td>
                                     <td class="text-center" style="background-color: #bbdefb;">
-                                        {{ resumenData.simbolo_moneda }} {{ resumenData.inventario_apertura.total.toFixed(2) }}
+                                        {{ resumenData.simbolo_moneda }} {{ resumenData.inventario_apertura.total }}
                                     </td>
                                     <td [attr.colspan]="resumenData.inventario_cierre.cajas.length" class="text-end"></td>
                                     <td class="text-center" style="background-color: #f8bbd0;">
-                                        {{ resumenData.simbolo_moneda }} {{ resumenData.inventario_cierre.total.toFixed(2) }}
+                                        {{ resumenData.simbolo_moneda }} {{ resumenData.inventario_cierre.total }}
                                     </td>
                                 </tr>
                                 </tbody>
@@ -292,7 +284,7 @@
                                                                   'text-danger': categoria.tipo_operacion === 'egreso',
                                                                   'text-warning': categoria.tipo_operacion === 'diferencia'
                                                               }">
-                                                            {{ resumenData.simbolo_moneda }} {{ item.importe.toFixed(2) }}
+                                                            {{ resumenData.simbolo_moneda }} {{ item.importe }}
                                                         </span>
                                                     </td>
                                                 </tr>
@@ -304,7 +296,7 @@
                                     <tr style="background-color: #e9ecef; font-weight: bold;">
                                         <td>TOTAL</td>
                                         <td class="text-end">
-                                            {{ resumenData.simbolo_moneda }} {{ resumenData.suma_diaria.total.toFixed(2) }}
+                                            {{ resumenData.simbolo_moneda }} {{ resumenData.suma_diaria.total }}
                                         </td>
                                     </tr>
                                 </tbody>
