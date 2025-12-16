@@ -1085,8 +1085,6 @@ export class InventarioEfectivoStore extends SignalStore<IState> {
    * Incluye: inventario apertura, inventario cierre y suma diaria
    */
   public loadResumenOperacionTurno(operacionTurnoId: string): Observable<any> {
-    console.log('🏪 STORE: Iniciando carga de resumen para ID:', operacionTurnoId);
-
     this.patch({
       resumenOperacionLoading: true,
       resumenOperacionError: null
@@ -1094,8 +1092,6 @@ export class InventarioEfectivoStore extends SignalStore<IState> {
 
     return this._inventarioEfectivoRemoteReq.requestResumenOperacionTurno(operacionTurnoId).pipe(
       tap((response: any) => {
-        console.log('🏪 STORE: Respuesta recibida del backend:', response);
-
         if (response.code === 200 && response.data) {
           this.patch({
             resumenOperacionData: response.data,

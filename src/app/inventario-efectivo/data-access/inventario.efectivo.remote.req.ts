@@ -43,7 +43,15 @@ export class InventarioEfectivoRemoteReq {
    * Incluye: inventario de apertura, inventario de cierre y suma diaria
    */
   requestResumenOperacionTurno(operacionturno_id: any): Observable<IResponse> {
-    return this.http.get(this.REMOTE_API_URI + `operacionturno/${operacionturno_id}/resumen`);
+    return this.http.get(this.REMOTE_API_URI + `operacionturno/${operacionturno_id}/resumen`)
+      .pipe(
+        map((response: any) => {
+          if (response.data) {
+            response.data = this.inventarioEfectivoMapper.transform(response.data);
+          }
+          return response;
+        })
+      );;
   }
 
   requestGetValoresWithDetails(): Observable<IResponse> {
