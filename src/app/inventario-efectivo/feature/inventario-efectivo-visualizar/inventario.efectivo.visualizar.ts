@@ -160,34 +160,83 @@ export class InventarioEfectivoVisualizar implements OnInit {
   }
 
   /**
-   * Obtener el total de denominaciones antes de un índice de valor
-   * Esto ayuda a alinear los items de suma diaria con las denominaciones correctas
+   * Calcular el número máximo de filas necesarias
+   * Toma el mayor entre el total de denominaciones y el total de items de suma diaria
    */
-  getTotalDenominacionesAntes(valorIndex: number): number {
-    if (!this.resumenData || !this.resumenData.inventario_apertura) return 0;
+  getMaxRows(): number {
+    if (!this.resumenData) return 0;
 
-    let total = 0;
-    for (let i = 0; i < valorIndex; i++) {
-      const valor = this.resumenData.inventario_apertura.valores[i];
-      if (valor && valor.denominaciones) {
-        total += valor.denominaciones.length;
-      }
+    // Contar total de denominaciones
+    let totalDenominaciones = 0;
+    if (this.resumenData.inventario_apertura?.valores) {
+      this.resumenData.inventario_apertura.valores.forEach((valor: any) => {
+        totalDenominaciones += valor.denominaciones?.length || 0;
+      });
     }
-    return total;
+
+    // Contar total de items de suma diaria
+    let totalItemsSumaDiaria = 0;
+    if (this.resumenData.suma_diaria?.categorias) {
+      this.resumenData.suma_diaria.categorias.forEach((categoria: any) => {
+        totalItemsSumaDiaria += categoria.items?.length || 0;
+      });
+    }
+
+    // Retornar el mayor
+    return Math.max(totalDenominaciones, totalItemsSumaDiaria);
   }
 
   /**
-   * Obtener el item de suma diaria correspondiente a una fila de denominación
-   * Esto distribuye los items de suma diaria de manera uniforme entre las denominaciones
+   * Obtener la denominación correspondiente a un índice global de fila
    */
-  getSumaDiariaItem(rowIndex: number, resumenData: any): any {
-    if (!resumenData || !resumenData.suma_diaria || !resumenData.suma_diaria.categorias) {
-      return null;
+  getDenominacionByGlobalIndex(globalIndex: number): any {
+    if (!this.resumenData || !this.resumenData.inventario_apertura) return null;
+
+    let currentIndex = 0;
+    for (const valor of this.resumenData.inventario_apertura.valores) {
+      if (!valor.denominaciones) continue;
+
+      for (const denominacion of valor.denominaciones) {
+        if (currentIndex === globalIndex) {
+          return { valor, denominacion };
+        }
+        currentIndex++;
+      }
     }
 
-    // Aplanar todos los items de todas las categorías en un solo array
+    return null;
+  }
+
+  /**
+   * Obtener la denominación de CIERRE correspondiente a un índice global de fila
+   */
+  getDenominacionCierreByGlobalIndex(globalIndex: number): any {
+    if (!this.resumenData || !this.resumenData.inventario_cierre) return null;
+
+    let currentIndex = 0;
+    for (const valor of this.resumenData.inventario_cierre.valores) {
+      if (!valor.denominaciones) continue;
+
+      for (const denominacion of valor.denominaciones) {
+        if (currentIndex === globalIndex) {
+          return { valor, denominacion };
+        }
+        currentIndex++;
+      }
+    }
+
+    return null;
+  }
+
+  /**
+   * Obtener el item de suma diaria correspondiente a un índice global de fila
+   */
+  getSumaDiariaItemByGlobalIndex(globalIndex: number): any {
+    if (!this.resumenData || !this.resumenData.suma_diaria?.categorias) return null;
+
+    // Aplanar todos los items en un solo array
     const allItems: any[] = [];
-    resumenData.suma_diaria.categorias.forEach((categoria: any) => {
+    this.resumenData.suma_diaria.categorias.forEach((categoria: any) => {
       if (categoria.items && Array.isArray(categoria.items)) {
         categoria.items.forEach((item: any) => {
           allItems.push({
@@ -199,8 +248,22 @@ export class InventarioEfectivoVisualizar implements OnInit {
       }
     });
 
-    // Retornar el item correspondiente al índice de fila
-    return allItems[rowIndex] || null;
+    return allItems[globalIndex] || null;
+  }
+
+  /**
+   * Crear un array de índices para iterar sobre el máximo de filas
+   */
+  getRowIndices(): number[] {
+    const maxRows = this.getMaxRows();
+    return Array.from({ length: maxRows }, (_, i) => i);
+  }
+
+  /**
+   * Verificar si un valor es un array
+   */
+  isArray(value: any): boolean {
+    return Array.isArray(value);
   }
 }
 
