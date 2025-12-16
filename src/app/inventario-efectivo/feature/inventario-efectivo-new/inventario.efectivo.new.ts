@@ -233,8 +233,6 @@ export class InventarioEfectivoNew implements OnInit {
         // Actualizar el store con los datos del turno
         this.inventarioEfectivoStore.setSelectedTurnoId(operacionTurnoId);
         this.inventarioEfectivoStore.setSelectedOperacion('cierre');
-
-        console.log('Datos del turno cargados:', this.turnoData);
     }
 
 
