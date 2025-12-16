@@ -17,19 +17,28 @@ import {InventarioEfectivoStore} from "@app/inventario-efectivo/data-access/inve
     CommonModule,
   ],
   styles: [`
-    .table-scroll-container {
+    /* Tabla responsive con scroll */
+    .table-responsive {
       overflow-x: auto;
-      overflow-y: visible;
-      max-width: 100%;
+      overflow-y: auto;
+      max-height: 75vh;
       -webkit-overflow-scrolling: touch;
     }
 
+    /* Asegurar que la tabla ocupe todo el ancho */
+    .table {
+      width: 100% !important;
+      table-layout: auto;
+      min-width: max-content;
+    }
+
+    /* Sticky column para la descripción */
     .sticky-col {
       position: sticky;
       left: 0;
       background-color: #fff;
       z-index: 10;
-      box-shadow: 2px 0 5px rgba(0,0,0,0.1);
+      box-shadow: 2px 0 5px rgba(0,0,0,0.05);
     }
 
     .sticky-col-header {
@@ -40,26 +49,61 @@ import {InventarioEfectivoStore} from "@app/inventario-efectivo/data-access/inve
       box-shadow: 2px 0 5px rgba(0,0,0,0.1);
     }
 
-    .table-fixed {
-      min-width: 100%;
-      white-space: nowrap;
+    /* Scrollbar personalizado */
+    .table-responsive::-webkit-scrollbar {
+      height: 8px;
+      width: 8px;
     }
 
+    .table-responsive::-webkit-scrollbar-track {
+      background: #f1f1f1;
+      border-radius: 4px;
+    }
+
+    .table-responsive::-webkit-scrollbar-thumb {
+      background: #888;
+      border-radius: 4px;
+    }
+
+    .table-responsive::-webkit-scrollbar-thumb:hover {
+      background: #555;
+    }
+
+    /* Headers sticky en scroll vertical */
+    thead th {
+      position: sticky;
+      top: 0;
+      background-color: #f8f9fa;
+      z-index: 5;
+    }
+
+    /* Asegurar que las celdas se ajusten al contenido */
+    td, th {
+      white-space: nowrap;
+      padding: 0.5rem;
+    }
+
+    /* Mejorar la visualización en móviles */
+    @media (max-width: 767.98px) {
+      .table-responsive {
+        max-height: 60vh;
+      }
+
+      td, th {
+        font-size: 0.85rem;
+        padding: 0.35rem;
+      }
+    }
+
+    /* Cards del resumen */
     .section-divider {
       border-top: 3px solid #0d6efd;
       margin: 2rem 0;
     }
 
-    .badge-apertura {
-      background-color: #28a745;
-    }
-
-    .badge-cierre {
-      background-color: #dc3545;
-    }
-
-    .badge-suma-diaria {
-      background-color: #17a2b8;
+    /* Bordes para separar secciones */
+    .border-section {
+      border-left: 2px solid #dee2e6 !important;
     }
   `]
 })
