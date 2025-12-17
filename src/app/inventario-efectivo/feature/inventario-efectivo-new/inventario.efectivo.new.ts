@@ -41,7 +41,7 @@ import {NgbOffcanvas} from "@ng-bootstrap/ng-bootstrap";
         /* Contenedor Grid para dos tablas side-by-side */
         .table-container-dual {
             display: grid;
-            grid-template-columns: 1fr auto;
+            grid-template-columns: 60% 40%;
             max-height: 75vh;
             width: 100%;
         }
@@ -64,9 +64,7 @@ import {NgbOffcanvas} from "@ng-bootstrap/ng-bootstrap";
         }
 
         .suma-diaria-wrapper {
-            width: 450px;
-            min-width: 350px;
-            max-width: 500px;
+            min-width: 0; /* Permite que el grid funcione correctamente */
         }
 
         /* Scrollbar personalizado */
