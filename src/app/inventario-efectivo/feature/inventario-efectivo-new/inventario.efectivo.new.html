@@ -27,16 +27,52 @@
                 </div>
               </div>
             </div><!-- end col -->
-            <div class="col col-lg border-end d-flex align-items-center justify-content-center">
+            <div class="col col-lg border-end" [ngClass]="!isCerrarMode ? 'd-flex align-items-center justify-content-center' : ''">
               <div class="py-4 px-3">
-                <h5 class="text-muted text-uppercase fs-13">Total este inventario</h5>
-                <div class="d-flex align-items-center">
-                  <div class="flex-shrink-0 display-6 text-muted">
-                    S/.
-                  </div>
-                  <div class="flex-grow-1 ms-3">
-                    <h2 class="mb-0"><span [countUp]="vm.valoresSummary?.totalConvertido" class="counter-value"
-                                           [options]="option"></span></h2>
+                <div class="row g-3">
+                  <!-- Columna izquierda: Totales verticales -->
+                  <div class="col-12">
+                    <!-- Total este inventario -->
+                    <div class="mb-3">
+                      <h5 class="text-muted text-uppercase fs-13">Total este inventario</h5>
+                      <div class="d-flex align-items-center">
+                        <div class="flex-shrink-0 display-6 text-muted">
+                          S/.
+                        </div>
+                        <div class="flex-grow-1 ms-3">
+                          <h2 class="mb-0"><span [countUp]="vm.valoresSummary?.totalConvertido" class="counter-value"
+                                                 [options]="option"></span></h2>
+                        </div>
+                      </div>
+                    </div>
+
+                    <!-- Total suma diaria (solo en modo cierre) -->
+                    @if (isCerrarMode) {
+                      <div class="mb-3">
+                        <h5 class="text-muted text-uppercase fs-13">Total suma diaria</h5>
+                        <div class="d-flex align-items-center">
+                          <div class="flex-shrink-0 display-6 text-muted">
+                            S/.
+                          </div>
+                          <div class="flex-grow-1 ms-3">
+                            <h2 class="mb-0 text-primary"><span [countUp]="vm.valoresSummary?.total_real_turno" class="counter-value"
+                                                                 [options]="option"></span></h2>
+                          </div>
+                        </div>
+                        <small class="text-muted mt-1">
+                          Monto inicial apertura
+                        </small>
+                        <small class="text-success">
+                          <i class="ri-add-line"></i> Ingresos
+                        </small>
+                        <small class="text-danger">
+                          <i class="ri-subtract-line"></i> Egresos
+                        </small>
+                        <small class="text-warning">
+                          <i class="ri-exchange-line"></i> Diferencias
+                        </small>
+                      </div>
+                    }
                   </div>
                 </div>
               </div>
@@ -119,7 +155,7 @@
             <div class="col col-lg border-end">
               <div class="py-4 px-3">
                 @if (isCerrarMode) {
-                  <div class="alert alert-info border-0 mb-4" role="alert">
+                  <div class="alert alert-info border-0" role="alert">
                     <div class="d-flex align-items-start">
                       <div class="flex-shrink-0">
                         <i class="ri-information-line fs-16 align-middle me-2 text-danger"></i>
@@ -169,7 +205,7 @@
 
                   </div>
                 }
-                <button type="button" class="btn btn-success w-100" (click)="saveInventario()"
+                <button type="button" class="btn btn-success w-100" (click)="onClickGuardarInventario()"
                         [disabled]="vm.saveInventarioEfectivoLoading || vm.valoresSummary?.totalConvertido < 1 || !vm.selectedTurnoId">
                   <i class="ri-save-fill align-middle"></i> Guardar inventario
                 </button>
@@ -386,3 +422,140 @@
   </div>
   <!--end row-->
 }
+
+<!-- Modal/Offcanvas para diferencia detectada -->
+<ng-template #diferenciaModal let-offcanvas>
+  <div class="offcanvas-header bg-danger bg-gradient text-white">
+    <h5 class="offcanvas-title" id="offcanvasDiferenciaLabel">
+      <i class="ri-alert-line me-2"></i>Diferencia detectada
+    </h5>
+    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="offcanvas" aria-label="Close"
+            (click)="offcanvas.dismiss('Cross click')"></button>
+  </div>
+  <!--end offcanvas-header-->
+  <form (ngSubmit)="confirmGuardarInventario()" class="d-flex flex-column justify-content-end h-100">
+    <div class="offcanvas-body">
+      <!-- Información de la diferencia -->
+      <div class="alert alert-danger border-0" role="alert">
+        <div class="d-flex align-items-center mb-3">
+          <div class="flex-shrink-0">
+            <i class="ri-error-warning-line display-5"></i>
+          </div>
+          <div class="flex-grow-1 ms-3">
+            <h5 class="alert-heading mb-1">¡Atención!</h5>
+            <p class="mb-0">Se detectó una diferencia entre el inventario y la suma diaria</p>
+          </div>
+        </div>
+
+        <div class="bg-white rounded p-3 mb-0">
+          <div class="d-flex justify-content-between mb-2">
+            <strong>Total este inventario:</strong>
+            <span class="fs-5">S/. {{ vm.valoresSummary?.totalConvertido?.toFixed(2) || '0.00' }}</span>
+          </div>
+          <div class="d-flex justify-content-between mb-2">
+            <strong>Total suma diaria:</strong>
+            <span class="fs-5">S/. {{ vm.valoresSummary?.total_real_turno?.toFixed(2) || '0.00' }}</span>
+          </div>
+          <hr class="my-2">
+          <div class="d-flex justify-content-between align-items-center">
+            <strong class="text-danger">
+              <i class="ri-alert-line me-1"></i>Diferencia:
+            </strong>
+            <strong class="text-danger fs-5">
+              S/. {{ getDiferenciaInventarioSuma().toFixed(2) }}
+            </strong>
+          </div>
+        </div>
+      </div>
+
+      <!-- Campo de observaciones -->
+      <div class="mb-4">
+        <label for="observacionesDiferencia" class="form-label text-muted text-uppercase fw-semibold mb-3">
+          <i class="ri-file-list-3-line me-1"></i>Observaciones sobre la diferencia <span class="text-danger">*</span>
+        </label>
+        <textarea id="observacionesDiferencia"
+                  class="form-control"
+                  rows="5"
+                  [(ngModel)]="observacionesDiferencia"
+                  [ngModelOptions]="{standalone: true}"
+                  placeholder="Explique el motivo de la diferencia encontrada..."
+                  required></textarea>
+        <small class="text-muted">
+          <i class="ri-information-line me-1"></i>Este campo es obligatorio cuando existe diferencia
+        </small>
+      </div>
+    </div>
+    <!--end offcanvas-body-->
+    <div class="offcanvas-footer border-top p-3 text-center">
+      <button type="submit"
+              class="btn btn-success w-100"
+              [disabled]="!observacionesDiferencia || observacionesDiferencia.trim().length === 0">
+        <i class="ri-save-fill align-middle me-1"></i>Confirmar y guardar inventario
+      </button>
+    </div>
+    <!--end offcanvas-footer-->
+  </form>
+</ng-template>
+
+<!-- Modal para observaciones de diferencia -->
+<ng-template #diferenciaModal let-offcanvas>
+  <div class="offcanvas-header bg-danger text-white">
+    <h5 class="offcanvas-title" id="offcanvasDiferenciaLabel">
+      <i class="ri-alert-line me-2"></i>Diferencia detectada
+    </h5>
+    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="offcanvas" aria-label="Close"
+            (click)="offcanvas.dismiss('Cross click')"></button>
+  </div>
+  <!--end offcanvas-header-->
+  <form (ngSubmit)="confirmGuardarInventario()" class="d-flex flex-column justify-content-end h-100">
+    <div class="offcanvas-body">
+      <div class="alert alert-danger border-danger mb-4">
+        <div class="d-flex justify-content-between align-items-center">
+          <div>
+            <strong>Total este inventario:</strong><br>
+            <span class="fs-5">S/. {{ vm.valoresSummary?.totalConvertido?.toFixed(2) || '0.00' }}</span>
+          </div>
+          <div>
+            <strong>Total suma diaria:</strong><br>
+            <span class="fs-5">S/. {{ vm.valoresSummary?.total_real_turno?.toFixed(2) || '0.00' }}</span>
+          </div>
+        </div>
+        <hr class="my-2">
+        <div class="d-flex justify-content-between align-items-center">
+          <strong class="text-danger">
+            <i class="ri-alert-line me-1"></i>Diferencia:
+          </strong>
+          <strong class="text-danger fs-5">
+            S/. {{ getDiferenciaInventarioSuma().toFixed(2) }}
+          </strong>
+        </div>
+      </div>
+
+      <div class="mb-4">
+        <label for="observacionesDiferencia" class="form-label text-muted text-uppercase fw-semibold mb-3">
+          <i class="ri-file-list-3-line me-1"></i>Observaciones sobre la diferencia <span class="text-danger">*</span>
+        </label>
+        <textarea id="observacionesDiferencia"
+                  class="form-control"
+                  rows="5"
+                  [(ngModel)]="observacionesDiferencia"
+                  [ngModelOptions]="{standalone: true}"
+                  placeholder="Explique el motivo de la diferencia encontrada..."
+                  required></textarea>
+        <small class="text-muted">
+          <i class="ri-information-line me-1"></i>Este campo es obligatorio cuando existe diferencia
+        </small>
+      </div>
+    </div>
+    <!--end offcanvas-body-->
+    <div class="offcanvas-footer border-top p-3 text-center">
+      <button type="submit"
+              class="btn btn-success w-100"
+              [disabled]="!observacionesDiferencia || observacionesDiferencia.trim().length === 0">
+        <i class="ri-save-fill align-middle me-1"></i>Confirmar y guardar inventario
+      </button>
+    </div>
+    <!--end offcanvas-footer-->
+  </form>
+</ng-template>
+

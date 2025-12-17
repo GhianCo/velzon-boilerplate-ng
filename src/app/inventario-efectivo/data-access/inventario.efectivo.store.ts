@@ -389,7 +389,6 @@ export class InventarioEfectivoStore extends SignalStore<IState> {
 
   public async loadCatMovWithDetails() {
     this.patch({catMovWithDetailsLoading: true, catMovWithDetailsError: null});
-    this.initialize(initialState);
     this._inventarioEfectivoRemoteReq.requestGetCatMovWithDetails().pipe(
       tap(async ({data, pagination}) => {
         this.patch({
@@ -728,7 +727,8 @@ export class InventarioEfectivoStore extends SignalStore<IState> {
         this.loadCajas(PARAM.UNDEFINED);
       }
     } else {
-      this.loadCajas(PARAM.NO);
+      this.loadCatMovWithDetails();
+      this.loadCajas(PARAM.UNDEFINED);
     }
   }
 

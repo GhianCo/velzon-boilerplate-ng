@@ -1,4 +1,4 @@
-import {Component, inject, OnInit} from '@angular/core';
+import {Component, inject, OnInit, TemplateRef, ViewChild} from '@angular/core';
 import {BreadcrumbsComponent} from "@velzon/components/breadcrumbs/breadcrumbs.component";
 import {InventarioEfectivoStore} from "@app/inventario-efectivo/data-access/inventario.efectivo.store";
 import {FormsModule} from "@angular/forms";
@@ -7,6 +7,7 @@ import {ActivatedRoute} from "@angular/router";
 import {CountUpModule} from "ngx-countup";
 import {ConfirmationService} from "@sothy/services/confirmation.service";
 import {EmptyStateComponent} from "@shared/components/empty-state/empty-state.component";
+import {NgbOffcanvas} from "@ng-bootstrap/ng-bootstrap";
 
 @Component({
     selector: 'app-inventario-efectivo-new',
@@ -143,11 +144,18 @@ export class InventarioEfectivoNew implements OnInit {
     inventarioEfectivoStore = inject(InventarioEfectivoStore);
     private route = inject(ActivatedRoute);
     private confirmationService = inject(ConfirmationService);
+    private offcanvasService = inject(NgbOffcanvas);
+
+    // ViewChild para el template del modal
+    @ViewChild('diferenciaModal', { static: false }) diferenciaModal!: TemplateRef<any>;
 
     // Propiedades para modo cierre
     isCerrarMode: boolean = false;
     operacionTurnoId: string | null = null;
     turnoData: any = null; // Datos del turno abierto
+
+    // Propiedad para observaciones cuando hay diferencia
+    observacionesDiferencia: string = '';
 
     // Propiedades para manejo de selección de filas (solo una fila)
     selectedRowId: string | null = null;
@@ -243,12 +251,12 @@ export class InventarioEfectivoNew implements OnInit {
         this.inventarioEfectivoStore.initializeAllCajas();
     }
 
-    saveInventario() {
+    // Método que se ejecuta al hacer click en "Guardar inventario"
+    onClickGuardarInventario() {
         const vm = this.inventarioEfectivoStore.vm();
 
         // Validar que se haya seleccionado turno y operación
         if (!vm.selectedTurnoId || !vm.selectedOperacion) {
-            // ✅ NO requiere .subscribe()
             this.confirmationService.warning(
                 '⚠️ Faltan datos',
                 'Por favor selecciona un turno y el tipo de operación antes de guardar.'
@@ -256,10 +264,48 @@ export class InventarioEfectivoNew implements OnInit {
             return;
         }
 
-        // En modo cierre usar turnoData, en apertura usar getSelectedTurno()
+        // Verificar si hay diferencia en modo cierre
+        // Usamos Math.abs para comparar el valor absoluto y tolerancia de 0.01 para evitar problemas de precisión
+        const diferencia = Math.abs(this.getDiferenciaInventarioSuma());
+        const TOLERANCIA = 0.01; // Tolerancia de 1 centavo
+
+        if (this.isCerrarMode && diferencia > TOLERANCIA) {
+            // Si hay diferencia significativa, abrir el modal
+            this.offcanvasService.open(this.diferenciaModal, {
+                position: 'end',
+                backdrop: 'static',
+                keyboard: false
+            });
+            return;
+        }
+
+        // Si no hay diferencia, guardar directamente
+        this.proceedToSave();
+    }
+
+    // Método que se ejecuta al confirmar desde el modal de diferencia
+    confirmGuardarInventario() {
+        // Validar que se haya ingresado observación
+        if (!this.observacionesDiferencia || this.observacionesDiferencia.trim().length === 0) {
+            this.confirmationService.warning(
+                '⚠️ Observación requerida',
+                'Debes ingresar una observación sobre la diferencia encontrada.'
+            );
+            return;
+        }
+
+        // Cerrar el offcanvas
+        this.offcanvasService.dismiss();
+
+        // Proceder con el guardado
+        this.proceedToSave();
+    }
+
+    // Método privado para proceder con el guardado
+    private proceedToSave() {
+        const vm = this.inventarioEfectivoStore.vm();
         const turnoInfo = this.isCerrarMode ? this.turnoData : this.getSelectedTurno();
 
-        // ✅ Usar openAndHandle para NO requerir .subscribe()
         this.confirmationService.openAndHandle({
             title: '✅ ¿Todos los datos son correctos?',
             html: `
@@ -345,6 +391,36 @@ export class InventarioEfectivoNew implements OnInit {
 
         return vm.turnosData.find((turno: any) => turno.turno_id.toString() === vm.selectedTurnoId);
     }
+
+    // Método para calcular diferencia entre total inventario y total suma diaria
+    getDiferenciaInventarioSuma(): number {
+        const vm = this.inventarioEfectivoStore.vm();
+
+        if (!this.isCerrarMode) {
+            return 0;
+        }
+
+        const totalInventario = vm.valoresSummary?.totalConvertido || 0;
+        const totalSumaDiaria = vm.valoresSummary?.total_real_turno || 0;
+        const diferencia = totalInventario - totalSumaDiaria;
+
+        // Log para debug
+        console.log('💰 Cálculo de diferencia:', {
+            totalInventario: totalInventario.toFixed(2),
+            totalSumaDiaria: totalSumaDiaria.toFixed(2),
+            diferencia: diferencia.toFixed(2),
+            diferenciaAbsoluta: Math.abs(diferencia).toFixed(2)
+        });
+
+        return diferencia;
+    }
+
+    // Método público para acceder al vm desde el template
+    get vm() {
+        return this.inventarioEfectivoStore.vm();
+    }
+
+
 
     // Método para obtener información completa de la selección actual
     getSelectionInfo(): any {
