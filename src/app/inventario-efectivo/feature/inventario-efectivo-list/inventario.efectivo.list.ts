@@ -1,5 +1,5 @@
 import {Component, effect, TemplateRef, ViewChild, ViewEncapsulation} from '@angular/core';
-import {Router, RouterLink} from "@angular/router";
+import {Router} from "@angular/router";
 import {BreadcrumbsComponent} from "@velzon/components/breadcrumbs/breadcrumbs.component";
 import {
   NgbDropdown, NgbDropdownMenu, NgbDropdownToggle,
@@ -23,7 +23,7 @@ import {CommonModule} from "@angular/common";
 import {SimplebarAngularModule} from "simplebar-angular";
 import {EmptyStateComponent} from "@shared/components/empty-state/empty-state.component";
 import {LoadingSpinnerComponent} from "@shared/components/loading-spinner/loading-spinner.component";
-import {ConfirmationService} from "@sothy/services/confirmation.service";
+import {AperturaTurnoValidatorService} from "@app/inventario-efectivo/services/apertura-turno-validator.service";
 
 @Component({
   standalone: true,
@@ -39,7 +39,6 @@ import {ConfirmationService} from "@sothy/services/confirmation.service";
     NgbDropdownToggle,
     FlatpickrModule,
     HotTableModule,
-    RouterLink,
     CommonModule,
     SimplebarAngularModule,
     EmptyStateComponent,
@@ -195,7 +194,7 @@ export class InventarioEfectivoList {
               private store: Store<{ data: RootReducerState }>,
               public inventarioEfectivoStore: InventarioEfectivoStore,
               private offcanvasService: NgbOffcanvas,
-              private confirmationService: ConfirmationService,
+              private aperturaTurnoValidator: AperturaTurnoValidatorService,
   ) {
     // Inicializar FormControl con el rango de fechas del store
     this.dateRangeControl = new FormControl(this.inventarioEfectivoStore.getDateRangeForComponent());
@@ -656,42 +655,10 @@ export class InventarioEfectivoList {
 
   /**
    * Intenta aperturar un turno, validando primero que no haya un turno abierto
+   * Delega toda la lógica al servicio centralizado
    */
   onAperturarTurno() {
-    // Obtener validación desde el store
-    const { canOpen, primerRegistro } = this.inventarioEfectivoStore.validarAperturaTurno();
-
-    if (canOpen) {
-      // Permitir navegar
-      this.router.navigate(['/inventario-efectivo/nuevo']);
-    } else {
-      // Mostrar confirmación que no permite abrir nuevo turno
-      this.confirmationService.openAndHandle(
-        {
-          title: '⚠️ Hay un turno aperturado',
-          message: `No se puede aperturar un nuevo turno porque existe un turno actualmente abierto desde el ${primerRegistro?.apertura || 'N/A'}. Por favor, cierre el turno actual antes de aperturar uno nuevo.`,
-          icon: {
-            show: true,
-            name: 'warning',
-            color: 'warning'
-          },
-          actions: {
-            confirm: {
-              show: true,
-              label: 'Entendido',
-              color: 'primary'
-            },
-            cancel: {
-              show: false
-            }
-          },
-          dismissible: true
-        },
-        () => {
-          // No hacer nada cuando confirma, solo cerrar el diálogo
-        }
-      );
-    }
+    this.aperturaTurnoValidator.intentarAperturar();
   }
 
   cerrarTurno(id: any) {
