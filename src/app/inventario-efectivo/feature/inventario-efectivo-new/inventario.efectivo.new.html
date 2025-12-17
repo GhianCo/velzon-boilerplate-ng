@@ -293,19 +293,11 @@
                           @for (caja of vm.cajasData; track $index) {
                             <td class="text-center">
                               <div class="input-group input-group-sm">
-                                <button class="btn btn-outline-primary btn-sm" type="button"
-                                        (click)="decrementCantidadByCaja(denominacion, caja.caja_nombre); $event.stopPropagation()">
-                                  <i class="ri-subtract-line"></i>
-                                </button>
                                 <input type="number" class="form-control text-center" min="0" step="0.01"
                                        [(ngModel)]="getCajas(denominacion)[caja.caja_nombre]"
                                        (ngModelChange)="onCantidadCajaChange(denominacion, caja.caja_nombre, $event)"
                                        (click)="$event.stopPropagation()"
-                                       style="max-width: 80px;">
-                                <button class="btn btn-outline-primary btn-sm" type="button"
-                                        (click)="incrementCantidadByCaja(denominacion, caja.caja_nombre); $event.stopPropagation()">
-                                  <i class="ri-add-line"></i>
-                                </button>
+                                       style="max-width: 200px;">
                               </div>
                             </td>
                           }
@@ -381,18 +373,10 @@
                             </td>
                             <td>
                               <div class="input-group input-group-sm justify-content-end">
-                                <button class="btn btn-outline-primary btn-sm" type="button"
-                                        (click)="decrementCantidadMovimiento(detail)">
-                                  <i class="ri-subtract-line"></i>
-                                </button>
                                 <input type="number" class="form-control text-center" min="0" step="0.01"
                                        [(ngModel)]="detail.cantidad"
                                        (ngModelChange)="onCantidadMovimientoChange(detail, $event)"
-                                       style="max-width: 80px;">
-                                <button class="btn btn-outline-primary btn-sm" type="button"
-                                        (click)="incrementCantidadMovimiento(detail)">
-                                  <i class="ri-add-line"></i>
-                                </button>
+                                       style="max-width: 200px;">
                               </div>
                             </td>
                           </tr>

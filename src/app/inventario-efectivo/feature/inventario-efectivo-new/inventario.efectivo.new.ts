@@ -330,27 +330,11 @@ export class InventarioEfectivoNew implements OnInit {
         return denominacion.cajas || {};
     }
 
-    incrementCantidadByCaja(denominacion: any, caja: string) {
-        this.inventarioEfectivoStore.incrementCantidadByCaja(denominacion, caja);
-    }
-
-    decrementCantidadByCaja(denominacion: any, caja: string) {
-        this.inventarioEfectivoStore.decrementCantidadByCaja(denominacion, caja);
-    }
-
     onCantidadCajaChange(denominacion: any, caja: string, event: any) {
         this.inventarioEfectivoStore.onCantidadCajaChange(denominacion, caja, event);
     }
 
     // ===== MÉTODOS DELEGADOS AL STORE - MOVIMIENTOS =====
-
-    incrementCantidadMovimiento(detail: any) {
-        this.inventarioEfectivoStore.incrementCantidadMovimiento(detail);
-    }
-
-    decrementCantidadMovimiento(detail: any) {
-        this.inventarioEfectivoStore.decrementCantidadMovimiento(detail);
-    }
 
     onCantidadMovimientoChange(detail: any, event: any) {
         this.inventarioEfectivoStore.onCantidadMovimientoChange(detail, event);

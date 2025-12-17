@@ -843,24 +843,6 @@ export class InventarioEfectivoStore extends SignalStore<IState> {
   }
 
   /**
-   * Incrementa la cantidad de una denominación en una caja específica
-   */
-  public incrementCantidadByCaja(denominacion: any, cajaNombre: string) {
-    const cantidadActual = denominacion.cajas?.[cajaNombre] || 0;
-    this.updateCantidadByCaja(denominacion, cajaNombre, cantidadActual + 1);
-  }
-
-  /**
-   * Decrementa la cantidad de una denominación en una caja específica
-   */
-  public decrementCantidadByCaja(denominacion: any, cajaNombre: string) {
-    const cantidadActual = denominacion.cajas?.[cajaNombre] || 0;
-    if (cantidadActual > 0) {
-      this.updateCantidadByCaja(denominacion, cajaNombre, cantidadActual - 1);
-    }
-  }
-
-  /**
    * Actualiza la cantidad de una denominación en una caja específica
    */
   public onCantidadCajaChange(denominacion: any, cajaNombre: string, event: any) {
@@ -972,22 +954,6 @@ export class InventarioEfectivoStore extends SignalStore<IState> {
   }
 
   // ===== MÉTODOS PARA GESTIONAR MOVIMIENTOS =====
-
-  /**
-   * Incrementa la cantidad de un movimiento
-   */
-  public incrementCantidadMovimiento(detail: any) {
-    const cantidadActual = parseFloat(detail.cantidad) || 0;
-    this.updateCantidadMovimiento(detail, cantidadActual + 1);
-  }
-
-  /**
-   * Decrementa la cantidad de un movimiento
-   */
-  public decrementCantidadMovimiento(detail: any) {
-    const cantidadActual = parseFloat(detail.cantidad) || 0;
-    this.updateCantidadMovimiento(detail, cantidadActual - 1);
-  }
 
   /**
    * Actualiza la cantidad de un movimiento desde el input
