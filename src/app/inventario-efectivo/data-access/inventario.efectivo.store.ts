@@ -534,6 +534,30 @@ export class InventarioEfectivoStore extends SignalStore<IState> {
     return of(true);
   };
 
+  /**
+   * Valida si se puede aperturar un nuevo turno
+   * @returns objeto con { canOpen: boolean, primerRegistro?: any }
+   */
+  public validarAperturaTurno(): { canOpen: boolean, primerRegistro?: any } {
+    const inventarioData = this.vm().inventarioEfectivoData;
+
+    // Si no hay datos, permitir aperturar
+    if (!inventarioData?.body || inventarioData.body.length === 0) {
+      return { canOpen: true };
+    }
+
+    // Obtener el primer registro
+    const primerRegistro = inventarioData.body[0];
+
+    // Verificar si el primer registro está abierto
+    const estaAbierto = primerRegistro.abierta === 1 || primerRegistro.abierta === '1';
+
+    return {
+      canOpen: !estaAbierto,
+      primerRegistro: estaAbierto ? primerRegistro : undefined
+    };
+  }
+
   public incrementDenominacionEfectivo(denominacion: any) {
     const cantidadActual = denominacion.cantidad || 0;
     this.updateDenominacionCantidad(denominacion, cantidadActual + 1);

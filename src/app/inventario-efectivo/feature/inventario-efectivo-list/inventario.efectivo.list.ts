@@ -23,6 +23,7 @@ import {CommonModule} from "@angular/common";
 import {SimplebarAngularModule} from "simplebar-angular";
 import {EmptyStateComponent} from "@shared/components/empty-state/empty-state.component";
 import {LoadingSpinnerComponent} from "@shared/components/loading-spinner/loading-spinner.component";
+import {ConfirmationService} from "@sothy/services/confirmation.service";
 
 @Component({
   standalone: true,
@@ -194,6 +195,7 @@ export class InventarioEfectivoList {
               private store: Store<{ data: RootReducerState }>,
               public inventarioEfectivoStore: InventarioEfectivoStore,
               private offcanvasService: NgbOffcanvas,
+              private confirmationService: ConfirmationService,
   ) {
     // Inicializar FormControl con el rango de fechas del store
     this.dateRangeControl = new FormControl(this.inventarioEfectivoStore.getDateRangeForComponent());
@@ -650,6 +652,46 @@ export class InventarioEfectivoList {
     this.productRate = 0;
     this.productPrice = 0;
     this.products = this.allproduct
+  }
+
+  /**
+   * Intenta aperturar un turno, validando primero que no haya un turno abierto
+   */
+  onAperturarTurno() {
+    // Obtener validación desde el store
+    const { canOpen, primerRegistro } = this.inventarioEfectivoStore.validarAperturaTurno();
+
+    if (canOpen) {
+      // Permitir navegar
+      this.router.navigate(['/inventario-efectivo/nuevo']);
+    } else {
+      // Mostrar confirmación que no permite abrir nuevo turno
+      this.confirmationService.openAndHandle(
+        {
+          title: '⚠️ Hay un turno aperturado',
+          message: `No se puede aperturar un nuevo turno porque existe un turno actualmente abierto desde el ${primerRegistro?.apertura || 'N/A'}. Por favor, cierre el turno actual antes de aperturar uno nuevo.`,
+          icon: {
+            show: true,
+            name: 'warning',
+            color: 'warning'
+          },
+          actions: {
+            confirm: {
+              show: true,
+              label: 'Entendido',
+              color: 'primary'
+            },
+            cancel: {
+              show: false
+            }
+          },
+          dismissible: true
+        },
+        () => {
+          // No hacer nada cuando confirma, solo cerrar el diálogo
+        }
+      );
+    }
   }
 
   cerrarTurno(id: any) {
