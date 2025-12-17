@@ -41,6 +41,11 @@ export type IState = {
   selectedTurnoId: string | null,
   selectedOperacion: string | null,
 
+  // Datos del turno cargado (para modo cierre)
+  turnoDataLoading: boolean,
+  turnoData: any,
+  turnoDataError: any,
+
   // Campos para el resumen de operación turno (visualizar)
   resumenOperacionLoading: boolean,
   resumenOperacionData: any,
@@ -82,6 +87,11 @@ const initialState: IState = {
   // Inicializar campos de turno y operación
   selectedTurnoId: null,
   selectedOperacion: null,
+
+  // Inicializar datos del turno
+  turnoDataLoading: false,
+  turnoData: null,
+  turnoDataError: null,
 
   // Inicializar campos de resumen
   resumenOperacionLoading: false,
@@ -166,6 +176,11 @@ export class InventarioEfectivoStore extends SignalStore<IState> {
 
     'selectedTurnoId',
     'selectedOperacion',
+
+    // Datos del turno cargado
+    'turnoDataLoading',
+    'turnoData',
+    'turnoDataError',
 
     // Propiedades para visualizar resumen
     'resumenOperacionLoading',
@@ -346,6 +361,41 @@ export class InventarioEfectivoStore extends SignalStore<IState> {
       }),
     ).subscribe();
   };
+
+  // Método para cargar datos de una operación turno por ID
+  public loadOperacionTurnoById(operacionturno_id: number): void {
+    this.patch({turnoDataLoading: true, turnoDataError: null});
+
+    this._inventarioEfectivoRemoteReq.requestGetOperacionturnoById(operacionturno_id).pipe(
+      tap(({data}) => {
+
+        // Mapear la respuesta del backend a turnoData
+        const turnoData = {
+          turno_id: data.turno_id,
+          turno_nombre: data.turno || 'Turno',
+          fecha_apertura: data.apertura || '',
+          monto_inicial: data.totalinventario || 0,
+          usuario_apertura: data.gerente || ''
+        };
+
+        this.patch({
+          turnoData,
+          selectedOperacion: 'cierre'
+        });
+        this.setSelectedTurnoId(data.turno_id);
+      }),
+      finalize(() => {
+        this.patch({turnoDataLoading: false});
+      }),
+      catchError((error) => {
+        this.patch({
+          turnoDataError: error,
+          turnoData: null
+        });
+        return of(null);
+      })
+    ).subscribe();
+  }
 
   public async loadCajas(de_apertura = PARAM.UNDEFINED) {
     this.patch({cajasLoading: true, cajasError: null});
@@ -868,8 +918,8 @@ export class InventarioEfectivoStore extends SignalStore<IState> {
     // Calcular total_real_turno basado en el modo
     let totalRealTurno = totalConvertido;
     if (isCerrarMode) {
-      const turnoData = this.getTurnoData();
-      const montoInicial = turnoData?.monto_inicial || 0;
+      const turnoData = state.turnoData;
+      const montoInicial = Number(turnoData?.monto_inicial) || 0;
       const subtotalMovimientos = this.calculateSubtotalMovimientos();
       totalRealTurno = montoInicial + subtotalMovimientos;
     }
@@ -957,8 +1007,8 @@ export class InventarioEfectivoStore extends SignalStore<IState> {
     // Recalcular total_real_turno si está en modo cierre
     let totalRealTurno = state.valoresSummary.totalConvertido;
     if (isCerrarMode) {
-      const turnoData = this.getTurnoData();
-      const montoInicial = turnoData?.monto_inicial || 0;
+      const turnoData = state.turnoData;
+      const montoInicial = Number(turnoData?.monto_inicial) || 0;
       const subtotalMovimientos = this.calculateSubtotalMovimientos(catMovActualizado);
       totalRealTurno = montoInicial + subtotalMovimientos;
     }
@@ -999,26 +1049,6 @@ export class InventarioEfectivoStore extends SignalStore<IState> {
       }
       return total;
     }, 0);
-  }
-
-  /**
-   * Obtiene los datos del turno desde inventarioEfectivoData
-   */
-  private getTurnoData(): any {
-    const state = this.vm();
-    const operacionTurnoId = state.selectedTurnoId;
-    const inventarioData = state.inventarioEfectivoData?.body.map((operacionturno: any) => {
-      const monto_inicial = Number(operacionturno.totalinventario);
-      return { ...operacionturno, monto_inicial };
-    });;
-
-    if (!inventarioData || !operacionTurnoId) {
-      return null;
-    }
-
-    return inventarioData.find(
-      (item: any) => item.operacionturno_id === parseInt(operacionTurnoId)
-    );
   }
 
   /**

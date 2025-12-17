@@ -1,4 +1,4 @@
-import {Component, inject, OnInit, TemplateRef, ViewChild} from '@angular/core';
+import {Component, effect, inject, OnInit, TemplateRef, ViewChild} from '@angular/core';
 import {BreadcrumbsComponent} from "@velzon/components/breadcrumbs/breadcrumbs.component";
 import {InventarioEfectivoStore} from "@app/inventario-efectivo/data-access/inventario.efectivo.store";
 import {FormsModule} from "@angular/forms";
@@ -168,6 +168,13 @@ export class InventarioEfectivoNew implements OnInit {
     };
 
     constructor() {
+        // Effect para observar cambios en turnoData del store
+        effect(() => {
+            const turnoData = this.inventarioEfectivoStore.vm().turnoData;
+            if (turnoData) {
+              this.turnoData = turnoData;
+            }
+        });
     }
 
     ngOnInit(): void {
@@ -215,28 +222,9 @@ export class InventarioEfectivoNew implements OnInit {
 
     // Método para cargar datos del turno abierto
     loadTurnoData(operacionTurnoId: string) {
-        const vm = this.inventarioEfectivoStore.vm();
-
-        // Buscar el inventario en la lista por operacionturno_id
-        if (vm?.inventarioEfectivoData?.body) {
-            const inventarioApertura = vm.inventarioEfectivoData.body.find(
-                (inv: any) => inv.operacionturno_id == operacionTurnoId
-            );
-
-            if (inventarioApertura) {
-                this.turnoData = {
-                    turno_id: inventarioApertura.turno_id,
-                    turno_nombre: inventarioApertura.turno || 'Turno',
-                    fecha_apertura: inventarioApertura.apertura || '',
-                    monto_inicial: Number(inventarioApertura.totalinventario) || 0,
-                    usuario_apertura: inventarioApertura.gerente || ''
-                };
-            }
-        }
-
-        // Actualizar el store con los datos del turno
-        this.inventarioEfectivoStore.setSelectedTurnoId(operacionTurnoId);
-        this.inventarioEfectivoStore.setSelectedOperacion('cierre');
+        // Llamar al store para cargar la operación turno (sin subscribe)
+        this.inventarioEfectivoStore.loadOperacionTurnoById(Number(operacionTurnoId));
+        // El effect en el constructor se encargará de actualizar cuando turnoData cambie
     }
 
 
@@ -298,7 +286,7 @@ export class InventarioEfectivoNew implements OnInit {
     // Método privado para proceder con el guardado
     private proceedToSave() {
         const vm = this.inventarioEfectivoStore.vm();
-        const turnoInfo = this.isCerrarMode ? this.turnoData : this.getSelectedTurno();
+        const turnoInfo = this.isCerrarMode ? vm.turnoData : this.getSelectedTurno();
 
         this.confirmationService.openAndHandle({
             title: '✅ ¿Todos los datos son correctos?',
@@ -330,7 +318,7 @@ export class InventarioEfectivoNew implements OnInit {
             dismissible: false
         }, () => {
             // onConfirm callback
-            const turnoId = this.turnoData?.turno_id || vm.selectedTurnoId;
+            const turnoId = vm.turnoData?.turno_id || vm.selectedTurnoId;
             const operacionTurnoId = this.operacionTurnoId || null;
             this.inventarioEfectivoStore.saveInventarioEfectivoWithDetils(turnoId, operacionTurnoId);
         });
