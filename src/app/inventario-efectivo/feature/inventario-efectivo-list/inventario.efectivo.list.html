@@ -155,7 +155,7 @@
                                         class="ri-lock-2-fill align-bottom me-2 text-muted"></i> Cerrar </a>
                                     </li>
                                   } @else {
-                                    @if (inventarioEfectivo.operacionturno_id_aperturada == null) {
+                                    @if (inventarioEfectivo.operacionturno_id_aperturada == null && $index === 0) {
                                       <li>
                                         <a class="dropdown-item"
                                            (click)="replicarInventario(inventarioEfectivo.operacionturno_id)"><i
