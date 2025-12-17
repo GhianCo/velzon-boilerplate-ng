@@ -34,6 +34,10 @@ export class InventarioEfectivoRemoteReq {
       );
   }
 
+  requestGetOperacionturnoById(id: number): Observable<IResponse> {
+    return this.http.post(this.REMOTE_API_URI + 'operacionturno/', id);
+  }
+
   requestOperacionTurnoWithDetails(operacionturno_id: any): Observable<IResponse> {
     return this.http.get(this.REMOTE_API_URI + `operacionturno/${operacionturno_id}/details`);
   }

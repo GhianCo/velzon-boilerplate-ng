@@ -194,13 +194,7 @@ export class InventarioEfectivoNew implements OnInit {
                 this.operacionTurnoId = params['id'];
 
                 if (esModoCierre && this.operacionTurnoId) {
-                    // Modo CIERRE: cargar datos del turno abierto para cerrarlo
-                    this.inventarioEfectivoStore.loadAllInvetarioEfectivoStore();
-
-                    // Esperar un momento para que los datos se carguen
-                    setTimeout(() => {
-                        this.loadTurnoData(this.operacionTurnoId as string);
-                    }, 500);
+                  this.loadTurnoData(this.operacionTurnoId as string);
                 } else if (this.operacionTurnoId) {
                     // Modo REPLICAR: cargar datos del turno anterior como plantilla para apertura
                 } else {
