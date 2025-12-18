@@ -496,12 +496,12 @@ export class InventarioEfectivoStore extends SignalStore<IState> {
     });
 
     const turno = state.turnosData.find(
-      (turno: any) => turno.turno_id == turnoId
+      (turno: any) => turno.turno_id == state.selectedTurnoId
     );
 
     // Construir el payload con turno y tipo de operación
     const inventario = {
-      turno_id: turnoId || state.selectedTurnoId,
+      turno_id: state.selectedTurnoId,
       operacionturno_id: operacionTurnoId || null,
       tipo_operacion: state.selectedOperacion,
       total: state.valoresSummary.totalConvertido,
