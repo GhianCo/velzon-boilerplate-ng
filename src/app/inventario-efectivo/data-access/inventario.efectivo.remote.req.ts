@@ -38,6 +38,10 @@ export class InventarioEfectivoRemoteReq {
     return this.http.get(this.REMOTE_API_URI + 'operacionturno/' + id);
   }
 
+  requestGetLastOperacionturno(): Observable<IResponse> {
+    return this.http.get(this.REMOTE_API_URI + 'operacionturno/last');
+  }
+
   requestOperacionTurnoWithDetails(operacionturno_id: any): Observable<IResponse> {
     return this.http.get(this.REMOTE_API_URI + `operacionturno/${operacionturno_id}/details`);
   }

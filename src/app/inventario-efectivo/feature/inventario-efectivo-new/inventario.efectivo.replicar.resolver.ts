@@ -7,6 +7,7 @@ export const InventarioEfectivoReplicarResolver = (route: ActivatedRouteSnapshot
   const id = route.params['id'];
   inventarioEfectivoStore.loadCajas();
   inventarioEfectivoStore.loadTurnos();
+  inventarioEfectivoStore.loadLastOperacionTurno();
   inventarioEfectivoStore.loadCatMovWithDetails();
   inventarioEfectivoStore.loadOperacionTurnoWithDetails(id);
   return true;

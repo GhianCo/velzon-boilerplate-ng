@@ -1,4 +1,4 @@
-import {Injectable} from "@angular/core";
+import {computed, Injectable} from "@angular/core";
 import {ActivatedRoute, Router} from "@angular/router";
 import {SignalStore} from "@shared/data-access/signal.store";
 import {InventarioEfectivoRemoteReq} from "@app/inventario-efectivo/data-access/inventario.efectivo.remote.req";
@@ -36,6 +36,11 @@ export type IState = {
   turnosLoading: boolean,
   turnosData: any,
   turnosError: any,
+
+  // Último turno registrado (para determinar turnos disponibles)
+  lastOperacionTurnoLoading: boolean,
+  lastOperacionTurno: any,
+  lastOperacionTurnoError: any,
 
   // Campos para turno y tipo de operación seleccionados
   selectedTurnoId: string | null,
@@ -83,6 +88,11 @@ const initialState: IState = {
   turnosLoading: false,
   turnosData: [],
   turnosError: null,
+
+  // Inicializar último turno
+  lastOperacionTurnoLoading: false,
+  lastOperacionTurno: null,
+  lastOperacionTurnoError: null,
 
   // Inicializar campos de turno y operación
   selectedTurnoId: null,
@@ -168,6 +178,10 @@ export class InventarioEfectivoStore extends SignalStore<IState> {
     'turnosData',
     'turnosError',
 
+    'lastOperacionTurnoLoading',
+    'lastOperacionTurno',
+    'lastOperacionTurnoError',
+
     'valoresSummary',
     'chartSummary',
 
@@ -187,6 +201,55 @@ export class InventarioEfectivoStore extends SignalStore<IState> {
     'resumenOperacionData',
     'resumenOperacionError'
   ]);
+
+  /**
+   * Computed signal que devuelve los turnos disponibles para aperturar
+   * basándose en el último turno registrado obtenido desde el backend
+   */
+  public readonly turnosDisponibles = computed(() => {
+    const state = this.vm();
+    const lastOperacionTurno = state.lastOperacionTurno;
+    const turnosData = state.turnosData;
+
+    // Si no hay turnos, retornar array vacío
+    if (!turnosData || turnosData.length === 0) {
+      return [];
+    }
+
+    // Si no hay último turno registrado, mostrar todos los turnos
+    if (!lastOperacionTurno) {
+      return turnosData;
+    }
+
+    // Si el último turno está abierto, solo retornar ese turno
+    if (lastOperacionTurno.abierta === 1 || lastOperacionTurno.abierta === '1') {
+      const turnoAbierto = turnosData.find(
+        (t: any) => t.turno_id === lastOperacionTurno.turno_id
+      );
+      return turnoAbierto ? [turnoAbierto] : [];
+    }
+
+    // Si el último turno está cerrado, buscar el siguiente turno en orden
+    // Obtener el turno_orden del último turno cerrado
+    const turnoActual = turnosData.find(
+      (t: any) => t.turno_id === lastOperacionTurno.turno_id
+    );
+
+    if (!turnoActual) {
+      return turnosData; // Si no se encuentra, mostrar todos
+    }
+
+    const ordenUltimoTurno = turnoActual.turno_orden || 0;
+    const esUltimoTurno = turnoActual.turno_ultimo === 1 || turnoActual.turno_ultimo === '1';
+
+    if (esUltimoTurno) {
+      // Si era el último turno, empezar de nuevo desde el primer turno
+      return turnosData.filter((t: any) => t.turno_primero === 1 || t.turno_primero === '1');
+    }
+
+    // Retornar turnos con orden mayor al último cerrado
+    return turnosData.filter((t: any) => (t.turno_orden || 0) > ordenUltimoTurno);
+  });
 
   constructor(
     private _inventarioEfectivoRemoteReq: InventarioEfectivoRemoteReq,
@@ -682,6 +745,31 @@ export class InventarioEfectivoStore extends SignalStore<IState> {
         return of(this.patch({
           turnosLoading: false,
           turnosError: error
+        }));
+      })
+    ).subscribe();
+  }
+
+  /**
+   * Cargar el último turno registrado (aperturado o cerrado)
+   * Se usa para determinar qué turnos están disponibles para aperturar
+   */
+  public async loadLastOperacionTurno() {
+    this.patch({lastOperacionTurnoLoading: true});
+
+    this._inventarioEfectivoRemoteReq.requestGetLastOperacionturno().pipe(
+      tap(async ({data}) => {
+        this.patch({
+          lastOperacionTurno: data,
+        });
+      }),
+      finalize(() => {
+        this.patch({lastOperacionTurnoLoading: false});
+      }),
+      catchError((error) => {
+        return of(this.patch({
+          lastOperacionTurnoLoading: false,
+          lastOperacionTurnoError: error
         }));
       })
     ).subscribe();
