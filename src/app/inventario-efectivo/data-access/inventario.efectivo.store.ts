@@ -512,7 +512,7 @@ export class InventarioEfectivoStore extends SignalStore<IState> {
       suma_diaria_detalle: state.catMovWithDetailsData,
       cajas: state.cajasData,
       supervisor: turno.supervisor || '',
-      ultimo_turno: turno.turno_ultimo || ''
+      ultimo_turno: turno.turno_ultimo || 0
     };
 
     this._inventarioEfectivoRemoteReq.requestSaveInventario(inventario).pipe(
