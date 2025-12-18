@@ -1225,31 +1225,16 @@ export class InventarioEfectivoStore extends SignalStore<IState> {
     });
 
     return this._inventarioEfectivoRemoteReq.requestResumenOperacionTurno(operacionTurnoId).pipe(
-      tap((response: any) => {
-        if (response.code === 200 && response.data) {
-          this.patch({
-            resumenOperacionData: response.data,
-            resumenOperacionLoading: false
-          });
-        } else {
-          this.patch({
-            resumenOperacionError: 'Error al cargar el resumen',
-            resumenOperacionLoading: false
-          });
-        }
+      tap(async ({data}) => {
+        this.patch({
+          resumenOperacionData: data,
+          resumenOperacionLoading: false
+        })
       }),
       catchError((error) => {
-
-        // Usar datos simulados como fallback
-        const simulatedData = this.getSimulatedResumenData();
-
-        this.patch({
-          resumenOperacionData: simulatedData,
-          resumenOperacionLoading: false,
-          resumenOperacionError: null
-        });
-
-        return of({ code: 200, data: simulatedData });
+        return of(this.patch({
+          resumenOperacionError: error
+        }));
       })
     );
   }
@@ -1257,126 +1242,6 @@ export class InventarioEfectivoStore extends SignalStore<IState> {
   /**
    * Datos simulados para el resumen (fallback cuando el backend no está disponible)
    */
-  private getSimulatedResumenData() {
-    return {
-      operacionturno_id: 35,
-      turno_id: 3,
-      turno_nombre: 'Turno Mañana',
-      apertura: '2025-12-15 08:00:00',
-      cierre: '2025-12-15 16:00:00',
-      gerente: 'Richard Nizama Timana',
-      supervisor: 'Piter Chavez Flores',
-      sala: 'Masaris Paita',
-      moneda: 'PEN',
-      simbolo_moneda: 'S/.',
-
-      inventario_apertura: {
-        total: 143499.36,
-        cajas: [
-          { caja_id: 5, caja_nombre: 'Boveda' },
-          { caja_id: 6, caja_nombre: 'Caja 01' },
-          { caja_id: 7, caja_nombre: 'Caja 02' },
-          { caja_id: 8, caja_nombre: 'Caja 03' }
-        ],
-        valores: [
-          {
-            valor_id: 1,
-            nombre: 'Soles',
-            simbolo: 'S/.',
-            denominaciones: [
-              {
-                denominacion_id: 1,
-                descripcion: '200 NUEVOS SOLES',
-                valor_unitario: 200,
-                cajas: [
-                  { caja_id: 5, caja_nombre: 'Boveda', cantidad: 9, importe: 1800 },
-                  { caja_id: 6, caja_nombre: 'Caja 01', cantidad: 0, importe: 0 },
-                  { caja_id: 7, caja_nombre: 'Caja 02', cantidad: 0, importe: 0 },
-                  { caja_id: 8, caja_nombre: 'Caja 03', cantidad: 0, importe: 0 }
-                ],
-                total_cantidad: 9,
-                total_importe: 1800
-              },
-              {
-                denominacion_id: 2,
-                descripcion: '100 NUEVOS SOLES',
-                valor_unitario: 100,
-                cajas: [
-                  { caja_id: 5, caja_nombre: 'Boveda', cantidad: 536, importe: 53600 },
-                  { caja_id: 6, caja_nombre: 'Caja 01', cantidad: 0, importe: 0 },
-                  { caja_id: 7, caja_nombre: 'Caja 02', cantidad: 0, importe: 0 },
-                  { caja_id: 8, caja_nombre: 'Caja 03', cantidad: 0, importe: 0 }
-                ],
-                total_cantidad: 536,
-                total_importe: 53600
-              }
-            ]
-          }
-        ]
-      },
-
-      inventario_cierre: {
-        total: 116111.16,
-        cajas: [
-          { caja_id: 5, caja_nombre: 'Boveda' },
-          { caja_id: 6, caja_nombre: 'Caja 01' },
-          { caja_id: 7, caja_nombre: 'Caja 02' },
-          { caja_id: 8, caja_nombre: 'Caja 03' }
-        ],
-        valores: [
-          {
-            valor_id: 1,
-            nombre: 'Soles',
-            simbolo: 'S/.',
-            denominaciones: [
-              {
-                denominacion_id: 1,
-                descripcion: '200 NUEVOS SOLES',
-                valor_unitario: 200,
-                cajas: [
-                  { caja_id: 5, caja_nombre: 'Boveda', cantidad: 10, importe: 2000 },
-                  { caja_id: 6, caja_nombre: 'Caja 01', cantidad: 0, importe: 0 },
-                  { caja_id: 7, caja_nombre: 'Caja 02', cantidad: 0, importe: 0 },
-                  { caja_id: 8, caja_nombre: 'Caja 03', cantidad: 0, importe: 0 }
-                ],
-                total_cantidad: 10,
-                total_importe: 2000
-              }
-            ]
-          }
-        ]
-      },
-
-      suma_diaria: {
-        subtotales: {
-          ingresos: 27391.89,
-          egresos: 3110,
-          diferencias: 1.85
-        },
-        total: 24283.74,
-        categorias: [
-          {
-            categoria_id: 1,
-            nombre: 'INGRESOS',
-            tipo_operacion: '+',
-            items: [
-              { id: 15, nombre: 'CONTEO DE HOPPER', cantidad: 3884, importe: 3884 },
-              { id: 17, nombre: 'BILLETES RECIBIDOS', cantidad: 19043.05, importe: 19043.05 }
-            ]
-          },
-          {
-            categoria_id: 2,
-            nombre: 'EGRESOS',
-            tipo_operacion: '-',
-            items: [
-              { id: 29, nombre: 'RELLENO', cantidad: 1353, importe: 1353 }
-            ]
-          }
-        ]
-      }
-    };
-  }
-
   // ===== FIN MÉTODOS PARA VISUALIZAR RESUMEN =====
 
 }
