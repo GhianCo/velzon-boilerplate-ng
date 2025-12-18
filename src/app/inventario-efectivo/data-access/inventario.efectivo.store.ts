@@ -340,6 +340,7 @@ export class InventarioEfectivoStore extends SignalStore<IState> {
             id: valor.valor_id,
             valor_id: valor.valor_id,
             name: valor.name,
+            codigo: valor.codigo,
             denominaciones: denominacionesTransformadas,
             acumuladoLocal,
             acumuladoConvertido,
