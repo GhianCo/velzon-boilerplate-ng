@@ -495,6 +495,10 @@ export class InventarioEfectivoStore extends SignalStore<IState> {
       });
     });
 
+    const turno = state.turnosData.find(
+      (turno: any) => turno.turno_id == turnoId
+    );
+
     // Construir el payload con turno y tipo de operación
     const inventario = {
       turno_id: turnoId || state.selectedTurnoId,
@@ -506,7 +510,9 @@ export class InventarioEfectivoStore extends SignalStore<IState> {
       tipocambio: state.valoresSummary.tipocambio,
       inventario_efectivo_detalle: inventarioDetallePorDenominacion,
       suma_diaria_detalle: state.catMovWithDetailsData,
-      cajas: state.cajasData
+      cajas: state.cajasData,
+      supervisor: turno.supervisor || '',
+      ultimo_turno: turno.turno_ultimo || ''
     };
 
     this._inventarioEfectivoRemoteReq.requestSaveInventario(inventario).pipe(
