@@ -204,7 +204,8 @@ export class InventarioEfectivoStore extends SignalStore<IState> {
 
   /**
    * Computed signal que devuelve los turnos disponibles para aperturar
-   * basándose en el último turno registrado obtenido desde el backend
+   * basándose en el último turno registrado obtenido desde el backend.
+   * Muestra el siguiente turno a aperturar Y todos los posteriores.
    */
   public readonly turnosDisponibles = computed(() => {
     const state = this.vm();
@@ -222,6 +223,7 @@ export class InventarioEfectivoStore extends SignalStore<IState> {
     }
 
     // Si el último turno está abierto, solo retornar ese turno
+    // (No se puede aperturar otro mientras uno esté abierto)
     if (lastOperacionTurno.abierta === 1 || lastOperacionTurno.abierta === '1') {
       const turnoAbierto = turnosData.find(
         (t: any) => t.turno_id === lastOperacionTurno.turno_id
@@ -229,7 +231,7 @@ export class InventarioEfectivoStore extends SignalStore<IState> {
       return turnoAbierto ? [turnoAbierto] : [];
     }
 
-    // Si el último turno está cerrado, buscar el siguiente turno en orden
+    // Si el último turno está cerrado, buscar el siguiente turno Y todos los posteriores
     // Obtener el turno_orden del último turno cerrado
     const turnoActual = turnosData.find(
       (t: any) => t.turno_id === lastOperacionTurno.turno_id
@@ -243,12 +245,15 @@ export class InventarioEfectivoStore extends SignalStore<IState> {
     const esUltimoTurno = turnoActual.turno_ultimo === 1 || turnoActual.turno_ultimo === '1';
 
     if (esUltimoTurno) {
-      // Si era el último turno, empezar de nuevo desde el primer turno
-      return turnosData.filter((t: any) => t.turno_primero === 1 || t.turno_primero === '1');
+      // Si era el último turno del día, empezar de nuevo mostrando todos los turnos
+      // (el usuario puede elegir desde el primero en adelante)
+      return turnosData;
     }
 
-    // Retornar turnos con orden mayor al último cerrado
-    return turnosData.filter((t: any) => (t.turno_orden || 0) > ordenUltimoTurno);
+    // Retornar el siguiente turno Y todos los posteriores
+    // (turnos con orden mayor o igual al siguiente)
+    const siguienteOrden = ordenUltimoTurno + 1;
+    return turnosData.filter((t: any) => (t.turno_orden || 0) >= siguienteOrden);
   });
 
   constructor(

@@ -173,6 +173,27 @@ export class InventarioEfectivoNew implements OnInit {
               this.turnoData = turnoData;
             }
         });
+
+        // Effect para seleccionar automáticamente el turno si solo hay uno disponible
+        effect(() => {
+            const turnosDisponibles = this.inventarioEfectivoStore.turnosDisponibles();
+            const vm = this.inventarioEfectivoStore.vm();
+            const selectedTurnoId = vm.selectedTurnoId;
+
+            // Si hay exactamente un turno disponible y no hay ninguno seleccionado, seleccionarlo automáticamente
+            if (turnosDisponibles.length === 1 && !selectedTurnoId) {
+                const turnoId = turnosDisponibles[0].turno_id;
+                this.inventarioEfectivoStore.setSelectedTurnoId(turnoId);
+            }
+
+            // Si el turno seleccionado ya no está disponible, limpiar la selección
+            if (selectedTurnoId && turnosDisponibles.length > 0) {
+                const turnoExiste = turnosDisponibles.find((t: any) => t.turno_id == selectedTurnoId);
+                if (!turnoExiste) {
+                    this.inventarioEfectivoStore.setSelectedTurnoId(null);
+                }
+            }
+        });
     }
 
     ngOnInit(): void {
@@ -368,14 +389,6 @@ export class InventarioEfectivoNew implements OnInit {
         const totalSumaDiaria = vm.valoresSummary?.total_real_turno || 0;
         const diferencia = totalInventario - totalSumaDiaria;
 
-        // Log para debug
-        console.log('💰 Cálculo de diferencia:', {
-            totalInventario: totalInventario.toFixed(2),
-            totalSumaDiaria: totalSumaDiaria.toFixed(2),
-            diferencia: diferencia.toFixed(2),
-            diferenciaAbsoluta: Math.abs(diferencia).toFixed(2)
-        });
-
         return diferencia;
     }
 
@@ -452,13 +465,6 @@ export class InventarioEfectivoNew implements OnInit {
             // Seleccionar la nueva fila (deselecciona automáticamente la anterior)
             this.selectedRowId = rowId;
         }
-
-        console.log('Fila seleccionada:', {
-            valorDetail: valorDetail.nombre,
-            denominacion: denominacion.descripcion,
-            seleccionada: this.selectedRowId === rowId,
-            rowId: this.selectedRowId
-        });
     }
 
     // Verificar si una fila está seleccionada
@@ -503,7 +509,6 @@ export class InventarioEfectivoNew implements OnInit {
         const selectedRowInfo = this.getSelectedRowInfo();
 
         if (selectedRowInfo) {
-            console.log('Fila seleccionada:', selectedRowInfo);
 
             // Mostrar información más legible
             const summary = {
@@ -513,10 +518,7 @@ export class InventarioEfectivoNew implements OnInit {
                 importe: selectedRowInfo.denominacion.importeLocal,
                 cantidadTotal: selectedRowInfo.denominacion.cantidadTotal
             };
-
-            console.table([summary]);
         } else {
-            console.log('Ninguna fila seleccionada');
         }
     }
 
