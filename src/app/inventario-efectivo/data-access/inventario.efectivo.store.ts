@@ -571,6 +571,7 @@ export class InventarioEfectivoStore extends SignalStore<IState> {
     // Construir el payload con turno y tipo de operación
     const inventario = {
       turno_id: state.selectedTurnoId,
+      turno: turno.turno_nombre,
       operacionturno_id: operacionTurnoId || null,
       tipo_operacion: state.selectedOperacion,
       total: state.valoresSummary.totalConvertido,
