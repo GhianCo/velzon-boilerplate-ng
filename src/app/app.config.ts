@@ -1,4 +1,4 @@
-import {ApplicationConfig, importProvidersFrom} from "@angular/core";
+import {ApplicationConfig, APP_INITIALIZER, importProvidersFrom} from "@angular/core";
 import {
   PreloadAllModules,
   provideRouter, withHashLocation,
@@ -46,6 +46,8 @@ import {controlActivosAPiCreator, ControlActivosApiService} from "@sothy/service
 import {workersAPiCreator, WorkersApiService} from "@sothy/services/workers.api.service";
 import {AlertService, alertServiceFactory} from "@sothy/services/alert.service";
 import {provideAuth} from "@sothy/providers/auth.provider";
+import {ExternalAuthInitializerService} from "@app/account/services/external-auth-initializer.service";
+
 registerLanguageDictionary(deDE);
 
 const globalHotConfig: HotGlobalConfig = {
@@ -57,6 +59,15 @@ const globalHotConfig: HotGlobalConfig = {
 
 export function createTranslateLoader(http: HttpClient): any {
   return new TranslateHttpLoader(http, 'assets/i18n/', '.json');
+}
+
+/**
+ * Factory para inicializar la autenticación con token externo
+ */
+export function initializeExternalAuth(
+  externalAuthService: ExternalAuthInitializerService
+): () => Promise<void> {
+  return () => externalAuthService.initialize();
 }
 
 if (environment.defaultauth === 'firebase') {
@@ -74,6 +85,13 @@ export const appConfig: ApplicationConfig = {
       withInMemoryScrolling({scrollPositionRestoration: 'enabled'})
     ),
     {provide: HOT_GLOBAL_CONFIG, useValue: globalHotConfig},
+    // APP_INITIALIZER para autenticación con token externo
+    {
+      provide: APP_INITIALIZER,
+      useFactory: initializeExternalAuth,
+      deps: [ExternalAuthInitializerService],
+      multi: true
+    },
     // Configuración de HttpClient con interceptores funcionales
     provideHttpClient(
       withInterceptors([sslErrorHandlerInterceptor])

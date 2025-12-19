@@ -27,4 +27,16 @@ export class AuthLoginRemoteReq {
     return this._workersApiService.post(this.REMOTE_API_URI + 'liquidaciones/login', login);
   }
 
+  /**
+   * Autenticación con token JWT desde sistema externo
+   * @param salaId - ID de la sala (sala_id_liquidaciones)
+   * @param tokenJwt - Token JWT del sistema externo
+   */
+  requestAuthWithExternalToken(salaId: string, tokenJwt: string): Observable<IResponse> {
+    return this._workersApiService.post(this.REMOTE_API_URI + 'liquidaciones/login-external-token', {
+      sala_id: salaId,
+      token_jwt: tokenJwt
+    });
+  }
+
 }
