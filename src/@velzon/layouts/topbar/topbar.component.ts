@@ -42,7 +42,7 @@ export class TopbarComponent implements OnInit {
   valueset: any;
   countryName: any;
   cookieValue: any;
-  salaGerente: string  = '';
+  salaData: any = {};
   cartData!: CartModel[];
   total = 0;
   cart_length: any = 0;
@@ -58,7 +58,8 @@ export class TopbarComponent implements OnInit {
     private router: Router, private _persistenceService: PersistenceService) { }
 
   ngOnInit(): void {
-    this.salaGerente = this._persistenceService.getTokenProperty('sala_gerente') || '';
+    this.salaData.gerente = this._persistenceService.getTokenProperty('sala_gerente') || '';
+    this.salaData.sala = this._persistenceService.getTokenProperty('sala_nombre') || '';
     this.element = document.documentElement;
     // Cookies wise Language set
     this.cookieValue = this._cookiesService.get('lang');
