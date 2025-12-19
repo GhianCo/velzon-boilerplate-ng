@@ -18,6 +18,7 @@ import {
 import {SimplebarAngularModule} from "simplebar-angular";
 import {FormsModule} from "@angular/forms";
 import {AuthService} from "@sothy/services/auth.service";
+import {PersistenceService} from "@sothy/services/persistence.service";
 
 @Component({
   selector: 'app-topbar',
@@ -41,7 +42,7 @@ export class TopbarComponent implements OnInit {
   valueset: any;
   countryName: any;
   cookieValue: any;
-  userData: any;
+  salaGerente: string  = '';
   cartData!: CartModel[];
   total = 0;
   cart_length: any = 0;
@@ -54,12 +55,11 @@ export class TopbarComponent implements OnInit {
 
   constructor(@Inject(DOCUMENT) private document: any, private eventService: EventService, public languageService: LanguageService, private modalService: NgbModal,
     public _cookiesService: CookieService, public translate: TranslateService, private authService: AuthService, private authFackservice: AuthfakeauthenticationService,
-    private router: Router, private TokenStorageService: TokenStorageService) { }
+    private router: Router, private _persistenceService: PersistenceService) { }
 
   ngOnInit(): void {
-    this.userData = this.TokenStorageService.getUser();
+    this.salaGerente = this._persistenceService.getTokenProperty('sala_gerente') || '';
     this.element = document.documentElement;
-
     // Cookies wise Language set
     this.cookieValue = this._cookiesService.get('lang');
   }
