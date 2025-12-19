@@ -412,15 +412,15 @@
 
 <!-- Modal para observaciones de diferencia -->
 <ng-template #diferenciaModal let-offcanvas>
-  <div class="offcanvas-header bg-danger text-white">
-    <h5 class="offcanvas-title" id="offcanvasDiferenciaLabel">
+  <div class="offcanvas-header bg-danger">
+    <h5 class="offcanvas-title text-white" id="offcanvasDiferenciaLabel">
       <i class="ri-alert-line me-2"></i>Diferencia detectada
     </h5>
     <button type="button" class="btn-close btn-close-white" data-bs-dismiss="offcanvas" aria-label="Close"
             (click)="offcanvas.dismiss('Cross click')"></button>
   </div>
   <!--end offcanvas-header-->
-  <form (ngSubmit)="confirmGuardarInventario()" class="d-flex flex-column justify-content-end h-100">
+  <form  class="d-flex flex-column justify-content-end h-100">
     <div class="offcanvas-body">
       <div class="alert alert-danger border-danger mb-4">
         <div class="d-flex justify-content-between align-items-center">
@@ -443,29 +443,12 @@
           </strong>
         </div>
       </div>
-
-      <div class="mb-4">
-        <label for="observacionesDiferencia" class="form-label text-muted text-uppercase fw-semibold mb-3">
-          <i class="ri-file-list-3-line me-1"></i>Observaciones sobre la diferencia <span class="text-danger">*</span>
-        </label>
-        <textarea id="observacionesDiferencia"
-                  class="form-control"
-                  rows="5"
-                  [(ngModel)]="observacionesDiferencia"
-                  [ngModelOptions]="{standalone: true}"
-                  placeholder="Explique el motivo de la diferencia encontrada..."
-                  required></textarea>
-        <small class="text-muted">
-          <i class="ri-information-line me-1"></i>Este campo es obligatorio cuando existe diferencia
-        </small>
-      </div>
     </div>
     <!--end offcanvas-body-->
     <div class="offcanvas-footer border-top p-3 text-center">
-      <button type="submit"
-              class="btn btn-success w-100"
-              [disabled]="!observacionesDiferencia || observacionesDiferencia.trim().length === 0">
-        <i class="ri-save-fill align-middle me-1"></i>Confirmar y guardar inventario
+      <button type="button" (click)="offcanvas.dismiss('Cross click')"
+              class="btn btn-danger w-100">
+        <i class="ri-alert-line align-middle me-1"></i>Validar nuevamente
       </button>
     </div>
     <!--end offcanvas-footer-->
