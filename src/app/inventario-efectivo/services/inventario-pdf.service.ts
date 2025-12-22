@@ -438,7 +438,7 @@ export class InventarioPdfService {
       styles: { fontSize: 6, cellPadding: 0.5 },
       headStyles: { fillColor: [128, 128, 128], textColor: 255, fontStyle: 'bold', fontSize: 6 }, // Gris oscuro
       columnStyles: {
-        0: { cellWidth: 23, fontStyle: 'bold' }
+        0: { cellWidth: 23 }
       },
       margin: { left: xStart, right: doc.internal.pageSize.getWidth() - xStart - tableWidth }
     });
