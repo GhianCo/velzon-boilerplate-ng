@@ -381,7 +381,7 @@ export class InventarioPdfService {
         if (denomData.apertura) {
           cajasApertura.forEach((caja: any) => {
             const cajaData = denomData.apertura.cajas?.find((c: any) => c.caja_id === caja.caja_id);
-            row.push(`${cajaData?.importe}`);
+            row.push(`${cajaData?.cantidad}`);
           });
         } else {
           cajasApertura.forEach(() => row.push('-'));
@@ -395,7 +395,7 @@ export class InventarioPdfService {
         if (denomData.cierre) {
           cajasCierre.forEach((caja: any) => {
             const cajaData = denomData.cierre.cajas?.find((c: any) => c.caja_id === caja.caja_id);
-            row.push(`${cajaData.importe}`);
+            row.push(`${cajaData.cantidad}`);
           });
         } else {
           cajasCierre.forEach(() => row.push('-'));
