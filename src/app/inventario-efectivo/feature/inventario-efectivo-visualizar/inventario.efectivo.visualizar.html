@@ -166,8 +166,20 @@
                                             <i class="ri-checkbox-blank-circle-fill me-2" style="font-size: 8px;"></i>
                                             {{ valor.nombre }}
                                         </td>
-                                        <td [attr.colspan]="(resumenData.inventario_apertura.cajas.length * 2) + 2"></td>
+                                        <td [attr.colspan]="resumenData.inventario_apertura.cajas.length + resumenData.inventario_cierre.cajas.length + 2"></td>
                                     </tr>
+
+                                    <!-- Fila de Tipo de Cambio (solo para USD) -->
+                                    @if (valor.codigo === 'USD') {
+                                        <tr style="background-color: #fff3cd;">
+                                            <td class="fw-medium fst-italic" style="position: sticky; left: 0; background-color: #fff3cd; z-index: 10;">
+                                                <i class="ri-exchange-line me-2"></i>Tipo de cambio
+                                            </td>
+                                            <td class="text-center align-middle fw-bold" [attr.colspan]="(resumenData.inventario_apertura.cajas.length + resumenData.inventario_cierre.cajas.length) + 2">
+                                                S/. {{ valor.tc || '0.00' }}
+                                            </td>
+                                        </tr>
+                                    }
 
                                     <!-- Filas de denominaciones -->
                                     @for (denominacion of valor.denominaciones; track denominacion.denominacion_id; let dIdx = $index) {
