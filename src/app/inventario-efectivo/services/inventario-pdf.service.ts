@@ -436,7 +436,7 @@ export class InventarioPdfService {
       head: [titleRow, headers, subHeaders],
       body: rows,
       theme: 'striped',
-      styles: { fontSize: 6, cellPadding: 0.5 },
+      styles: { fontSize: 6, cellPadding: 1.1 }, // Aumentado de 0.5 a 1.5 para más espacio vertical
       headStyles: { fillColor: [128, 128, 128], textColor: 255, fontStyle: 'bold', fontSize: 6 }, // Gris oscuro
       columnStyles: {
         0: { cellWidth: 23 }
@@ -512,7 +512,7 @@ export class InventarioPdfService {
       head: [titleRow, headers],
       body: rows,
       theme: 'striped',
-      styles: { fontSize: 6, cellPadding: 0.5 },
+      styles: { fontSize: 6, cellPadding: 0.9 }, // Aumentado de 0.5 a 1.5 para más espacio vertical
       headStyles: { fillColor: [128, 128, 128], textColor: 255, fontStyle: 'bold', fontSize: 6 }, // Gris oscuro
       columnStyles: {
         0: { cellWidth: tableWidth * 0.65, halign: 'left' },
