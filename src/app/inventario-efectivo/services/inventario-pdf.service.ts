@@ -99,8 +99,33 @@ export class InventarioPdfService {
         yPosition,
         resumenData.simbolo_moneda
       );
-      yPosition = (doc as any).lastAutoTable.finalY + 40;
+      yPosition = (doc as any).lastAutoTable.finalY + 10;
     }
+
+    // Cuadro de certificación (arriba de firmas)
+    if (yPosition > pageHeight - 50) {
+      doc.addPage();
+      yPosition = 15;
+    }
+
+    const boxCertX = 15;
+    const boxCertY = yPosition;
+    const boxCertW = pageWidth - 30;
+    const boxCertH = 12;
+
+    doc.setDrawColor(0, 0, 0);
+    doc.setLineWidth(0.5);
+    doc.rect(boxCertX, boxCertY, boxCertW, boxCertH);
+
+    doc.setFont('helvetica', 'bold');
+    doc.setFontSize(7.5);
+    doc.setTextColor(0, 0, 0);
+    const textoCertificacion = 'YO CERTIFICO QUE HE CONTADO Y REGISTRADO EL DINERO BAJO MI CUSTODIA DECLARANDO EN ESTE INVENTARIO DE EFECTIVO Y HE NOTIFICADO AL PERSONAL INDICADO CUALQUIER DISCREPANCIA';
+
+    const lineasCertificacion = doc.splitTextToSize(textoCertificacion, pageWidth - 40);
+    doc.text(lineasCertificacion, pageWidth / 2, boxCertY + 4, { align: 'center', maxWidth: pageWidth - 40 });
+
+    yPosition = boxCertY + boxCertH + 15;
 
     // Líneas para firmas
     const firmaWidth = 80;
