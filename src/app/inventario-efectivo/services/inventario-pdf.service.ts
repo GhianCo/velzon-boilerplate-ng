@@ -102,16 +102,23 @@ export class InventarioPdfService {
       yPosition = (doc as any).lastAutoTable.finalY + 10;
     }
 
-    // Cuadro de certificación (arriba de firmas)
-    if (yPosition > pageHeight - 50) {
-      doc.addPage();
-      yPosition = 15;
-    }
+    // Cuadro de certificación - posicionado al final de la página antes del cuadro de declaración
+    const alturaCuadroCert = 8;
+    const alturaFirmas = 12;
+    const alturaCuadroDeclaracion = 12;
+    const espacioEntreElementos = 5;
+    const espacioCertFirmas = 30;
 
+    // Calcular posición desde el final hacia arriba
+    const posicionYDeclaracion = pageHeight - 30; // 30mm desde el margen inferior
+    const posicionYFirmas = posicionYDeclaracion - alturaCuadroDeclaracion - espacioEntreElementos - alturaFirmas;
+    const posicionYCertificacion = posicionYFirmas - espacioCertFirmas - alturaCuadroCert;
+
+    // Cuadro de certificación
     const boxCertX = 15;
-    const boxCertY = yPosition;
+    const boxCertY = posicionYCertificacion;
     const boxCertW = pageWidth - 30;
-    const boxCertH = 8;
+    const boxCertH = alturaCuadroCert;
 
     doc.setDrawColor(0, 0, 0);
     doc.setLineWidth(0.5);
@@ -125,37 +132,31 @@ export class InventarioPdfService {
     const lineasCertificacion = doc.splitTextToSize(textoCertificacion, pageWidth - 40);
     doc.text(lineasCertificacion, pageWidth / 2, boxCertY + 3.5, { align: 'center', maxWidth: pageWidth - 40 });
 
-    yPosition = boxCertY + boxCertH + 15;
-
-    // Líneas para firmas
+    // Líneas para firmas - posicionadas al final
+    const yPosFirmas = posicionYFirmas;
     const firmaWidth = 80;
     const firmaSpacing = (pageWidth - 30 - (firmaWidth * 2)) / 3;
 
     // Firma 1 - Gerente
     const firma1X = 15 + firmaSpacing;
-    doc.line(firma1X, yPosition, firma1X + firmaWidth, yPosition);
+    doc.line(firma1X, yPosFirmas, firma1X + firmaWidth, yPosFirmas);
     doc.setFont('helvetica', 'normal');
     doc.setFontSize(8);
-    doc.text('GERENTE DE SALA', firma1X + (firmaWidth / 2), yPosition + 4, { align: 'center' });
-    doc.text('D.N.I.:', firma1X + (firmaWidth / 2), yPosition + 8, { align: 'right' });
+    doc.text('GERENTE DE SALA', firma1X + (firmaWidth / 2), yPosFirmas + 4, { align: 'center' });
+    doc.text('D.N.I.:', firma1X + (firmaWidth / 2), yPosFirmas + 8, { align: 'right' });
 
     // Firma 2 - Supervisor
     const firma2X = firma1X + firmaWidth + firmaSpacing;
-    doc.line(firma2X, yPosition, firma2X + firmaWidth, yPosition);
-    doc.text('SUPERVISOR DE TURNO', firma2X + (firmaWidth / 2), yPosition + 4, { align: 'center' });
-    doc.text('D.N.I.:', firma2X + (firmaWidth / 2), yPosition + 8, { align: 'right' });
+    doc.line(firma2X, yPosFirmas, firma2X + firmaWidth, yPosFirmas);
+    doc.text('SUPERVISOR DE TURNO', firma2X + (firmaWidth / 2), yPosFirmas + 4, { align: 'center' });
+    doc.text('D.N.I.:', firma2X + (firmaWidth / 2), yPosFirmas + 8, { align: 'right' });
 
-    yPosition += 15;
-
-    // Cuadro de advertencia
-    if (yPosition > pageHeight - 30) {
-      doc.addPage();
-      yPosition = 15;
-    }
+    // Cuadro de advertencia - siempre al final de la hoja
+    const posicionYCuadro = posicionYDeclaracion;
 
     doc.setDrawColor(0, 0, 0);
     doc.setLineWidth(0.5);
-    doc.rect(15, yPosition, pageWidth - 30, 12);
+    doc.rect(15, posicionYCuadro, pageWidth - 30, alturaCuadroDeclaracion);
 
     doc.setFont('helvetica', 'normal');
     doc.setFontSize(7.5);
@@ -163,7 +164,7 @@ export class InventarioPdfService {
     const textoDeclaracion = 'La información contenida en el presente documento tiene carácter de DECLARACIÓN JURADA. La sala, tomará en cuenta la información en ella consignada, reservándose el derecho de llevar a cabo las verificaciones correspondientes. En caso de detectarse que se ha omitido, ocultado o consignado información  falsa, se procederá con las acciones administrativas  y/o penales que corresponda.';
 
     const lineasTexto = doc.splitTextToSize(textoDeclaracion, pageWidth - 40);
-    doc.text(lineasTexto, pageWidth / 2, yPosition + 4, { align: 'center', maxWidth: pageWidth - 40 });
+    doc.text(lineasTexto, pageWidth / 2, posicionYCuadro + 4, { align: 'center', maxWidth: pageWidth - 40 });
 
     // Pie de página
     const totalPages = (doc as any).internal.getNumberOfPages();
