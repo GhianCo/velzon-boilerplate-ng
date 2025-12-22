@@ -1,0 +1,431 @@
+import { Injectable } from '@angular/core';
+import jsPDF from 'jspdf';
+import autoTable from 'jspdf-autotable';
+
+@Injectable({
+  providedIn: 'root'
+})
+export class InventarioPdfService {
+
+  constructor() { }
+
+  /**
+   * Genera un PDF con el resumen de operación de turno
+   * @param resumenData - Datos del resumen de la operación de turno
+   */
+  generarPdfResumen(resumenData: any): void {
+    const doc = new jsPDF('p', 'mm', 'a4'); // Landscape para mejor visualización de tablas
+    const pageWidth = doc.internal.pageSize.getWidth();
+    const pageHeight = doc.internal.pageSize.getHeight();
+    let yPosition = 15;
+
+    // Logo y encabezado (opcional - puedes agregar un logo si lo tienes)
+    doc.setFontSize(18);
+    doc.setFont('helvetica', 'bold');
+    doc.text('RESUMEN DE OPERACIÓN DE TURNO', pageWidth / 2, yPosition, { align: 'center' });
+    yPosition += 10;
+
+    // Información del turno
+    doc.setFontSize(10);
+    doc.setFont('helvetica', 'normal');
+
+    const infoTurno = [
+      ['Turno:', resumenData.turno_nombre || '-'],
+      ['Sala:', resumenData.sala || '-'],
+      ['Apertura:', resumenData.apertura || '-'],
+      ['Cierre:', resumenData.cierre || '-'],
+      ['Gerente:', resumenData.gerente || '-'],
+      ['Supervisor:', resumenData.supervisor || '-']
+    ];
+
+    autoTable(doc, {
+      startY: yPosition,
+      head: [],
+      body: infoTurno,
+      theme: 'plain',
+      styles: { fontSize: 9 },
+      columnStyles: {
+        0: { fontStyle: 'bold', cellWidth: 30 },
+        1: { cellWidth: 'auto' }
+      },
+      margin: { left: 15, right: 15 }
+    });
+
+    yPosition = (doc as any).lastAutoTable.finalY + 10;
+
+
+    // TABLAS LADO A LADO: Inventario de Efectivo (60%) + Suma Diaria de Efectivo (40%)
+    if (resumenData.inventario_apertura?.valores?.length > 0 || resumenData.inventario_cierre?.valores?.length > 0 || resumenData.suma_diaria?.categorias?.length > 0) {
+      // Verificar si necesitamos una nueva página
+      if (yPosition > pageHeight - 60) {
+        doc.addPage();
+        yPosition = 15;
+      }
+
+      // Generar ambas tablas lado a lado
+      this.generarTablasLadoALado(
+        doc,
+        resumenData.inventario_apertura,
+        resumenData.inventario_cierre,
+        resumenData.suma_diaria?.categorias || [],
+        yPosition,
+        resumenData.simbolo_moneda
+      );
+      yPosition = (doc as any).lastAutoTable.finalY + 10;
+    }
+
+    // Sección de firmas
+    if (yPosition > pageHeight - 50) {
+      doc.addPage();
+      yPosition = 15;
+    }
+
+    doc.setFontSize(10);
+    doc.setFont('helvetica', 'bold');
+    doc.text('FIRMAS', 15, yPosition);
+    yPosition += 10;
+
+    // Líneas para firmas
+    const firmaWidth = 80;
+    const firmaSpacing = (pageWidth - 30 - (firmaWidth * 2)) / 3;
+
+    // Firma 1 - Gerente
+    const firma1X = 15 + firmaSpacing;
+    doc.line(firma1X, yPosition, firma1X + firmaWidth, yPosition);
+    doc.setFont('helvetica', 'normal');
+    doc.setFontSize(9);
+    doc.text('Gerente', firma1X + (firmaWidth / 2), yPosition + 5, { align: 'center' });
+    doc.text(resumenData.gerente || '', firma1X + (firmaWidth / 2), yPosition + 10, { align: 'center' });
+
+    // Firma 2 - Supervisor
+    const firma2X = firma1X + firmaWidth + firmaSpacing;
+    doc.line(firma2X, yPosition, firma2X + firmaWidth, yPosition);
+    doc.text('Supervisor', firma2X + (firmaWidth / 2), yPosition + 5, { align: 'center' });
+    doc.text(resumenData.supervisor || '', firma2X + (firmaWidth / 2), yPosition + 10, { align: 'center' });
+
+    yPosition += 20;
+
+    // Cuadro de advertencia
+    if (yPosition > pageHeight - 30) {
+      doc.addPage();
+      yPosition = 15;
+    }
+
+    doc.setDrawColor(200, 0, 0);
+    doc.setLineWidth(0.5);
+    doc.rect(15, yPosition, pageWidth - 30, 25);
+
+    doc.setFontSize(9);
+    doc.setFont('helvetica', 'bold');
+    doc.setTextColor(200, 0, 0);
+    doc.text('DECLARACIÓN DE VERACIDAD', pageWidth / 2, yPosition + 5, { align: 'center' });
+
+    doc.setFont('helvetica', 'normal');
+    doc.setTextColor(0, 0, 0);
+    const textoDeclaracion = 'La información contenida en este documento es verídica y corresponde a los movimientos realizados durante el turno. Cualquier inconsistencia o falsedad en los datos reportados será sometida a las normas disciplinarias establecidas por la empresa.';
+
+    const lineasTexto = doc.splitTextToSize(textoDeclaracion, pageWidth - 40);
+    doc.text(lineasTexto, pageWidth / 2, yPosition + 12, { align: 'center', maxWidth: pageWidth - 40 });
+
+    // Pie de página
+    const totalPages = (doc as any).internal.getNumberOfPages();
+    doc.setFontSize(8);
+    doc.setFont('helvetica', 'italic');
+    doc.setTextColor(128, 128, 128);
+
+    for (let i = 1; i <= totalPages; i++) {
+      doc.setPage(i);
+      doc.text(
+        `Página ${i} de ${totalPages} - Generado el ${new Date().toLocaleString('es-PE')}`,
+        pageWidth / 2,
+        pageHeight - 10,
+        { align: 'center' }
+      );
+    }
+
+    // Guardar el PDF
+    const fileName = `Resumen_Turno_${resumenData.turno_nombre}_${resumenData.apertura?.replace(/[: ]/g, '_')}.pdf`;
+    doc.save(fileName);
+  }
+
+  /**
+   * Genera una tabla combinada con Inventario (apertura y cierre) + Suma Diaria de Efectivo
+   */
+  private generarTablaCombinada(
+    doc: jsPDF,
+    inventarioApertura: any,
+    inventarioCierre: any,
+    categoriasSumaDiaria: any[],
+    startY: number,
+    simbolo: string
+  ): void {
+    // Preparar encabezados principales
+    const headers: any[] = [];
+    const subHeaders: any[] = [''];
+
+    // Encabezado de Apertura
+    const cajasApertura = inventarioApertura?.cajas || [];
+    headers.push({
+      content: 'Apertura',
+      colSpan: cajasApertura.length + 1,
+      styles: { halign: 'center', fillColor: [173, 216, 230] }
+    });
+
+    // Sub-encabezados de Apertura
+    cajasApertura.forEach((caja: any) => {
+      subHeaders.push(caja.caja_nombre);
+    });
+    subHeaders.push('Total');
+
+    // Encabezado de Cierre
+    const cajasCierre = inventarioCierre?.cajas || [];
+    headers.push({
+      content: 'Cierre',
+      colSpan: cajasCierre.length + 1,
+      styles: { halign: 'center', fillColor: [255, 182, 193] }
+    });
+
+    // Sub-encabezados de Cierre
+    cajasCierre.forEach((caja: any) => {
+      subHeaders.push(caja.caja_nombre);
+    });
+    subHeaders.push('Total');
+
+    // Encabezado de Suma Diaria
+    headers.push({
+      content: 'Suma Diaria de Efectivo',
+      colSpan: 2,
+      styles: { halign: 'center', fillColor: [144, 238, 144] }
+    });
+    subHeaders.push('Descripción');
+    subHeaders.push('Importe');
+
+    // Preparar filas
+    const rows: any[] = [];
+
+    // Obtener todas las denominaciones únicas del inventario
+    const valoresApertura = inventarioApertura?.valores || [];
+    const valoresCierre = inventarioCierre?.valores || [];
+
+    // Crear un mapa de todas las denominaciones por valor
+    const todosLosValores = new Map<number, any>();
+
+    valoresApertura.forEach((valor: any) => {
+      todosLosValores.set(valor.valor_id, {
+        valor_id: valor.valor_id,
+        nombre: valor.nombre,
+        apertura: valor,
+        cierre: null
+      });
+    });
+
+    valoresCierre.forEach((valor: any) => {
+      if (todosLosValores.has(valor.valor_id)) {
+        todosLosValores.get(valor.valor_id).cierre = valor;
+      } else {
+        todosLosValores.set(valor.valor_id, {
+          valor_id: valor.valor_id,
+          nombre: valor.nombre,
+          apertura: null,
+          cierre: valor
+        });
+      }
+    });
+
+    // Recopilar todas las filas de inventario
+    const filasInventario: any[] = [];
+    todosLosValores.forEach((valorData) => {
+      // Fila de categoría
+      const totalCols = cajasApertura.length + 1 + cajasCierre.length + 1 + 2;
+      filasInventario.push({
+        tipo: 'categoria_inventario',
+        data: [{
+          content: `● ${valorData.nombre}`,
+          colSpan: totalCols,
+          styles: { fontStyle: 'bold', fillColor: [240, 240, 240], halign: 'left' }
+        }]
+      });
+
+      // Obtener todas las denominaciones
+      const denominacionesApertura = valorData.apertura?.denominaciones || [];
+      const denominacionesCierre = valorData.cierre?.denominaciones || [];
+
+      // Crear mapa de denominaciones
+      const denomMap = new Map<number, any>();
+
+      denominacionesApertura.forEach((denom: any) => {
+        denomMap.set(denom.denominacion_id, {
+          denominacion_id: denom.denominacion_id,
+          descripcion: denom.descripcion,
+          apertura: denom,
+          cierre: null
+        });
+      });
+
+      denominacionesCierre.forEach((denom: any) => {
+        if (denomMap.has(denom.denominacion_id)) {
+          denomMap.get(denom.denominacion_id).cierre = denom;
+        } else {
+          denomMap.set(denom.denominacion_id, {
+            denominacion_id: denom.denominacion_id,
+            descripcion: denom.descripcion,
+            apertura: null,
+            cierre: denom
+          });
+        }
+      });
+
+      // Generar fila por cada denominación
+      denomMap.forEach((denomData) => {
+        const row: any[] = [denomData.descripcion];
+
+        // Cajas de Apertura
+        let totalApertura = 0;
+        if (denomData.apertura) {
+          cajasApertura.forEach((caja: any) => {
+            const cajaData = denomData.apertura.cajas?.find((c: any) => c.caja_id === caja.caja_id);
+            const importe = parseFloat(cajaData?.importe || '0');
+            totalApertura += importe;
+            row.push(`${simbolo} ${importe.toFixed(2)}`);
+          });
+        } else {
+          cajasApertura.forEach(() => row.push('-'));
+        }
+        row.push({ content: `${simbolo} ${totalApertura.toFixed(2)}`, styles: { fontStyle: 'bold', fillColor: [230, 240, 255] } });
+
+        // Cajas de Cierre
+        let totalCierre = 0;
+        if (denomData.cierre) {
+          cajasCierre.forEach((caja: any) => {
+            const cajaData = denomData.cierre.cajas?.find((c: any) => c.caja_id === caja.caja_id);
+            const importe = parseFloat(cajaData?.importe || '0');
+            totalCierre += importe;
+            row.push(`${simbolo} ${importe.toFixed(2)}`);
+          });
+        } else {
+          cajasCierre.forEach(() => row.push('-'));
+        }
+        row.push({ content: `${simbolo} ${totalCierre.toFixed(2)}`, styles: { fontStyle: 'bold', fillColor: [255, 230, 230] } });
+
+        filasInventario.push({
+          tipo: 'denominacion',
+          data: row
+        });
+      });
+    });
+
+    // Recopilar todas las filas de suma diaria
+    const filasSumaDiaria: any[] = [];
+    categoriasSumaDiaria.forEach(categoria => {
+      // Fila de categoría
+      filasSumaDiaria.push({
+        tipo: 'categoria_suma',
+        categoria: categoria.nombre,
+        colorFondo: categoria.tipo_operacion === 'ingreso' ? [144, 238, 144] :
+                    categoria.tipo_operacion === 'egreso' ? [255, 182, 193] :
+                    [255, 255, 153]
+      });
+
+      // Items de la categoría
+      categoria.items?.forEach((item: any) => {
+        filasSumaDiaria.push({
+          tipo: 'item',
+          nombre: item.nombre,
+          importe: parseFloat(item.importe || '0')
+        });
+      });
+    });
+
+    // Combinar filas: tomar el máximo de filas entre inventario y suma diaria
+    const maxFilas = Math.max(filasInventario.length, filasSumaDiaria.length);
+    const colsInventario = cajasApertura.length + 1 + cajasCierre.length + 1;
+
+    for (let i = 0; i < maxFilas; i++) {
+      const filaInventario = filasInventario[i];
+      const filaSumaDiaria = filasSumaDiaria[i];
+
+      if (filaInventario && filaInventario.tipo === 'categoria_inventario') {
+        // Fila de categoría de inventario - ocupa toda la fila excepto suma diaria
+        const row: any[] = [filaInventario.data[0]];
+
+        if (filaSumaDiaria) {
+          if (filaSumaDiaria.tipo === 'categoria_suma') {
+            row.push({
+              content: `${filaSumaDiaria.categoria}`,
+              colSpan: 2,
+              styles: { fontStyle: 'bold', fillColor: filaSumaDiaria.colorFondo, halign: 'left' }
+            });
+          } else if (filaSumaDiaria.tipo === 'item') {
+            row.push(filaSumaDiaria.nombre);
+            row.push(`${simbolo} ${filaSumaDiaria.importe.toFixed(2)}`);
+          }
+        } else {
+          row.push('');
+          row.push('');
+        }
+
+        rows.push(row);
+      } else if (filaInventario && filaInventario.tipo === 'denominacion') {
+        // Fila de denominación de inventario
+        const row: any[] = [...filaInventario.data];
+
+        if (filaSumaDiaria) {
+          if (filaSumaDiaria.tipo === 'categoria_suma') {
+            row.push({
+              content: `${filaSumaDiaria.categoria}`,
+              colSpan: 2,
+              styles: { fontStyle: 'bold', fillColor: filaSumaDiaria.colorFondo, halign: 'left' }
+            });
+          } else if (filaSumaDiaria.tipo === 'item') {
+            row.push(filaSumaDiaria.nombre);
+            row.push(`${simbolo} ${filaSumaDiaria.importe.toFixed(2)}`);
+          }
+        } else {
+          row.push('');
+          row.push('');
+        }
+
+        rows.push(row);
+      } else {
+        // Solo hay fila de suma diaria, rellenar columnas de inventario
+        const row: any[] = [''];
+        for (let j = 0; j < colsInventario; j++) {
+          row.push('');
+        }
+
+        if (filaSumaDiaria) {
+          if (filaSumaDiaria.tipo === 'categoria_suma') {
+            row.push({
+              content: `● ${filaSumaDiaria.categoria}`,
+              colSpan: 2,
+              styles: { fontStyle: 'bold', fillColor: filaSumaDiaria.colorFondo, halign: 'left' }
+            });
+          } else if (filaSumaDiaria.tipo === 'item') {
+            row.push(filaSumaDiaria.nombre);
+            row.push(`${simbolo} ${filaSumaDiaria.importe.toFixed(2)}`);
+          }
+        } else {
+          row.push('');
+          row.push('');
+        }
+
+        rows.push(row);
+      }
+    }
+
+    autoTable(doc, {
+      startY: startY,
+      head: [headers, subHeaders],
+      body: rows,
+      theme: 'striped',
+      styles: { fontSize: 6, cellPadding: 1.5 },
+      headStyles: { fillColor: [52, 152, 219], textColor: 255, fontStyle: 'bold', fontSize: 7 },
+      columnStyles: {
+        0: { cellWidth: 35, fontStyle: 'bold' }
+      },
+      margin: { left: 5, right: 5 }
+    });
+  }
+
+}
+
