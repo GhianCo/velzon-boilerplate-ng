@@ -111,7 +111,7 @@ export class InventarioPdfService {
     const boxCertX = 15;
     const boxCertY = yPosition;
     const boxCertW = pageWidth - 30;
-    const boxCertH = 12;
+    const boxCertH = 8;
 
     doc.setDrawColor(0, 0, 0);
     doc.setLineWidth(0.5);
@@ -123,7 +123,7 @@ export class InventarioPdfService {
     const textoCertificacion = 'YO CERTIFICO QUE HE CONTADO Y REGISTRADO EL DINERO BAJO MI CUSTODIA DECLARANDO EN ESTE INVENTARIO DE EFECTIVO Y HE NOTIFICADO AL PERSONAL INDICADO CUALQUIER DISCREPANCIA';
 
     const lineasCertificacion = doc.splitTextToSize(textoCertificacion, pageWidth - 40);
-    doc.text(lineasCertificacion, pageWidth / 2, boxCertY + 4, { align: 'center', maxWidth: pageWidth - 40 });
+    doc.text(lineasCertificacion, pageWidth / 2, boxCertY + 3.5, { align: 'center', maxWidth: pageWidth - 40 });
 
     yPosition = boxCertY + boxCertH + 15;
 
@@ -438,7 +438,7 @@ export class InventarioPdfService {
       styles: { fontSize: 6, cellPadding: 0.5 },
       headStyles: { fillColor: [128, 128, 128], textColor: 255, fontStyle: 'bold', fontSize: 6 }, // Gris oscuro
       columnStyles: {
-        0: { cellWidth: 20, fontStyle: 'bold' }
+        0: { cellWidth: 23, fontStyle: 'bold' }
       },
       margin: { left: xStart, right: doc.internal.pageSize.getWidth() - xStart - tableWidth }
     });
