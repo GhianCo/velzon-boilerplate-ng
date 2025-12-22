@@ -287,7 +287,7 @@ export class InventarioPdfService {
     cajasApertura.forEach((caja: any) => {
       subHeaders.push(caja.caja_nombre);
     });
-    subHeaders.push('Total');
+    subHeaders.push({ content: 'Total', styles: { halign: 'right' } });
 
     // Encabezado de Cierre (gris claro)
     headers.push({
@@ -299,7 +299,7 @@ export class InventarioPdfService {
     cajasCierre.forEach((caja: any) => {
       subHeaders.push(caja.caja_nombre);
     });
-    subHeaders.push('Total');
+    subHeaders.push({ content: 'Total', styles: { halign: 'right' } });
 
     // Preparar filas
     const rows: any[] = [];
@@ -387,7 +387,7 @@ export class InventarioPdfService {
         }
         row.push({
           content: `${simbolo} ${denomData.total_importe}`,
-          styles: { fontStyle: 'bold', fillColor: [220, 220, 220] } // Gris claro
+          styles: { fontStyle: 'bold', fillColor: [220, 220, 220], halign: 'right' } // Gris claro, alineado a la derecha
         });
 
         // Cajas de Cierre
@@ -401,7 +401,7 @@ export class InventarioPdfService {
         }
         row.push({
           content: `${simbolo} ${denomData.total_importe}`,
-          styles: { fontStyle: 'bold', fillColor: [220, 220, 220] } // Gris claro
+          styles: { fontStyle: 'bold', fillColor: [220, 220, 220], halign: 'right' } // Gris claro, alineado a la derecha
         });
 
         rows.push(row);
@@ -418,14 +418,14 @@ export class InventarioPdfService {
     }
     rowTotal.push({
       content: `${simbolo} ${totalApertura}`,
-      styles: { fontStyle: 'bold', fillColor: [200, 200, 200] } // Gris medio
+      styles: { fontStyle: 'bold', fillColor: [200, 200, 200], halign: 'right' } // Gris medio, alineado a la derecha
     });
     for (let i = 0; i < cajasCierre.length; i++) {
       rowTotal.push('');
     }
     rowTotal.push({
       content: `${simbolo} ${totalCierre}`,
-      styles: { fontStyle: 'bold', fillColor: [200, 200, 200] } // Gris medio
+      styles: { fontStyle: 'bold', fillColor: [200, 200, 200], halign: 'right' } // Gris medio, alineado a la derecha
     });
 
     rows.push(rowTotal);
