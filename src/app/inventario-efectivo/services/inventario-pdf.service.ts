@@ -130,15 +130,15 @@ export class InventarioPdfService {
 
     doc.setDrawColor(0, 0, 0);
     doc.setLineWidth(0.5);
-    doc.rect(15, yPosition, pageWidth - 30, 20);
+    doc.rect(15, yPosition, pageWidth - 30, 12);
 
     doc.setFont('helvetica', 'normal');
-    doc.setFontSize(7);
+    doc.setFontSize(7.5);
     doc.setTextColor(0, 0, 0);
     const textoDeclaracion = 'La información contenida en el presente documento tiene carácter de DECLARACIÓN JURADA. La sala, tomará en cuenta la información en ella consignada, reservándose el derecho de llevar a cabo las verificaciones correspondientes. En caso de detectarse que se ha omitido, ocultado o consignado información  falsa, se procederá con las acciones administrativas  y/o penales que corresponda.';
 
     const lineasTexto = doc.splitTextToSize(textoDeclaracion, pageWidth - 40);
-    doc.text(lineasTexto, pageWidth / 2, yPosition + 9, { align: 'center', maxWidth: pageWidth - 40 });
+    doc.text(lineasTexto, pageWidth / 2, yPosition + 4, { align: 'center', maxWidth: pageWidth - 40 });
 
     // Pie de página
     const totalPages = (doc as any).internal.getNumberOfPages();
