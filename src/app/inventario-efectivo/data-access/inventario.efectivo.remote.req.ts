@@ -27,7 +27,7 @@ export class InventarioEfectivoRemoteReq {
       .pipe(
         map((response: any) => {
           if (response.data) {
-            response.data.body = this.inventarioEfectivoMapper.transform(response.data.body);
+            response.data = this.inventarioEfectivoMapper.transform(response.data);
           }
           return response;
         })

@@ -618,12 +618,12 @@ export class InventarioEfectivoStore extends SignalStore<IState> {
     const inventarioData = this.vm().inventarioEfectivoData;
 
     // Si no hay datos, permitir aperturar
-    if (!inventarioData?.body || inventarioData.body.length === 0) {
+    if (!inventarioData || inventarioData.length === 0) {
       return { canOpen: true };
     }
 
     // Obtener el primer registro
-    const primerRegistro = inventarioData.body[0];
+    const primerRegistro = inventarioData[0];
 
     // Verificar si el primer registro está abierto
     const estaAbierto = primerRegistro.abierta === 1 || primerRegistro.abierta === '1';
