@@ -342,6 +342,23 @@ export class InventarioPdfService {
         styles: { fontStyle: 'bold', fillColor: [248, 249, 250], halign: 'left' }
       }]);
 
+      // Agregar fila de Tipo de Cambio si es USD
+      const codigoValor = valorData.apertura?.codigo || valorData.cierre?.codigo;
+      const tcValor = valorData.apertura?.tc || valorData.cierre?.tc || '0.00';
+      if (codigoValor === 'USD') {
+        rows.push([
+          {
+            content: 'Tipo de cambio',
+            styles: { fontStyle: 'italic', fillColor: [255, 243, 205] } // Color amarillo claro
+          },
+          {
+            content: `S/. ${tcValor}`,
+            colSpan: totalCols - 1,
+            styles: { fontStyle: 'bold', fillColor: [255, 243, 205], halign: 'center' }
+          }
+        ]);
+      }
+
       // Obtener denominaciones
       const denominacionesApertura = valorData.apertura?.denominaciones || [];
       const denominacionesCierre = valorData.cierre?.denominaciones || [];
