@@ -1,0 +1,457 @@
+<!-- Start Breadcrumbs -->
+<app-breadcrumbs title="Nuevo cuadre de suma diaria" [breadcrumbItems]="breadCrumbItems"></app-breadcrumbs>
+<!-- End Breadcrumbs -->
+@if (inventarioEfectivoStore.vm(); as vm) {
+  <div class="row">
+    <div class="col-xl-12">
+      <div class="card crm-widget">
+        <div class="card-body p-0">
+          <div class="row row-cols-md-3 row-cols-1">
+            <div class="col col-lg border-end">
+              <div class="py-4 px-3">
+                <h5 class="text-muted text-uppercase fs-13">Resumen</h5>
+                <div>
+                  @for (valorDetail of vm.valoresWithDetailsData; track $index) {
+                    <div class="d-flex justify-content-between border-bottom border-bottom-dashed py-2">
+                      <p class="fw-medium mb-0">
+                        <i class="ri-number-{{$index + 1}} text-primary align-middle me-2"></i> {{ valorDetail.name }}
+                      </p>
+                      <div>
+                        <span
+                          class="text-muted pe-5">S/. {{ valorDetail.acumuladoConvertido?.toFixed(2) || '0.00' }}</span>
+                        <span class="text-success fw-medium fs-12">{{ valorDetail.porcentaje?.toFixed(0) || '0' }}
+                          %</span>
+                      </div>
+                    </div><!-- end -->
+                  }
+                </div>
+              </div>
+            </div><!-- end col -->
+            <div class="col col-lg border-end" [ngClass]="!isCerrarMode ? 'd-flex align-items-center justify-content-center' : ''">
+              <div class="py-4 px-3">
+                <div class="row g-3">
+                  <!-- Columna izquierda: Totales verticales -->
+                  <div class="col-12">
+                    <!-- Total este inventario -->
+                    <div class="mb-3">
+                      <h5 class="text-muted text-uppercase fs-13">Total este inventario</h5>
+                      <div class="d-flex align-items-center">
+                        <div class="flex-shrink-0 display-6 text-muted">
+                          S/.
+                        </div>
+                        <div class="flex-grow-1 ms-3">
+                          <h2 class="mb-0"><span [countUp]="vm.valoresSummary?.totalConvertido" class="counter-value"
+                                                 [options]="option"></span></h2>
+                        </div>
+                      </div>
+                    </div>
+
+                    <!-- Total suma diaria (solo en modo cierre) -->
+                    @if (isCerrarMode) {
+                      <div class="mb-3">
+                        <h5 class="text-muted text-uppercase fs-13">Total suma diaria</h5>
+                        <div class="d-flex align-items-center">
+                          <div class="flex-shrink-0 display-6 text-muted">
+                            S/.
+                          </div>
+                          <div class="flex-grow-1 ms-3">
+                            <h2 class="mb-0 text-primary"><span [countUp]="vm.valoresSummary?.total_real_turno" class="counter-value"
+                                                                 [options]="option"></span></h2>
+                          </div>
+                        </div>
+                        <small class="text-muted mt-1">
+                          Monto inicial apertura
+                        </small>
+                        <small class="text-success">
+                          <i class="ri-add-line"></i> Ingresos
+                        </small>
+                        <small class="text-danger">
+                          <i class="ri-subtract-line"></i> Egresos
+                        </small>
+                        <small class="text-warning">
+                          <i class="ri-exchange-line"></i> Diferencias
+                        </small>
+                      </div>
+                    }
+                  </div>
+                </div>
+              </div>
+            </div><!-- end col -->
+            @if (isCerrarMode) {
+              <div class="col col-lg border-end">
+                <div class="py-4 px-3">
+                  <h5 class="text-muted text-uppercase fs-13">Suma diaria de efectivo</h5>
+                  <div>
+                    <div class="mt-2 p-2 bg-light rounded">
+                      <!-- Monto inicial apertura del turno (solo en modo cierre) -->
+                      @if (isCerrarMode && turnoData?.monto_inicial) {
+                        <div class="d-flex justify-content-between mb-2 pb-2 border-bottom">
+                          <small class="fw-bold text-primary">
+                            <i class="ri-safe-line me-1"></i>Monto inicial apertura del turno:
+                          </small>
+                          <small class="fw-bold text-primary">S/. {{ turnoData?.monto_inicial || '0.00' }}</small>
+                        </div>
+                      } @else {
+                        <!-- Inventario base -->
+                        <div class="d-flex justify-content-between">
+                          <small><i class="ri-coins-line me-1"></i>Inventario de efectivo:</small>
+                          <small
+                            class="fw-medium">S/. {{ vm.valoresSummary?.totalConvertido?.toFixed(2) || '0.00' }}</small>
+                        </div>
+                      }
+
+                      <!-- Movimientos de cada categoría -->
+                      @for (catMovimiento of vm.catMovWithDetailsData; track $index) {
+                        @if (catMovimiento.acumuladoConvertido) {
+                          <div class="d-flex justify-content-between">
+                            <small>
+                              @if (catMovimiento.tipo_operacion === '+') {
+                                <i class="ri-add-line me-1 text-success"></i>
+                              } @else if (catMovimiento.tipo_operacion === '-') {
+                                <i class="ri-subtract-line me-1 text-danger"></i>
+                              } @else {
+                                <i class="ri-exchange-line me-1 text-warning"></i>
+                              }
+                              {{ catMovimiento.nombre }}:
+                            </small>
+                            <small [ngClass]="getOperacionClass(catMovimiento.tipo_operacion)">
+                              @if (catMovimiento.tipo_operacion === '-') {
+                                - S/. {{ catMovimiento.acumuladoConvertido?.toFixed(2) || '0.00' }}
+                              } @else if (catMovimiento.tipo_operacion === '+') {
+                                + S/. {{ catMovimiento.acumuladoConvertido?.toFixed(2) || '0.00' }}
+                              } @else {
+                                S/. {{ catMovimiento.acumuladoConvertido?.toFixed(2) || '0.00' }}
+                              }
+                            </small>
+                          </div>
+                        }
+                      }
+
+                      <!-- Diferencia manual -->
+                      @if (vm.valoresSummary?.diferencia && vm.valoresSummary?.diferencia !== 0) {
+                        <div class="d-flex justify-content-between">
+                          <small><i class="ri-edit-line me-1"></i>Diferencia manual:</small>
+                          <small [ngClass]="vm.valoresSummary?.diferencia > 0 ? 'text-success' : 'text-danger'">
+                            {{ vm.valoresSummary?.diferencia > 0 ? '+' : '' }}
+                            S/. {{ vm.valoresSummary?.diferencia?.toFixed(2) || '0.00' }}
+                          </small>
+                        </div>
+                      }
+
+                      <hr class="my-2">
+
+                      <div class="p-3 bg-success-subtle">
+                        <div class="float-end ms-2">
+                          <h6 class="text-success mb-0">S/. <span
+                            class="text-body">{{ vm.valoresSummary.total_real_turno?.toFixed(2) || '0.00' }}</span></h6>
+                        </div>
+                        <h6 class="mb-0 text-success">Inventario final de efectivo</h6>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div><!-- end col -->
+            }
+            <div class="col col-lg border-end">
+              <div class="py-4 px-3">
+                @if (isCerrarMode) {
+                  <div class="alert alert-info border-0" role="alert">
+                    <div class="d-flex align-items-start">
+                      <div class="flex-shrink-0">
+                        <i class="ri-information-line fs-16 align-middle me-2 text-danger"></i>
+                      </div>
+                      <div class="flex-grow-1">
+                        <h6 class="mb-1">Cerrar turno {{ turnoData?.turno_nombre }}</h6>
+                        <p class="mb-1">
+                          <strong>Fecha/Hora Apertura:</strong> {{ turnoData?.fecha_apertura }}
+                        </p>
+                        @if (turnoData?.usuario_apertura) {
+                          <p class="mb-0">
+                            <strong>Usuario de apertura:</strong> {{ turnoData?.usuario_apertura }}
+                          </p>
+                        }
+                      </div>
+                    </div>
+                  </div>
+                } @else {
+                  <div class="alert alert-success border-0 mb-2" role="alert">
+                    <div class="d-flex align-items-start">
+                      <div class="flex-shrink-0">
+                        <i class="ri-information-line fs-16 align-middle me-2 text-danger"></i>
+                      </div>
+                      <div class="flex-grow-1">
+                        <h6 class="mb-1">Apertura de turno</h6>
+                        <p class="mb-1">
+                          <strong>Gestiona los turnos</strong> por apertura y cierre.
+                        </p>
+                        <p class="mb-0">
+                          <strong>Los usuarios que realizan las operaciones</strong> se registran en automatico.
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="d-flex align-items-center justify-content-between mb-2">
+                    <h5 class="text-muted text-uppercase fs-13 mb-0">Selecciona el turno a aperturar</h5>
+                    <div>
+                      <select class="form-select form-select-sm"
+                              [ngModel]="vm.selectedTurnoId"
+                              (ngModelChange)="onTurnoChange($event)">
+                        <option [value]="null" disabled selected>Selecciona turno</option>
+                        @for (turno of inventarioEfectivoStore.turnosDisponibles(); track turno.turno_id) {
+                          <option [value]="turno.turno_id">{{ turno.turno_nombre }}</option>
+                        }
+                      </select>
+                    </div>
+
+                  </div>
+                }
+                <button type="button" class="btn btn-success w-100" (click)="onClickGuardarInventario()"
+                        [disabled]="vm.saveInventarioEfectivoLoading || vm.valoresSummary?.totalConvertido < 1 || !vm.selectedTurnoId">
+                  <i class="ri-save-fill align-middle"></i> Guardar inventario
+                </button>
+                <div>
+                </div>
+              </div>
+            </div><!-- end col -->
+          </div><!-- end row -->
+        </div><!-- end card body -->
+      </div><!-- end card -->
+    </div><!-- end col -->
+  </div><!-- end row -->
+    <div class="row">
+    <div class="col-xl-12">
+      <!-- Tabla Unificada con colspan -->
+      <div class="card">
+        @if(vm.cajasData?.length){
+          <div class="card-body p-0">
+            <!-- Contenedor con dos tablas side-by-side -->
+            <!-- Contenedor responsivo con Grid CSS -->
+            <div [ngClass]="{'table-container-dual': isCerrarMode, 'table-container-single': !isCerrarMode}">
+
+              <!-- TABLA 1: INVENTARIO DE EFECTIVO (Izquierda) -->
+              <div class="table-wrapper inventario-wrapper">
+                <table class="table table-bordered table-hover align-middle mb-0">
+                  <thead class="table-light sticky-top" style="z-index: 10;">
+                    @if (isCerrarMode) {
+                      <tr>
+                        <th colspan="100%" class="text-center bg-light">
+                          <i class="ri-stack-line me-2"></i>Inventario de Efectivo
+                        </th>
+                      </tr>
+                    }
+                  <tr class="table-light">
+                    <th style="min-width: 180px;">Descripción</th>
+                    @for (caja of vm.cajasData; track $index) {
+                      <th style="min-width: 150px;">{{ caja.caja_nombre }}</th>
+                    }
+                    <th class="text-end" style="min-width: 120px;">Total</th>
+                  </tr>
+                  </thead>
+                  <tbody>
+                  <!-- Solo denominaciones de inventario -->
+                    @for (valorDetail of vm.valoresWithDetailsData; track $index) {
+                      <!-- Header de categoría -->
+                      <tr class="table-active">
+                        <td [attr.colspan]="(vm.cajasData?.length || 0) + 2" class="fw-bold">
+                          <div class="d-flex justify-content-between align-items-center">
+                            <span><i class="ri-checkbox-circle-line me-2"></i>{{ valorDetail.name }}</span>
+                            <span
+                              class="text-success">S/. {{ valorDetail.acumuladoConvertido?.toFixed(2) || '0.00' }}</span>
+                          </div>
+                        </td>
+                      </tr>
+
+                      <!-- Tipo de cambio USD -->
+                      @if (valorDetail.codigo == 'USD') {
+                        <tr>
+                          <td [attr.colspan]="(vm.cajasData?.length || 0) + 2" class="p-2">
+                            <label class="form-label fw-medium mb-1 me-2">Tipo de cambio:</label>
+                            <input type="number" class="form-control form-control-sm d-inline-block"
+                                   style="width: 100px;" min="1"
+                                   [(ngModel)]="valorDetail.current_tc"
+                                   (ngModelChange)="onTipoCambioChange(valorDetail, $event)"
+                                   (wheel)="$event.preventDefault()">
+                          </td>
+                        </tr>
+                      }
+
+                      <!-- Filas de denominaciones -->
+                      @for (denominacion of valorDetail.denominaciones; track $index) {
+                        <tr [class]="getRowClass(valorDetail, denominacion)"
+                            (click)="toggleRowSelection(valorDetail, denominacion)"
+                            style="cursor: pointer; transition: background-color 0.2s ease;">
+                          <!-- Denominación -->
+                          <td class="align-middle">
+                            <div class="d-flex align-items-center">
+                              <span class="fw-medium">{{ denominacion.descripcion }}</span>
+                              @if (isRowSelected(valorDetail, denominacion)) {
+                                <i class="ri-check-line ms-2 text-primary"></i>
+                              }
+                            </div>
+                          </td>
+
+                          <!-- Cajas -->
+                          @for (caja of vm.cajasData; track $index) {
+                            <td class="text-center">
+                              <div class="input-group input-group-sm">
+                                <input type="number" class="form-control text-center" min="0" step="0.01"
+                                       [(ngModel)]="getCajas(denominacion)[caja.caja_nombre]"
+                                       (ngModelChange)="onCantidadCajaChange(denominacion, caja.caja_nombre, $event)"
+                                       (click)="$event.stopPropagation()"
+                                       (wheel)="$event.preventDefault()"
+                                       style="max-width: 200px;">
+                              </div>
+                            </td>
+                          }
+
+                          <!-- Total -->
+                          <td class="text-end">
+                            <span class="fw-bold">
+                              {{ valorDetail.simbolo }} {{ denominacion.importeLocal?.toFixed(2) || '0.00' }}
+                            </span>
+                          </td>
+                        </tr>
+                      }
+
+                      <!-- Espacio -->
+                      <tr style="height: 10px;">
+                        <td [attr.colspan]="(vm.cajasData?.length || 0) + 2" class="p-0 bg-light"></td>
+                      </tr>
+                    }
+                  </tbody>
+                </table>
+              </div>
+
+              <!-- TABLA 2: SUMA DIARIA DE EFECTIVO (Derecha) -->
+              @if (isCerrarMode) {
+                <div class="table-wrapper suma-diaria-wrapper">
+                  <table class="table table-bordered table-hover align-middle mb-0">
+                    <thead class="table-light sticky-top" style="z-index: 10;">
+                    <tr>
+                      <th colspan="2" class="text-center bg-light">
+                        <i class="ri-calculator-line me-2"></i>Suma Diaria de Efectivo
+                      </th>
+                    </tr>
+                    </thead>
+
+                    <tbody>
+                    <!-- Solo items de suma diaria -->
+                      @for (catMovimiento of vm.catMovWithDetailsData; track $index) {
+                        <!-- Header de categoría -->
+                        <tr class="table-active">
+                          <td colspan="2" class="fw-bold">
+                            <div class="d-flex justify-content-between align-items-center">
+                            <span>
+                              @if (catMovimiento.tipo_operacion === '+') {
+                                <i class="ri-add-circle-line me-2 text-success"></i>
+                              } @else if (catMovimiento.tipo_operacion === '-') {
+                                <i class="ri-subtract-circle-line me-2 text-danger"></i>
+                              } @else if (catMovimiento.tipo_operacion === 'diff' || catMovimiento.tipo_operacion === 'diferencia') {
+                                <i class="ri-exchange-line me-2 text-warning"></i>
+                              } @else {
+                                <i class="ri-checkbox-circle-line me-2"></i>
+                              }
+                              {{ catMovimiento.nombre }}
+                            </span>
+                              <span [ngClass]="getOperacionClass(catMovimiento.tipo_operacion)">
+                              @if (catMovimiento.tipo_operacion === '-') {
+                                - S/. {{ catMovimiento.acumuladoConvertido?.toFixed(2) || '0.00' }}
+                              } @else if (catMovimiento.tipo_operacion === '+') {
+                                + S/. {{ catMovimiento.acumuladoConvertido?.toFixed(2) || '0.00' }}
+                              } @else {
+                                S/. {{ catMovimiento.acumuladoConvertido?.toFixed(2) || '0.00' }}
+                              }
+                            </span>
+                            </div>
+                          </td>
+                        </tr>
+
+                        <!-- Items -->
+                        @for (detail of catMovimiento.details; track $index) {
+                          <tr>
+                            <!-- Nombre del item -->
+                            <td class="align-middle">
+                              <span class="fw-medium">{{ detail.nombre }}</span>
+                            </td>
+                            <td>
+                              <div class="input-group input-group-sm justify-content-end">
+                                <input type="number" class="form-control text-center" min="0" step="0.01"
+                                       [(ngModel)]="detail.cantidad"
+                                       (ngModelChange)="onCantidadMovimientoChange(detail, $event)"
+                                       (wheel)="$event.preventDefault()"
+                                       style="max-width: 200px;">
+                              </div>
+                            </td>
+                          </tr>
+                        }
+
+                        <!-- Espacio -->
+                        <tr style="height: 10px;">
+                          <td colspan="2" class="p-0 bg-light"></td>
+                        </tr>
+                      }
+                    </tbody>
+                  </table>
+                </div>
+              }
+            </div>
+          </div>
+        }
+        @else {
+          <app-empty-state
+            title="Selecciona el turno de operacion"
+            message="Debes seleccionar el turno de operacion para cargar las cajas asociadas.">
+          </app-empty-state>
+        }
+      </div>
+      <!--end card-->
+    </div>
+  </div>
+  <!--end row-->
+}
+
+<!-- Modal para observaciones de diferencia -->
+<ng-template #diferenciaModal let-offcanvas>
+  <div class="offcanvas-header bg-danger">
+    <h5 class="offcanvas-title text-white" id="offcanvasDiferenciaLabel">
+      <i class="ri-alert-line me-2"></i>Diferencia detectada
+    </h5>
+    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="offcanvas" aria-label="Close"
+            (click)="offcanvas.dismiss('Cross click')"></button>
+  </div>
+  <!--end offcanvas-header-->
+  <form  class="d-flex flex-column justify-content-end h-100">
+    <div class="offcanvas-body">
+      <div class="alert alert-danger border-danger mb-4">
+        <div class="d-flex justify-content-between align-items-center">
+          <div>
+            <strong>Total este inventario:</strong><br>
+            <span class="fs-5">S/. {{ vm.valoresSummary?.totalConvertido?.toFixed(2) || '0.00' }}</span>
+          </div>
+          <div>
+            <strong>Total suma diaria:</strong><br>
+            <span class="fs-5">S/. {{ vm.valoresSummary?.total_real_turno?.toFixed(2) || '0.00' }}</span>
+          </div>
+        </div>
+        <hr class="my-2">
+        <div class="d-flex justify-content-between align-items-center">
+          <strong class="text-danger">
+            <i class="ri-alert-line me-1"></i>Diferencia:
+          </strong>
+          <strong class="text-danger fs-5">
+            S/. {{ getDiferenciaInventarioSuma().toFixed(2) }}
+          </strong>
+        </div>
+      </div>
+    </div>
+    <!--end offcanvas-body-->
+    <div class="offcanvas-footer border-top p-3 text-center">
+      <button type="button" (click)="offcanvas.dismiss('Cross click')"
+              class="btn btn-danger w-100">
+        <i class="ri-alert-line align-middle me-1"></i>Validar nuevamente
+      </button>
+    </div>
+    <!--end offcanvas-footer-->
+  </form>
+</ng-template>
+

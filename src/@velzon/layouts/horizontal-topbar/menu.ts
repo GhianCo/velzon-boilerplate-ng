@@ -12,7 +12,7 @@ export const MENU: MenuItem[] = [
     icon: 'ri-number-1',
     subItems: [
       {
-        id: 3,
+        id: 1,
         label: 'Apertura y cierre',
         link: '/inventario-efectivo',
         parentId: 2
@@ -20,9 +20,22 @@ export const MENU: MenuItem[] = [
     ]
   },
   {
+    id: 3,
+    label: 'Control interno',
+    icon: 'ri-number-2',
+    subItems: [
+      {
+        id: 1,
+        label: 'Cuadrar suma diaria',
+        link: '/cuadre-suma-diaria',
+        parentId: 3
+      },
+    ]
+  },
+  {
     id: 4,
     label: 'Maestras',
-    icon: 'ri-number-2',
+    icon: 'ri-number-3',
     subItems: [
       {
         id: 5,
