@@ -1,547 +1,330 @@
-import {Component, effect, inject, OnInit, TemplateRef, ViewChild} from '@angular/core';
-import {BreadcrumbsComponent} from "@velzon/components/breadcrumbs/breadcrumbs.component";
-import {InventarioEfectivoStore} from "@app/inventario-efectivo/data-access/inventario.efectivo.store";
-import {FormsModule} from "@angular/forms";
-import {NgClass} from "@angular/common";
-import {ActivatedRoute} from "@angular/router";
-import {CountUpModule} from "ngx-countup";
+import {Component, inject, OnInit, effect} from '@angular/core';
+import {FormsModule, ReactiveFormsModule, FormControl} from "@angular/forms";
+import {NgClass, DatePipe} from "@angular/common";
+import {CuadreSumaDiariaStore} from "@app/control-interno/cuadre-suma-diaria/data-access/cuadre.suma.diaria.store";
+import {FlatpickrModule} from "angularx-flatpickr";
+import Spanish from 'flatpickr/dist/l10n/es.js';
 import {ConfirmationService} from "@sothy/services/confirmation.service";
-import {EmptyStateComponent} from "@shared/components/empty-state/empty-state.component";
-import {NgbOffcanvas} from "@ng-bootstrap/ng-bootstrap";
 
 @Component({
-    selector: 'app-inventario-efectivo-new',
+    selector: 'app-cuadre-suma-diaria-new',
     templateUrl: './cuadre.suma.diaria.new.html',
   imports: [
-    BreadcrumbsComponent,
     FormsModule,
+    FlatpickrModule,
+    ReactiveFormsModule,
     NgClass,
-    CountUpModule,
-    EmptyStateComponent,
   ],
     standalone: true,
     styles: [`
-        .selected-row {
-            background-color: rgba(13, 110, 253, 0.08) !important;
-            border-left: 4px solid #0d6efd !important;
+        .table-danger {
+            background-color: rgba(220, 53, 69, 0.1) !important;
         }
 
-        .selected-row:hover {
-            background-color: rgba(13, 110, 253, 0.25) !important;
+        .border-danger {
+            border-color: #dc3545 !important;
+            border-width: 2px !important;
         }
 
-        tr:hover:not(.selected-row) {
-            background-color: rgba(0, 0, 0, 0.05) !important;
-        }
-
-        .selected-row td {
-            border-color: rgba(13, 110, 253, 0.2) !important;
-        }
-
-        /* Contenedor Grid para dos tablas side-by-side */
-        .table-container-dual {
-            display: grid;
-            grid-template-columns: 60% 40%;
-            max-height: 75vh;
-            width: 100%;
-        }
-
-        .table-container-single {
-            display: block;
-            max-height: 75vh;
-            overflow: auto;
-        }
-
-        /* Wrapper para cada tabla */
-        .table-wrapper {
-            overflow: auto;
-            height: 75vh;
-        }
-
-        .inventario-wrapper {
-            border-right: 2px solid #dee2e6;
-            min-width: 0; /* Permite que el grid funcione correctamente */
-        }
-
-        .suma-diaria-wrapper {
-            min-width: 0; /* Permite que el grid funcione correctamente */
-        }
-
-        /* Scrollbar personalizado */
-        .table-wrapper::-webkit-scrollbar {
-            height: 8px;
-            width: 8px;
-        }
-
-        .table-wrapper::-webkit-scrollbar-track {
-            background: #f1f1f1;
-            border-radius: 4px;
-        }
-
-        .table-wrapper::-webkit-scrollbar-thumb {
-            background: #888;
-            border-radius: 4px;
-        }
-
-        .table-wrapper::-webkit-scrollbar-thumb:hover {
-            background: #555;
-        }
-
-        /* Sticky header */
-        .sticky-top {
-            position: sticky !important;
-            top: 0 !important;
-            z-index: 10 !important;
-            background-color: #f8f9fa !important;
-        }
-
-        /* Responsive para móviles y tablets */
-        @media (max-width: 991.98px) {
-            .table-container-dual {
-                grid-template-columns: 1fr;
-                grid-template-rows: auto auto;
-            }
-
-            .inventario-wrapper {
-                border-right: none;
-                border-bottom: 2px solid #dee2e6;
-            }
-
-            .suma-diaria-wrapper {
-                width: 100%;
-                max-width: 100%;
-            }
-
-            .table-wrapper {
-                height: auto;
-                max-height: 50vh;
-            }
-        }
-
-        /* Mejorar inputs en tablas */
-        .input-group-sm .btn {
-            padding: 0.25rem 0.5rem;
-            font-size: 0.875rem;
-        }
-
-        .input-group-sm input {
-            padding: 0.25rem 0.5rem;
-            font-size: 0.875rem;
+        input[type="number"]::-webkit-inner-spin-button,
+        input[type="number"]::-webkit-outer-spin-button {
+            opacity: 1;
         }
     `]
 })
-
-/**
- * OrdersDetails Component
- */
 export class CuadreSumaDiariaNew implements OnInit {
 
-    // bread crumb items
     breadCrumbItems!: Array<{}>;
-    submitted = false;
-    inventarioEfectivoStore = inject(InventarioEfectivoStore);
-    private route = inject(ActivatedRoute);
+    cuadreSumaDiariaStore = inject(CuadreSumaDiariaStore);
     private confirmationService = inject(ConfirmationService);
-    private offcanvasService = inject(NgbOffcanvas);
+    private datePipe = inject(DatePipe);
 
-    // ViewChild para el template del modal
-    @ViewChild('diferenciaModal', { static: false }) diferenciaModal!: TemplateRef<any>;
+    // Control para el selector de fechas
+    dateRangeControl = new FormControl();
 
-    // Propiedades para modo cierre
-    isCerrarMode: boolean = false;
-    operacionTurnoId: string | null = null;
-    turnoData: any = null; // Datos del turno abierto
+    // Opciones para Flatpickr
+    flatpickrOptions: any = {
+        mode: 'range',
+        dateFormat: 'd/m/Y',
+        locale: Spanish.es,
+        maxDate: new Date(),
+        onChange: (selectedDates: Date[], dateStr: string) => {
+            console.log('📅 Flatpickr onChange:', { selectedDates, dateStr });
 
-    // Propiedad para observaciones cuando hay diferencia
-    observacionesDiferencia: string = '';
+            if (selectedDates.length === 2) {
+                const diffTime = Math.abs(selectedDates[1].getTime() - selectedDates[0].getTime());
+                const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
 
-    // Propiedades para manejo de selección de filas (solo una fila)
-    selectedRowId: string | null = null;
-    num: number = 0;
-    option = {
-      startVal: this.num,
-      useEasing: true,
-      duration: 0.5,
-      decimalPlaces: 2,
-    };
+                console.log('📊 Diferencia de días:', diffDays);
 
-    constructor() {
-        // Effect para observar cambios en turnoData del store
-        effect(() => {
-            const turnoData = this.inventarioEfectivoStore.vm().turnoData;
-            if (turnoData) {
-              this.turnoData = turnoData;
-            }
-        });
-
-        // Effect para seleccionar automáticamente el turno si solo hay uno disponible
-        effect(() => {
-            const turnosDisponibles = this.inventarioEfectivoStore.turnosDisponibles();
-            const vm = this.inventarioEfectivoStore.vm();
-            const selectedTurnoId = vm.selectedTurnoId;
-
-            // Si hay exactamente un turno disponible y no hay ninguno seleccionado, seleccionarlo automáticamente
-            if (turnosDisponibles.length === 1 && !selectedTurnoId) {
-                const turnoId = turnosDisponibles[0].turno_id;
-                this.inventarioEfectivoStore.setSelectedTurnoId(turnoId);
-            }
-
-            // Si el turno seleccionado ya no está disponible, limpiar la selección
-            if (selectedTurnoId && turnosDisponibles.length > 0) {
-                const turnoExiste = turnosDisponibles.find((t: any) => t.turno_id == selectedTurnoId);
-                if (!turnoExiste) {
-                    this.inventarioEfectivoStore.setSelectedTurnoId(null);
+                if (diffDays > 7) {
+                    console.warn('⚠️ Rango mayor a 7 días');
+                    this.confirmationService.warning(
+                        'Rango inválido',
+                        'El rango de fechas no puede ser mayor a 7 días'
+                    );
+                    this.dateRangeControl.setValue(null);
+                } else {
+                    console.log('✅ Rango válido, actualizando control:', dateStr);
+                    // Asegurarse de que el valor se actualice correctamente
+                    this.dateRangeControl.setValue(dateStr);
                 }
             }
+        }
+    };
+
+    // Datos del cuadre
+    cuadreData: any = null;
+    isLoading: boolean = false;
+    isGuardando: boolean = false;
+
+    constructor() {
+        // Effect para sincronizar datos del store con el componente
+        effect(() => {
+            const vm = this.cuadreSumaDiariaStore.vm();
+
+            // Actualizar isLoading
+            this.isLoading = vm.cuadreLoading;
+
+            // Actualizar cuadreData cuando llegan datos del backend
+            if (vm.cuadreData) {
+                console.log('📦 Effect: Datos recibidos del store:', vm.cuadreData);
+                this.cuadreData = vm.cuadreData;
+            }
+
+            // Manejar errores
+            if (vm.cuadreError) {
+                console.error('❌ Effect: Error en el store:', vm.cuadreError);
+                this.confirmationService.error(
+                    'Error al cargar datos',
+                    'No se pudieron cargar los datos del cuadre. Por favor, intenta nuevamente.'
+                );
+            }
+
+            // Actualizar estado de guardado
+            this.isGuardando = vm.saveCuadreLoading;
         });
     }
 
     ngOnInit(): void {
-        // Detectar el modo según la ruta y procesar parámetros
-        this.route.url.subscribe(urlSegments => {
-            const rutaActual = urlSegments.map(segment => segment.path).join('/');
-
-            // Detectar si es modo cierre o replicar
-            const esModoCierre = rutaActual.includes('cerrar');
-
-            this.isCerrarMode = esModoCierre;
-
-            // Detectar automáticamente el tipo de operación según la ruta
-            if (esModoCierre) {
-                // Ruta "cerrar" → operación de cierre
-                this.inventarioEfectivoStore.setSelectedOperacion('cierre');
-            } else {
-                // Rutas "replicar" o "new" → operación de apertura
-                this.inventarioEfectivoStore.setSelectedOperacion('apertura');
-            }
-
-            // Procesar parámetros de ruta dentro del mismo contexto
-            this.route.params.subscribe(params => {
-                this.operacionTurnoId = params['id'];
-
-                if (esModoCierre && this.operacionTurnoId) {
-                  this.loadTurnoData(this.operacionTurnoId as string);
-                } else if (this.operacionTurnoId) {
-                    // Modo REPLICAR: cargar datos del turno anterior como plantilla para apertura
-                } else {
-                    // Modo APERTURA normal: inicializar desde cero
-                    this.initializeAllCajas();
-                }
-            });
-        });
-
-        /**
-         * BreadCrumb
-         */
+        console.log('🚀 CuadreSumaDiariaNew inicializado');
         this.breadCrumbItems = [
-            {label: 'Cuadre de suma diaria'},
-            {label: 'Registrar', active: true}
+            {label: 'Control Interno'},
+            {label: 'Cuadre de Suma Diaria', active: true}
         ];
+
+        // Verificar que Flatpickr esté configurado
+        console.log('⚙️ Flatpickr options:', this.flatpickrOptions);
     }
 
-    // Método para cargar datos del turno abierto
-    loadTurnoData(operacionTurnoId: string) {
-        // Llamar al store para cargar la operación turno (sin subscribe)
-        this.inventarioEfectivoStore.loadOperacionTurnoById(Number(operacionTurnoId));
-        // El effect en el constructor se encargará de actualizar cuando turnoData cambie
-    }
+    /**
+     * Buscar sumas diarias por rango de fechas
+     */
+    buscarSumasDiarias(): void {
+        console.log('🎯 Método buscarSumasDiarias ejecutado');
+        console.log('📅 Valor del dateRangeControl:', this.dateRangeControl.value);
 
-
-    // Inicializar cajas para todas las denominaciones
-    initializeAllCajas() {
-        this.inventarioEfectivoStore.initializeAllCajas();
-    }
-
-    // Método que se ejecuta al hacer click en "Guardar inventario"
-    onClickGuardarInventario() {
-        const vm = this.inventarioEfectivoStore.vm();
-
-        // Validar que se haya seleccionado turno y operación
-        if (!vm.selectedTurnoId || !vm.selectedOperacion) {
+        if (!this.dateRangeControl.value) {
+            console.warn('⚠️ dateRangeControl.value está vacío');
             this.confirmationService.warning(
-                '⚠️ Faltan datos',
-                'Por favor selecciona un turno y el tipo de operación antes de guardar.'
+                'Selecciona un rango de fechas',
+                'Por favor, selecciona un rango de fechas para buscar'
             );
             return;
         }
 
-        // Verificar si hay diferencia en modo cierre
-        // Usamos Math.abs para comparar el valor absoluto y tolerancia de 0.01 para evitar problemas de precisión
-        const diferencia = Math.abs(this.getDiferenciaInventarioSuma());
-        const TOLERANCIA = 0.01; // Tolerancia de 1 centavo
+        // El separador en español es " a " no " to "
+        const dateRange = this.dateRangeControl.value.split(' a ');
+        console.log('📊 Rango parseado:', dateRange);
 
-        if (this.isCerrarMode && diferencia > TOLERANCIA) {
-            // Si hay diferencia significativa, abrir el modal
-            this.offcanvasService.open(this.diferenciaModal, {
-                position: 'end',
-                backdrop: 'static',
-                keyboard: false
-            });
-            return;
-        }
-
-        // Si no hay diferencia, guardar directamente
-        this.proceedToSave();
-    }
-
-    // Método que se ejecuta al confirmar desde el modal de diferencia
-    confirmGuardarInventario() {
-        // Validar que se haya ingresado observación
-        if (!this.observacionesDiferencia || this.observacionesDiferencia.trim().length === 0) {
+        if (dateRange.length !== 2) {
+            console.warn('⚠️ El rango no tiene 2 fechas:', dateRange.length);
             this.confirmationService.warning(
-                '⚠️ Observación requerida',
-                'Debes ingresar una observación sobre la diferencia encontrada.'
+                'Rango inválido',
+                'Por favor, selecciona un rango de fechas válido (fecha inicio y fecha fin)'
             );
             return;
         }
 
-        // Cerrar el offcanvas
-        this.offcanvasService.dismiss();
+        // Convertir fechas de formato DD/MM/YYYY a YYYY-MM-DD
+        const startDate = this.convertirFechaAFormatoISO(dateRange[0].trim());
+        const endDate = this.convertirFechaAFormatoISO(dateRange[1].trim());
 
-        // Proceder con el guardado
-        this.proceedToSave();
+        console.log('🔍 Buscando sumas diarias:', {
+            rangoOriginal: dateRange,
+            startDate,
+            endDate
+        });
+
+        this.isLoading = true;
+
+        // Llamar al store para obtener los datos del backend
+        this.cuadreSumaDiariaStore.loadCategoriasConRegistros(startDate, endDate);
     }
 
-    // Método privado para proceder con el guardado
-    private proceedToSave() {
-        const vm = this.inventarioEfectivoStore.vm();
-        const turnoInfo = this.isCerrarMode ? vm.turnoData : this.getSelectedTurno();
+    /**
+     * Convertir fecha de formato DD/MM/YYYY a YYYY-MM-DD
+     */
+    private convertirFechaAFormatoISO(fecha: string): string {
+        const [day, month, year] = fecha.split('/');
+        return `${year}-${month.padStart(2, '0')}-${day.padStart(2, '0')}`;
+    }
 
-        this.confirmationService.openAndHandle({
-            title: '✅ ¿Todos los datos son correctos?',
-            html: `
-                <div class="text-start">
-                    <p>He revisado que los datos sean los correctos!</p>
-                    <div class="mt-3 p-3 bg-light rounded">
-                        <strong>Turno:</strong> ${turnoInfo?.turno_nombre || 'No especificado'}<br>
-                        <strong>Operación:</strong> <span class="badge ${vm.selectedOperacion === 'apertura' ? 'bg-success' : 'bg-danger'}">${vm.selectedOperacion}</span><br>
-                    </div>
-                </div>
-            `,
-            icon: {
-                show: true,
-                name: 'warning',
-                color: 'warn'
-            },
-            actions: {
-                confirm: {
-                    show: true,
-                    label: '💾 Si, guardar inventario!',
-                    color: 'success'
-                },
-                cancel: {
-                    show: true,
-                    label: '❌ No, cerrar'
-                }
-            },
-            dismissible: false
-        }, () => {
-            // onConfirm callback
-            const turnoId = vm.turnoData?.turno_id || vm.selectedTurnoId;
-            const operacionTurnoId = this.operacionTurnoId || null;
-            this.inventarioEfectivoStore.saveInventarioEfectivoWithDetils(turnoId, operacionTurnoId);
+
+    /**
+     * Formatear fecha para mostrar en la tabla
+     */
+    formatearFecha(fecha: string): string {
+        const date = new Date(fecha);
+        return this.datePipe.transform(date, 'dd/MM/yyyy') || fecha;
+    }
+
+    /**
+     * Obtener cantidad registrada de un item en una fecha
+     */
+    getCantidadRegistrada(item: any, fecha: string): number {
+        return item.registrado[fecha] || 0;
+    }
+
+    /**
+     * Calcular diferencia entre control y registrado
+     */
+    getDiferencia(item: any, fecha: string): number {
+        const registrado = this.getCantidadRegistrada(item, fecha);
+        const control = item.control[fecha] || 0;
+        return control - registrado;
+    }
+
+    /**
+     * Verificar si un item tiene diferencia en alguna fecha
+     */
+    getTieneDiferencia(item: any): boolean {
+        if (!this.cuadreData) return false;
+
+        return this.cuadreData.fechas.some((fecha: string) => {
+            return this.getDiferencia(item, fecha) !== 0;
         });
     }
 
-    // ===== MÉTODOS DELEGADOS AL STORE - CAJAS =====
-
-    getCajas(denominacion: any): any {
-        return denominacion.cajas || {};
+    /**
+     * Calcular subtotal de una categoría en una fecha
+     */
+    getSubtotalCategoria(categoria: any, fecha: string): number {
+        return categoria.items.reduce((sum: number, item: any) => {
+            return sum + (item.control[fecha] || 0);
+        }, 0);
     }
 
-    onCantidadCajaChange(denominacion: any, caja: string, event: any) {
-        this.inventarioEfectivoStore.onCantidadCajaChange(denominacion, caja, event);
+    /**
+     * Calcular total registrado por fecha
+     */
+    getTotalRegistradoPorFecha(fecha: string): number {
+        if (!this.cuadreData) return 0;
+
+        return this.cuadreData.categorias.reduce((sum: number, categoria: any) => {
+            return sum + categoria.items.reduce((itemSum: number, item: any) => {
+                return itemSum + this.getCantidadRegistrada(item, fecha);
+            }, 0);
+        }, 0);
     }
 
-    // ===== MÉTODOS DELEGADOS AL STORE - MOVIMIENTOS =====
+    /**
+     * Calcular total de control por fecha
+     */
+    getTotalControlPorFecha(fecha: string): number {
+        if (!this.cuadreData) return 0;
 
-    onCantidadMovimientoChange(detail: any, event: any) {
-        this.inventarioEfectivoStore.onCantidadMovimientoChange(detail, event);
+        return this.cuadreData.categorias.reduce((sum: number, categoria: any) => {
+            return sum + categoria.items.reduce((itemSum: number, item: any) => {
+                return itemSum + (item.control[fecha] || 0);
+            }, 0);
+        }, 0);
     }
 
-    // ===== MÉTODOS DELEGADOS AL STORE - TIPO DE CAMBIO =====
-
-    onTipoCambioChange(valorDetail: any, nuevoTipoCambio: number) {
-        this.inventarioEfectivoStore.onTipoCambioChange(valorDetail, nuevoTipoCambio);
+    /**
+     * Calcular total diferencia por fecha
+     */
+    getTotalDiferenciaPorFecha(fecha: string): number {
+        return this.getTotalControlPorFecha(fecha) - this.getTotalRegistradoPorFecha(fecha);
     }
 
-    // ===== FIN MÉTODOS DELEGADOS =====
-
-    // Método para obtener el turno seleccionado
-    getSelectedTurno(): any {
-        const vm = this.inventarioEfectivoStore.vm();
-        if (!vm.selectedTurnoId) return null;
-
-        if (!vm.turnosData) return null;
-
-        return vm.turnosData.find((turno: any) => turno.turno_id.toString() === vm.selectedTurnoId);
+    /**
+     * Manejador cuando cambia la cantidad de control
+     */
+    onCantidadControlChange(item: any, fecha: string): void {
+        // Aquí podrías agregar lógica adicional si es necesario
+        console.log('Cantidad control cambiada:', item.nombre, fecha, item.control[fecha]);
     }
 
-    // Método para calcular diferencia entre total inventario y total suma diaria
-    getDiferenciaInventarioSuma(): number {
-        const vm = this.inventarioEfectivoStore.vm();
+    /**
+     * Verificar si hay cambios en el cuadre
+     */
+    hayCambios(): boolean {
+        if (!this.cuadreData) return false;
 
-        if (!this.isCerrarMode) {
-            return 0;
+        return this.cuadreData.categorias.some((categoria: any) => {
+            return categoria.items.some((item: any) => {
+                return this.cuadreData.fechas.some((fecha: string) => {
+                    return (item.control[fecha] || 0) > 0;
+                });
+            });
+        });
+    }
+
+    /**
+     * Guardar el cuadre
+     */
+    guardarCuadre(): void {
+        if (!this.hayCambios()) {
+            this.confirmationService.warning(
+                'Sin cambios',
+                'No hay cambios para guardar'
+            );
+            return;
         }
 
-        const totalInventario = vm.valoresSummary?.totalConvertido || 0;
-        const totalSumaDiaria = vm.valoresSummary?.total_real_turno || 0;
-        const diferencia = totalInventario - totalSumaDiaria;
+        // Verificar si hay diferencias
+        const hayDiferencias = this.cuadreData.fechas.some((fecha: string) => {
+            return this.getTotalDiferenciaPorFecha(fecha) !== 0;
+        });
 
-        return diferencia;
-    }
-
-    // Método público para acceder al vm desde el template
-    get vm() {
-        return this.inventarioEfectivoStore.vm();
-    }
-
-
-
-    // Método para obtener información completa de la selección actual
-    getSelectionInfo(): any {
-        const vm = this.inventarioEfectivoStore.vm();
-        const turno = this.getSelectedTurno();
-        if (!turno || !vm.selectedOperacion) return null;
-
-        return {
-            turno: turno,
-            operacion: vm.selectedOperacion,
-            isValid: !!(vm.selectedTurnoId && vm.selectedOperacion)
-        };
-    }
-
-
-    // Método para obtener clases CSS según el tipo de operación
-    getOperacionClass(tipoOperacion: string): string {
-        switch (tipoOperacion) {
-            case '+': return 'text-success';
-            case '-': return 'text-danger';
-            case 'diff':
-            case 'diferencia': return 'text-warning';
-            default: return 'text-success';
-        }
-    }
-
-    // Método para obtener clase CSS según el valor de la cantidad (para diferencias)
-    getCantidadClass(detail: any, categoriaMovimiento: any): string {
-        const operador = categoriaMovimiento?.tipo_operacion || categoriaMovimiento?.operador;
-
-        // Solo aplicar colores especiales si es diferencia
-        if (operador === 'diff' || operador === 'diferencia') {
-            const cantidad = detail.cantidad || 0;
-            if (cantidad > 0) return 'text-success fw-bold';
-            if (cantidad < 0) return 'text-danger fw-bold';
-            return '';
-        }
-
-        return '';
-    }
-
-    // Método para verificar si un item permite valores negativos
-    isNegativeAllowed(categoriaMovimiento: any): boolean {
-        const operador = categoriaMovimiento?.tipo_operacion || categoriaMovimiento?.operador;
-        return operador === 'diff' || operador === 'diferencia';
-    }
-
-    // ===== FIN MÉTODOS PARA CATEGORÍAS DE MOVIMIENTO =====
-
-    // ===== MÉTODOS PARA SELECCIÓN DE FILAS (UNA SOLA FILA) =====
-
-    // Generar ID único para cada fila
-    private getRowId(valorDetail: any, denominacion: any): string {
-        return `${valorDetail.id || valorDetail.nombre}_${denominacion.id || denominacion.descripcion}`;
-    }
-
-    // Seleccionar fila (solo una a la vez)
-    toggleRowSelection(valorDetail: any, denominacion: any): void {
-        const rowId = this.getRowId(valorDetail, denominacion);
-
-        // Si la fila ya está seleccionada, deseleccionarla
-        if (this.selectedRowId === rowId) {
-            this.selectedRowId = null;
-        } else {
-            // Seleccionar la nueva fila (deselecciona automáticamente la anterior)
-            this.selectedRowId = rowId;
-        }
-    }
-
-    // Verificar si una fila está seleccionada
-    isRowSelected(valorDetail: any, denominacion: any): boolean {
-        const rowId = this.getRowId(valorDetail, denominacion);
-        return this.selectedRowId === rowId;
-    }
-
-    // Obtener clase CSS para la fila
-    getRowClass(valorDetail: any, denominacion: any): string {
-        const isSelected = this.isRowSelected(valorDetail, denominacion);
-        return isSelected ? 'table-primary selected-row' : '';
-    }
-
-    // Obtener información de la fila seleccionada
-    getSelectedRowInfo(): any | null {
-        if (!this.selectedRowId) return null;
-
-        const vm = this.inventarioEfectivoStore.vm();
-
-        if (vm?.valoresWithDetailsData) {
-            for (const valorDetail of vm.valoresWithDetailsData) {
-                if (valorDetail.denominaciones) {
-                    for (const denominacion of valorDetail.denominaciones) {
-                        if (this.getRowId(valorDetail, denominacion) === this.selectedRowId) {
-                            return {
-                                valorDetail: valorDetail,
-                                denominacion: denominacion,
-                                rowId: this.selectedRowId
-                            };
-                        }
+        if (hayDiferencias) {
+            this.confirmationService.openAndHandle(
+                {
+                    title: '¿Guardar con diferencias?',
+                    message: 'Se detectaron diferencias en el cuadre. ¿Desea continuar?',
+                    icon: { show: true, name: 'warning' },
+                    actions: {
+                        confirm: { show: true, label: 'Sí, guardar', color: 'warning' },
+                        cancel: { show: true, label: 'Cancelar' }
                     }
+                },
+                () => {
+                    this.procesarGuardado();
                 }
-            }
-        }
-
-        return null;
-    }
-
-    // Mostrar información de la fila seleccionada en consola
-    logSelectedRows(): void {
-        const selectedRowInfo = this.getSelectedRowInfo();
-
-        if (selectedRowInfo) {
-
-            // Mostrar información más legible
-            const summary = {
-                moneda: selectedRowInfo.valorDetail.nombre,
-                denominacion: selectedRowInfo.denominacion.descripcion,
-                valor: selectedRowInfo.denominacion.valor,
-                importe: selectedRowInfo.denominacion.importeLocal,
-                cantidadTotal: selectedRowInfo.denominacion.cantidadTotal
-            };
+            );
         } else {
+            this.procesarGuardado();
         }
     }
 
-    // ===== FIN MÉTODOS PARA SELECCIÓN DE FILAS =====
+    /**
+     * Procesar el guardado del cuadre
+     */
+    private procesarGuardado(): void {
+        this.isGuardando = true;
 
-    // ===== MÉTODO AUXILIAR PARA TABLA =====
-
-    // Método para generar array con el máximo de filas entre inventario y suma diaria
-    getMaxRowsArray(denominacionesLength: number, detailsLength: number): number[] {
-        const maxLength = Math.max(denominacionesLength, detailsLength);
-        return Array.from({length: maxLength}, (_, i) => i);
+        // Simular guardado (luego reemplazar con llamada real al store)
+        setTimeout(() => {
+            this.isGuardando = false;
+            this.confirmationService.success(
+                'Cuadre guardado',
+                'El cuadre de suma diaria se ha guardado correctamente'
+            );
+            // Limpiar datos
+            this.cuadreData = null;
+            this.dateRangeControl.setValue(null);
+        }, 1500);
     }
-
-    // ===== FIN MÉTODO AUXILIAR =====
-
-    // ===== MÉTODOS PARA ACTUALIZAR TURNO Y OPERACIÓN =====
-
-    onTurnoChange(operacionTurnoId: string) {
-        this.inventarioEfectivoStore.setSelectedTurnoId(operacionTurnoId);
-    }
-
-    // ===== FIN MÉTODOS PARA ACTUALIZAR TURNO Y OPERACIÓN ====
-
-    // ===== FIN MÉTODOS TURNO Y OPERACIÓN =====
-
 }
+

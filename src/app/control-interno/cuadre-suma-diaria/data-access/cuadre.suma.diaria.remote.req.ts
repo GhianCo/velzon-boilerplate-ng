@@ -1,85 +1,28 @@
 import {Injectable} from '@angular/core';
-import {map} from "rxjs/operators";
-import {environment} from "@environments/environment";
-import {Observable} from "rxjs";
-import {InventarioEfectivoMapper} from "@app/inventario-efectivo/data-access/mappers/inventario.efectivo.mapper";
-import {IResponse} from "@sothy/interfaces/IResponse";
 import {HttpService} from "@sothy/services/http.service";
-import {ControlActivosApiService} from "@sothy/services/control.activos.api.service";
-
+import {Observable} from "rxjs";
+import {environment} from "@environments/environment";
 @Injectable({
   providedIn: 'root'
 })
-
 export class CuadreSumaDiariaRemoteReq {
 
-  private inventarioEfectivoMapper = new InventarioEfectivoMapper();
   private REMOTE_API_URI = environment.apiRest;
 
-  constructor(
-    private http: HttpService,
-    private _controlActivosApiService: ControlActivosApiService,
-  ) {
-  }
-
-  requestSearchByCriteria(criteria: any): Observable<IResponse> {
-    return this.http.post(this.REMOTE_API_URI + 'operacionturno/searchByParams', criteria)
-      .pipe(
-        map((response: any) => {
-          if (response.data) {
-            response.data = this.inventarioEfectivoMapper.transform(response.data);
-          }
-          return response;
-        })
-      );
-  }
-
-  requestGetOperacionturnoById(id: number): Observable<IResponse> {
-    return this.http.get(this.REMOTE_API_URI + 'operacionturno/' + id);
-  }
-
-  requestGetLastOperacionturno(): Observable<IResponse> {
-    return this.http.get(this.REMOTE_API_URI + 'operacionturno/last');
-  }
-
-  requestOperacionTurnoWithDetails(operacionturno_id: any): Observable<IResponse> {
-    return this.http.get(this.REMOTE_API_URI + `operacionturno/${operacionturno_id}/details`);
-  }
-
+  constructor(private httpService: HttpService) {}
   /**
-   * Obtener el resumen completo de una operación de turno
-   * Incluye: inventario de apertura, inventario de cierre y suma diaria
+   * Obtener categorías con registros por rango de fechas
+   * @param startDate Fecha de inicio en formato YYYY-MM-DD
+   * @param endDate Fecha fin en formato YYYY-MM-DD
    */
-  requestResumenOperacionTurno(operacionturno_id: any): Observable<IResponse> {
-    return this.http.get(this.REMOTE_API_URI + `operacionturno/${operacionturno_id}/resumen`)
-      .pipe(
-        map((response: any) => {
-          if (response.data) {
-            response.data = this.inventarioEfectivoMapper.transform(response.data);
-          }
-          return response;
-        })
-      );;
+  requestCategoriasConRegistros(startDate: string, endDate: string): Observable<any> {
+    return this.httpService.get(this.REMOTE_API_URI + `operacionturno/categorias-con-registros/${startDate}/${endDate}`);
   }
-
-  requestGetValoresWithDetails(): Observable<IResponse> {
-    return this.http.get(this.REMOTE_API_URI + 'valor/withDetails')
+  /**
+   * Guardar cuadre de suma diaria
+   * @param data Datos del cuadre a guardar
+   */
+  requestGuardarCuadre(data: any): Observable<any> {
+    return this.httpService.post('cuadre-suma-diaria', data);
   }
-
-  requestGetCatMovWithDetails(): Observable<IResponse> {
-    return this.http.get(this.REMOTE_API_URI + 'sumdiacatmovimiento/withDetails')
-  }
-
-  requestSaveInventario(inventarioWithDetails: any): Observable<IResponse> {
-    return this.http.post(this.REMOTE_API_URI + 'inventario/saveWithDetails', inventarioWithDetails)
-  }
-
-  requestAllCajasBySala(sala_id: number, de_apertura: any): Observable<IResponse> {
-    return this._controlActivosApiService.get(this.REMOTE_API_URI + 'caja?sala='+sala_id+'&de_apertura='+de_apertura)
-  }
-
-  requestGetTurnos(sala_id: number): Observable<IResponse> {
-    return this._controlActivosApiService.get(this.REMOTE_API_URI + 'turno?sala='+sala_id)
-  }
-
 }

@@ -1,457 +1,229 @@
-<!-- Start Breadcrumbs -->
-<app-breadcrumbs title="Nuevo cuadre de suma diaria" [breadcrumbItems]="breadCrumbItems"></app-breadcrumbs>
-<!-- End Breadcrumbs -->
-@if (inventarioEfectivoStore.vm(); as vm) {
+<div class="container-fluid">
+  <!-- Breadcrumbs -->
   <div class="row">
-    <div class="col-xl-12">
-      <div class="card crm-widget">
-        <div class="card-body p-0">
-          <div class="row row-cols-md-3 row-cols-1">
-            <div class="col col-lg border-end">
-              <div class="py-4 px-3">
-                <h5 class="text-muted text-uppercase fs-13">Resumen</h5>
-                <div>
-                  @for (valorDetail of vm.valoresWithDetailsData; track $index) {
-                    <div class="d-flex justify-content-between border-bottom border-bottom-dashed py-2">
-                      <p class="fw-medium mb-0">
-                        <i class="ri-number-{{$index + 1}} text-primary align-middle me-2"></i> {{ valorDetail.name }}
-                      </p>
-                      <div>
-                        <span
-                          class="text-muted pe-5">S/. {{ valorDetail.acumuladoConvertido?.toFixed(2) || '0.00' }}</span>
-                        <span class="text-success fw-medium fs-12">{{ valorDetail.porcentaje?.toFixed(0) || '0' }}
-                          %</span>
-                      </div>
-                    </div><!-- end -->
-                  }
-                </div>
-              </div>
-            </div><!-- end col -->
-            <div class="col col-lg border-end" [ngClass]="!isCerrarMode ? 'd-flex align-items-center justify-content-center' : ''">
-              <div class="py-4 px-3">
-                <div class="row g-3">
-                  <!-- Columna izquierda: Totales verticales -->
-                  <div class="col-12">
-                    <!-- Total este inventario -->
-                    <div class="mb-3">
-                      <h5 class="text-muted text-uppercase fs-13">Total este inventario</h5>
-                      <div class="d-flex align-items-center">
-                        <div class="flex-shrink-0 display-6 text-muted">
-                          S/.
-                        </div>
-                        <div class="flex-grow-1 ms-3">
-                          <h2 class="mb-0"><span [countUp]="vm.valoresSummary?.totalConvertido" class="counter-value"
-                                                 [options]="option"></span></h2>
-                        </div>
-                      </div>
-                    </div>
+    <div class="col-12">
+      <div class="page-title-box d-sm-flex align-items-center justify-content-between">
+        <h4 class="mb-sm-0">Cuadre de Suma Diaria</h4>
+        <div class="page-title-right">
+          <ol class="breadcrumb m-0">
+            <li class="breadcrumb-item"><a href="javascript: void(0);">Control Interno</a></li>
+            <li class="breadcrumb-item active">Cuadre de Suma Diaria</li>
+          </ol>
+        </div>
+      </div>
+    </div>
+  </div>
 
-                    <!-- Total suma diaria (solo en modo cierre) -->
-                    @if (isCerrarMode) {
-                      <div class="mb-3">
-                        <h5 class="text-muted text-uppercase fs-13">Total suma diaria</h5>
-                        <div class="d-flex align-items-center">
-                          <div class="flex-shrink-0 display-6 text-muted">
-                            S/.
-                          </div>
-                          <div class="flex-grow-1 ms-3">
-                            <h2 class="mb-0 text-primary"><span [countUp]="vm.valoresSummary?.total_real_turno" class="counter-value"
-                                                                 [options]="option"></span></h2>
-                          </div>
-                        </div>
-                        <small class="text-muted mt-1">
-                          Monto inicial apertura
-                        </small>
-                        <small class="text-success">
-                          <i class="ri-add-line"></i> Ingresos
-                        </small>
-                        <small class="text-danger">
-                          <i class="ri-subtract-line"></i> Egresos
-                        </small>
-                        <small class="text-warning">
-                          <i class="ri-exchange-line"></i> Diferencias
-                        </small>
-                      </div>
-                    }
-                  </div>
-                </div>
-              </div>
-            </div><!-- end col -->
-            @if (isCerrarMode) {
-              <div class="col col-lg border-end">
-                <div class="py-4 px-3">
-                  <h5 class="text-muted text-uppercase fs-13">Suma diaria de efectivo</h5>
-                  <div>
-                    <div class="mt-2 p-2 bg-light rounded">
-                      <!-- Monto inicial apertura del turno (solo en modo cierre) -->
-                      @if (isCerrarMode && turnoData?.monto_inicial) {
-                        <div class="d-flex justify-content-between mb-2 pb-2 border-bottom">
-                          <small class="fw-bold text-primary">
-                            <i class="ri-safe-line me-1"></i>Monto inicial apertura del turno:
-                          </small>
-                          <small class="fw-bold text-primary">S/. {{ turnoData?.monto_inicial || '0.00' }}</small>
-                        </div>
-                      } @else {
-                        <!-- Inventario base -->
-                        <div class="d-flex justify-content-between">
-                          <small><i class="ri-coins-line me-1"></i>Inventario de efectivo:</small>
-                          <small
-                            class="fw-medium">S/. {{ vm.valoresSummary?.totalConvertido?.toFixed(2) || '0.00' }}</small>
-                        </div>
-                      }
-
-                      <!-- Movimientos de cada categoría -->
-                      @for (catMovimiento of vm.catMovWithDetailsData; track $index) {
-                        @if (catMovimiento.acumuladoConvertido) {
-                          <div class="d-flex justify-content-between">
-                            <small>
-                              @if (catMovimiento.tipo_operacion === '+') {
-                                <i class="ri-add-line me-1 text-success"></i>
-                              } @else if (catMovimiento.tipo_operacion === '-') {
-                                <i class="ri-subtract-line me-1 text-danger"></i>
-                              } @else {
-                                <i class="ri-exchange-line me-1 text-warning"></i>
-                              }
-                              {{ catMovimiento.nombre }}:
-                            </small>
-                            <small [ngClass]="getOperacionClass(catMovimiento.tipo_operacion)">
-                              @if (catMovimiento.tipo_operacion === '-') {
-                                - S/. {{ catMovimiento.acumuladoConvertido?.toFixed(2) || '0.00' }}
-                              } @else if (catMovimiento.tipo_operacion === '+') {
-                                + S/. {{ catMovimiento.acumuladoConvertido?.toFixed(2) || '0.00' }}
-                              } @else {
-                                S/. {{ catMovimiento.acumuladoConvertido?.toFixed(2) || '0.00' }}
-                              }
-                            </small>
-                          </div>
-                        }
-                      }
-
-                      <!-- Diferencia manual -->
-                      @if (vm.valoresSummary?.diferencia && vm.valoresSummary?.diferencia !== 0) {
-                        <div class="d-flex justify-content-between">
-                          <small><i class="ri-edit-line me-1"></i>Diferencia manual:</small>
-                          <small [ngClass]="vm.valoresSummary?.diferencia > 0 ? 'text-success' : 'text-danger'">
-                            {{ vm.valoresSummary?.diferencia > 0 ? '+' : '' }}
-                            S/. {{ vm.valoresSummary?.diferencia?.toFixed(2) || '0.00' }}
-                          </small>
-                        </div>
-                      }
-
-                      <hr class="my-2">
-
-                      <div class="p-3 bg-success-subtle">
-                        <div class="float-end ms-2">
-                          <h6 class="text-success mb-0">S/. <span
-                            class="text-body">{{ vm.valoresSummary.total_real_turno?.toFixed(2) || '0.00' }}</span></h6>
-                        </div>
-                        <h6 class="mb-0 text-success">Inventario final de efectivo</h6>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </div><!-- end col -->
-            }
-            <div class="col col-lg border-end">
-              <div class="py-4 px-3">
-                @if (isCerrarMode) {
-                  <div class="alert alert-info border-0" role="alert">
-                    <div class="d-flex align-items-start">
-                      <div class="flex-shrink-0">
-                        <i class="ri-information-line fs-16 align-middle me-2 text-danger"></i>
-                      </div>
-                      <div class="flex-grow-1">
-                        <h6 class="mb-1">Cerrar turno {{ turnoData?.turno_nombre }}</h6>
-                        <p class="mb-1">
-                          <strong>Fecha/Hora Apertura:</strong> {{ turnoData?.fecha_apertura }}
-                        </p>
-                        @if (turnoData?.usuario_apertura) {
-                          <p class="mb-0">
-                            <strong>Usuario de apertura:</strong> {{ turnoData?.usuario_apertura }}
-                          </p>
-                        }
-                      </div>
-                    </div>
-                  </div>
-                } @else {
-                  <div class="alert alert-success border-0 mb-2" role="alert">
-                    <div class="d-flex align-items-start">
-                      <div class="flex-shrink-0">
-                        <i class="ri-information-line fs-16 align-middle me-2 text-danger"></i>
-                      </div>
-                      <div class="flex-grow-1">
-                        <h6 class="mb-1">Apertura de turno</h6>
-                        <p class="mb-1">
-                          <strong>Gestiona los turnos</strong> por apertura y cierre.
-                        </p>
-                        <p class="mb-0">
-                          <strong>Los usuarios que realizan las operaciones</strong> se registran en automatico.
-                        </p>
-                      </div>
-                    </div>
-                  </div>
-                  <div class="d-flex align-items-center justify-content-between mb-2">
-                    <h5 class="text-muted text-uppercase fs-13 mb-0">Selecciona el turno a aperturar</h5>
-                    <div>
-                      <select class="form-select form-select-sm"
-                              [ngModel]="vm.selectedTurnoId"
-                              (ngModelChange)="onTurnoChange($event)">
-                        <option [value]="null" disabled selected>Selecciona turno</option>
-                        @for (turno of inventarioEfectivoStore.turnosDisponibles(); track turno.turno_id) {
-                          <option [value]="turno.turno_id">{{ turno.turno_nombre }}</option>
-                        }
-                      </select>
-                    </div>
-
-                  </div>
-                }
-                <button type="button" class="btn btn-success w-100" (click)="onClickGuardarInventario()"
-                        [disabled]="vm.saveInventarioEfectivoLoading || vm.valoresSummary?.totalConvertido < 1 || !vm.selectedTurnoId">
-                  <i class="ri-save-fill align-middle"></i> Guardar inventario
-                </button>
-                <div>
-                </div>
-              </div>
-            </div><!-- end col -->
-          </div><!-- end row -->
-        </div><!-- end card body -->
-      </div><!-- end card -->
-    </div><!-- end col -->
-  </div><!-- end row -->
-    <div class="row">
-    <div class="col-xl-12">
-      <!-- Tabla Unificada con colspan -->
+  <!-- Filtros -->
+  <div class="row">
+    <div class="col-12">
       <div class="card">
-        @if(vm.cajasData?.length){
-          <div class="card-body p-0">
-            <!-- Contenedor con dos tablas side-by-side -->
-            <!-- Contenedor responsivo con Grid CSS -->
-            <div [ngClass]="{'table-container-dual': isCerrarMode, 'table-container-single': !isCerrarMode}">
-
-              <!-- TABLA 1: INVENTARIO DE EFECTIVO (Izquierda) -->
-              <div class="table-wrapper inventario-wrapper">
-                <table class="table table-bordered table-hover align-middle mb-0">
-                  <thead class="table-light sticky-top" style="z-index: 10;">
-                    @if (isCerrarMode) {
-                      <tr>
-                        <th colspan="100%" class="text-center bg-light">
-                          <i class="ri-stack-line me-2"></i>Inventario de Efectivo
-                        </th>
-                      </tr>
-                    }
-                  <tr class="table-light">
-                    <th style="min-width: 180px;">Descripción</th>
-                    @for (caja of vm.cajasData; track $index) {
-                      <th style="min-width: 150px;">{{ caja.caja_nombre }}</th>
-                    }
-                    <th class="text-end" style="min-width: 120px;">Total</th>
-                  </tr>
-                  </thead>
-                  <tbody>
-                  <!-- Solo denominaciones de inventario -->
-                    @for (valorDetail of vm.valoresWithDetailsData; track $index) {
-                      <!-- Header de categoría -->
-                      <tr class="table-active">
-                        <td [attr.colspan]="(vm.cajasData?.length || 0) + 2" class="fw-bold">
-                          <div class="d-flex justify-content-between align-items-center">
-                            <span><i class="ri-checkbox-circle-line me-2"></i>{{ valorDetail.name }}</span>
-                            <span
-                              class="text-success">S/. {{ valorDetail.acumuladoConvertido?.toFixed(2) || '0.00' }}</span>
-                          </div>
-                        </td>
-                      </tr>
-
-                      <!-- Tipo de cambio USD -->
-                      @if (valorDetail.codigo == 'USD') {
-                        <tr>
-                          <td [attr.colspan]="(vm.cajasData?.length || 0) + 2" class="p-2">
-                            <label class="form-label fw-medium mb-1 me-2">Tipo de cambio:</label>
-                            <input type="number" class="form-control form-control-sm d-inline-block"
-                                   style="width: 100px;" min="1"
-                                   [(ngModel)]="valorDetail.current_tc"
-                                   (ngModelChange)="onTipoCambioChange(valorDetail, $event)"
-                                   (wheel)="$event.preventDefault()">
-                          </td>
-                        </tr>
-                      }
-
-                      <!-- Filas de denominaciones -->
-                      @for (denominacion of valorDetail.denominaciones; track $index) {
-                        <tr [class]="getRowClass(valorDetail, denominacion)"
-                            (click)="toggleRowSelection(valorDetail, denominacion)"
-                            style="cursor: pointer; transition: background-color 0.2s ease;">
-                          <!-- Denominación -->
-                          <td class="align-middle">
-                            <div class="d-flex align-items-center">
-                              <span class="fw-medium">{{ denominacion.descripcion }}</span>
-                              @if (isRowSelected(valorDetail, denominacion)) {
-                                <i class="ri-check-line ms-2 text-primary"></i>
-                              }
-                            </div>
-                          </td>
-
-                          <!-- Cajas -->
-                          @for (caja of vm.cajasData; track $index) {
-                            <td class="text-center">
-                              <div class="input-group input-group-sm">
-                                <input type="number" class="form-control text-center" min="0" step="0.01"
-                                       [(ngModel)]="getCajas(denominacion)[caja.caja_nombre]"
-                                       (ngModelChange)="onCantidadCajaChange(denominacion, caja.caja_nombre, $event)"
-                                       (click)="$event.stopPropagation()"
-                                       (wheel)="$event.preventDefault()"
-                                       style="max-width: 200px;">
-                              </div>
-                            </td>
-                          }
-
-                          <!-- Total -->
-                          <td class="text-end">
-                            <span class="fw-bold">
-                              {{ valorDetail.simbolo }} {{ denominacion.importeLocal?.toFixed(2) || '0.00' }}
-                            </span>
-                          </td>
-                        </tr>
-                      }
-
-                      <!-- Espacio -->
-                      <tr style="height: 10px;">
-                        <td [attr.colspan]="(vm.cajasData?.length || 0) + 2" class="p-0 bg-light"></td>
-                      </tr>
-                    }
-                  </tbody>
-                </table>
-              </div>
-
-              <!-- TABLA 2: SUMA DIARIA DE EFECTIVO (Derecha) -->
-              @if (isCerrarMode) {
-                <div class="table-wrapper suma-diaria-wrapper">
-                  <table class="table table-bordered table-hover align-middle mb-0">
-                    <thead class="table-light sticky-top" style="z-index: 10;">
-                    <tr>
-                      <th colspan="2" class="text-center bg-light">
-                        <i class="ri-calculator-line me-2"></i>Suma Diaria de Efectivo
-                      </th>
-                    </tr>
-                    </thead>
-
-                    <tbody>
-                    <!-- Solo items de suma diaria -->
-                      @for (catMovimiento of vm.catMovWithDetailsData; track $index) {
-                        <!-- Header de categoría -->
-                        <tr class="table-active">
-                          <td colspan="2" class="fw-bold">
-                            <div class="d-flex justify-content-between align-items-center">
-                            <span>
-                              @if (catMovimiento.tipo_operacion === '+') {
-                                <i class="ri-add-circle-line me-2 text-success"></i>
-                              } @else if (catMovimiento.tipo_operacion === '-') {
-                                <i class="ri-subtract-circle-line me-2 text-danger"></i>
-                              } @else if (catMovimiento.tipo_operacion === 'diff' || catMovimiento.tipo_operacion === 'diferencia') {
-                                <i class="ri-exchange-line me-2 text-warning"></i>
-                              } @else {
-                                <i class="ri-checkbox-circle-line me-2"></i>
-                              }
-                              {{ catMovimiento.nombre }}
-                            </span>
-                              <span [ngClass]="getOperacionClass(catMovimiento.tipo_operacion)">
-                              @if (catMovimiento.tipo_operacion === '-') {
-                                - S/. {{ catMovimiento.acumuladoConvertido?.toFixed(2) || '0.00' }}
-                              } @else if (catMovimiento.tipo_operacion === '+') {
-                                + S/. {{ catMovimiento.acumuladoConvertido?.toFixed(2) || '0.00' }}
-                              } @else {
-                                S/. {{ catMovimiento.acumuladoConvertido?.toFixed(2) || '0.00' }}
-                              }
-                            </span>
-                            </div>
-                          </td>
-                        </tr>
-
-                        <!-- Items -->
-                        @for (detail of catMovimiento.details; track $index) {
-                          <tr>
-                            <!-- Nombre del item -->
-                            <td class="align-middle">
-                              <span class="fw-medium">{{ detail.nombre }}</span>
-                            </td>
-                            <td>
-                              <div class="input-group input-group-sm justify-content-end">
-                                <input type="number" class="form-control text-center" min="0" step="0.01"
-                                       [(ngModel)]="detail.cantidad"
-                                       (ngModelChange)="onCantidadMovimientoChange(detail, $event)"
-                                       (wheel)="$event.preventDefault()"
-                                       style="max-width: 200px;">
-                              </div>
-                            </td>
-                          </tr>
-                        }
-
-                        <!-- Espacio -->
-                        <tr style="height: 10px;">
-                          <td colspan="2" class="p-0 bg-light"></td>
-                        </tr>
-                      }
-                    </tbody>
-                  </table>
-                </div>
-              }
+        <div class="card-header">
+          <h5 class="card-title mb-0">
+            <i class="ri-filter-3-line me-2"></i>Seleccionar Rango de Fechas
+          </h5>
+        </div>
+        <div class="card-body">
+          <div class="row g-3 align-items-end">
+            <div class="col-lg-4">
+              <label class="form-label">Rango de Fechas (máximo 7 días)</label>
+              <input
+                type="text"
+                class="form-control"
+                placeholder="Seleccionar rango de fechas"
+                mwlFlatpickr
+                [formControl]="dateRangeControl"
+                [options]="flatpickrOptions">
+              <!-- Debug info -->
+              <small class="text-muted">Valor actual: {{ dateRangeControl.value || 'Sin seleccionar' }}</small>
+            </div>
+            <div class="col-lg-2">
+              <button
+                type="button"
+                class="btn btn-primary w-100"
+                [disabled]="!dateRangeControl.value || isLoading"
+                (click)="buscarSumasDiarias()">
+                <i class="ri-search-line me-1"></i>
+                @if (isLoading) {
+                  <span class="spinner-border spinner-border-sm me-1" role="status"></span>
+                }
+                Buscar
+              </button>
+              <!-- Debug info -->
+              <small class="text-muted d-block mt-1">
+                Botón: {{ dateRangeControl.value ? 'Habilitado' : 'Deshabilitado' }}
+              </small>
             </div>
           </div>
-        }
-        @else {
-          <app-empty-state
-            title="Selecciona el turno de operacion"
-            message="Debes seleccionar el turno de operacion para cargar las cajas asociadas.">
-          </app-empty-state>
-        }
+        </div>
       </div>
-      <!--end card-->
     </div>
   </div>
-  <!--end row-->
-}
 
-<!-- Modal para observaciones de diferencia -->
-<ng-template #diferenciaModal let-offcanvas>
-  <div class="offcanvas-header bg-danger">
-    <h5 class="offcanvas-title text-white" id="offcanvasDiferenciaLabel">
-      <i class="ri-alert-line me-2"></i>Diferencia detectada
-    </h5>
-    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="offcanvas" aria-label="Close"
-            (click)="offcanvas.dismiss('Cross click')"></button>
-  </div>
-  <!--end offcanvas-header-->
-  <form  class="d-flex flex-column justify-content-end h-100">
-    <div class="offcanvas-body">
-      <div class="alert alert-danger border-danger mb-4">
-        <div class="d-flex justify-content-between align-items-center">
-          <div>
-            <strong>Total este inventario:</strong><br>
-            <span class="fs-5">S/. {{ vm.valoresSummary?.totalConvertido?.toFixed(2) || '0.00' }}</span>
+  <!-- Tabla de Cuadre -->
+  @if (cuadreData) {
+    <div class="row">
+      <div class="col-12">
+        <div class="card">
+          <div class="card-header bg-light">
+            <div class="d-flex justify-content-between align-items-center">
+              <h5 class="card-title mb-0">
+                <i class="ri-table-line me-2"></i>Cuadre de Suma Diaria
+              </h5>
+              <button
+                type="button"
+                class="btn btn-success"
+                [disabled]="!hayCambios() || isGuardando"
+                (click)="guardarCuadre()">
+                @if (isGuardando) {
+                  <span class="spinner-border spinner-border-sm me-1" role="status"></span>
+                }
+                <i class="ri-save-line me-1"></i>
+                Guardar Cuadre
+              </button>
+            </div>
           </div>
-          <div>
-            <strong>Total suma diaria:</strong><br>
-            <span class="fs-5">S/. {{ vm.valoresSummary?.total_real_turno?.toFixed(2) || '0.00' }}</span>
+          <div class="card-body p-0">
+            <div class="table-responsive" style="overflow-x: auto; max-height: 70vh;">
+              <table class="table table-bordered table-hover mb-0">
+                <thead class="table-light sticky-top">
+                  <!-- Fila 1: Headers principales -->
+                  <tr>
+                    <th rowspan="2" class="text-center align-middle" style="min-width: 250px; position: sticky; left: 0; background-color: #f8f9fa; z-index: 12;">
+                      Descripción
+                    </th>
+                    @for (fecha of cuadreData.fechas; track fecha) {
+                      <th colspan="3" class="text-center" style="min-width: 350px; background-color: #e9ecef;">
+                        {{fecha}}
+                      </th>
+                    }
+                  </tr>
+
+                  <!-- Fila 2: Subheaders -->
+                  <tr>
+                    @for (fecha of cuadreData.fechas; track fecha) {
+                      <th class="text-center" style="min-width: 100px; background-color: #e3f2fd;">Registrado</th>
+                      <th class="text-center" style="min-width: 120px; background-color: #fff3cd;">Control</th>
+                      <th class="text-center" style="min-width: 100px; background-color: #f8d7da;">Diferencia</th>
+                    }
+                  </tr>
+                </thead>
+
+                <tbody>
+                  <!-- Iterar por categorías -->
+                  @for (categoria of cuadreData.categorias; track categoria.categoria_id) {
+                    <!-- Header de categoría -->
+                    <tr [ngClass]="{
+                      'table-success': categoria.tipo_operacion === 'ingreso',
+                      'table-danger': categoria.tipo_operacion === 'egreso',
+                      'table-warning': categoria.tipo_operacion === 'diferencia'
+                    }">
+                      <td colspan="1000" class="fw-bold py-2" style="position: sticky; left: 0; z-index: 10;"
+                          [ngClass]="{
+                            'table-success': categoria.tipo_operacion === 'ingreso',
+                            'table-danger': categoria.tipo_operacion === 'egreso',
+                            'table-warning': categoria.tipo_operacion === 'diferencia'
+                          }">
+                        @if (categoria.tipo_operacion === 'ingreso') {
+                          <i class="ri-arrow-up-circle-fill me-2 text-success"></i>
+                        } @else if (categoria.tipo_operacion === 'egreso') {
+                          <i class="ri-arrow-down-circle-fill me-2 text-danger"></i>
+                        } @else {
+                          <i class="ri-alert-line me-2 text-warning"></i>
+                        }
+                        {{ categoria.nombre }}
+                      </td>
+                    </tr>
+
+                    <!-- Items de la categoría -->
+                    @for (item of $any(categoria.items); track item.id) {
+                      <tr>
+                        <!-- Nombre del item -->
+                        <td class="align-middle ps-4" style="position: sticky; left: 0; background-color: white; z-index: 10;">
+                          <span class="fw-medium">{{ item.nombre }}</span>
+                          @if (getTieneDiferencia(item)) {
+                            <i class="ri-error-warning-line text-danger ms-2"></i>
+                          }
+                        </td>
+
+                        <!-- Columnas por fecha -->
+                        @for (fecha of cuadreData.fechas; track fecha) {
+                          <!-- Registrado -->
+                          <td class="text-center align-middle">
+                            <span class="text-muted">{{ getCantidadRegistrada(item, fecha) }}</span>
+                          </td>
+
+                          <!-- Control (editable) -->
+                          <td class="text-center align-middle">
+                            <input
+                              type="number"
+                              class="form-control form-control-sm text-center"
+                              [(ngModel)]="$any(item.control)[fecha]"
+                              (wheel)="$event.preventDefault()"
+                              (ngModelChange)="onCantidadControlChange(item, fecha)"
+                              min="0"
+                              step="0.01"
+                              [ngClass]="{'border-danger': getDiferencia(item, fecha) !== 0}"
+                              style="max-width: 120px; margin: 0 auto;">
+                          </td>
+
+                          <!-- Diferencia -->
+                          <td class="text-center align-middle"
+                              [ngClass]="{'bg-danger bg-opacity-10': getDiferencia(item, fecha) !== 0}">
+                            <span class="fw-bold"
+                                  [ngClass]="{
+                                    'text-danger': getDiferencia(item, fecha) < 0,
+                                    'text-success': getDiferencia(item, fecha) > 0
+                                  }">
+                              {{ getDiferencia(item, fecha) }}
+                            </span>
+                          </td>
+                        }
+                      </tr>
+                    }
+                  }
+                </tbody>
+              </table>
+            </div>
           </div>
-        </div>
-        <hr class="my-2">
-        <div class="d-flex justify-content-between align-items-center">
-          <strong class="text-danger">
-            <i class="ri-alert-line me-1"></i>Diferencia:
-          </strong>
-          <strong class="text-danger fs-5">
-            S/. {{ getDiferenciaInventarioSuma().toFixed(2) }}
-          </strong>
         </div>
       </div>
     </div>
-    <!--end offcanvas-body-->
-    <div class="offcanvas-footer border-top p-3 text-center">
-      <button type="button" (click)="offcanvas.dismiss('Cross click')"
-              class="btn btn-danger w-100">
-        <i class="ri-alert-line align-middle me-1"></i>Validar nuevamente
-      </button>
+  }
+
+  <!-- Estado vacío -->
+  @if (!cuadreData && !isLoading) {
+    <div class="row">
+      <div class="col-12">
+        <div class="card">
+          <div class="card-body text-center py-5">
+            <div class="mb-4">
+              <i class="ri-calendar-check-line display-1 text-muted"></i>
+            </div>
+            <h5 class="text-muted mb-3">Selecciona un rango de fechas</h5>
+            <p class="text-muted mb-0">
+              Selecciona un rango de fechas (máximo 7 días) para ver y cuadrar las sumas diarias
+            </p>
+          </div>
+        </div>
+      </div>
     </div>
-    <!--end offcanvas-footer-->
-  </form>
-</ng-template>
+  }
+
+  <!-- Estado de carga -->
+  @if (isLoading) {
+    <div class="row">
+      <div class="col-12">
+        <div class="card">
+          <div class="card-body text-center py-5">
+            <div class="spinner-border text-primary mb-3" role="status" style="width: 3rem; height: 3rem;">
+              <span class="visually-hidden">Cargando...</span>
+            </div>
+            <h5 class="text-muted">Cargando datos de suma diaria...</h5>
+          </div>
+        </div>
+      </div>
+    </div>
+  }
+</div>
 

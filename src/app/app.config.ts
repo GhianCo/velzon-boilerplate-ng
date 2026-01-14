@@ -6,6 +6,7 @@ import {
   withPreloading
 } from "@angular/router";
 import {HttpClient, provideHttpClient, withInterceptors} from "@angular/common/http";
+import {DatePipe} from "@angular/common";
 import {ErrorInterceptor} from "@velzon/core/helpers/error.interceptor";
 import {FakeBackendInterceptor} from "@velzon/core/helpers/fake-backend";
 import {sslErrorHandlerInterceptor} from "@sothy/interceptors/ssl-error-handler.interceptor";
@@ -104,6 +105,7 @@ export const appConfig: ApplicationConfig = {
     {provide: ControlActivosApiService, useFactory: controlActivosAPiCreator, deps: [HttpClient]},
     {provide: WorkersApiService, useFactory: workersAPiCreator, deps: [HttpClient]},
     {provide: AlertService, useFactory: alertServiceFactory, deps: []},
+    DatePipe,
     importProvidersFrom(
       BrowserAnimationsModule,
       NgPipesModule,
