@@ -34,8 +34,6 @@
                 mwlFlatpickr
                 [formControl]="dateRangeControl"
                 [options]="flatpickrOptions">
-              <!-- Debug info -->
-              <small class="text-muted">Valor actual: {{ dateRangeControl.value || 'Sin seleccionar' }}</small>
             </div>
             <div class="col-lg-2">
               <button
@@ -49,10 +47,6 @@
                 }
                 Buscar
               </button>
-              <!-- Debug info -->
-              <small class="text-muted d-block mt-1">
-                Botón: {{ dateRangeControl.value ? 'Habilitado' : 'Deshabilitado' }}
-              </small>
             </div>
           </div>
         </div>
