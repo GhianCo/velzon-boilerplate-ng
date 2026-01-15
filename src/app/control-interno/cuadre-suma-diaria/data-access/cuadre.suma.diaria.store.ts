@@ -3,6 +3,7 @@ import {SignalStore} from "@shared/data-access/signal.store";
 import {CuadreSumaDiariaRemoteReq} from "./cuadre.suma.diaria.remote.req";
 import {catchError, tap} from "rxjs/operators";
 import {of} from "rxjs";
+import {ActivatedRoute, Router} from "@angular/router";
 
 export type IState = {
   // Datos de cuadre
@@ -12,6 +13,7 @@ export type IState = {
 
   // Guardado
   saveCuadreLoading: boolean,
+  saveCuadreSuccess: boolean,
   saveCuadreError: any,
 }
 
@@ -21,6 +23,7 @@ const initialState: IState = {
   cuadreError: null,
 
   saveCuadreLoading: false,
+  saveCuadreSuccess: false,
   saveCuadreError: null,
 }
 
@@ -35,11 +38,14 @@ export class CuadreSumaDiariaStore extends SignalStore<IState> {
     cuadreData: this.state().cuadreData,
     cuadreError: this.state().cuadreError,
     saveCuadreLoading: this.state().saveCuadreLoading,
+    saveCuadreSuccess: this.state().saveCuadreSuccess,
     saveCuadreError: this.state().saveCuadreError,
   }));
 
   constructor(
-    private remoteReq: CuadreSumaDiariaRemoteReq
+    private remoteReq: CuadreSumaDiariaRemoteReq,
+    private _activatedRoute: ActivatedRoute,
+    private _router: Router,
   ) {
     super();
     this.initialize(initialState);
@@ -59,14 +65,12 @@ export class CuadreSumaDiariaStore extends SignalStore<IState> {
     this.remoteReq.requestCategoriasConRegistros(startDate, endDate)
       .pipe(
         tap((response: any) => {
-          console.log('✅ Store: Datos recibidos del backend:', response);
           this.patch({
             cuadreData: response.data,
             cuadreLoading: false
           });
         }),
         catchError((error) => {
-          console.error('❌ Store: Error al cargar datos:', error);
           this.patch({
             cuadreError: error,
             cuadreLoading: false,
@@ -82,31 +86,42 @@ export class CuadreSumaDiariaStore extends SignalStore<IState> {
    * Guardar cuadre
    */
   guardarCuadre(data: any): void {
-    console.log('🏪 Store: Guardando cuadre', data);
-
     this.patch({
       saveCuadreLoading: true,
+      saveCuadreSuccess: false,
       saveCuadreError: null
     });
 
     this.remoteReq.requestGuardarCuadre(data)
       .pipe(
         tap((response: any) => {
-          console.log('✅ Store: Cuadre guardado exitosamente:', response);
+          this._router.navigate(['./'], {relativeTo: this._activatedRoute})
           this.patch({
-            saveCuadreLoading: false
+            saveCuadreLoading: false,
+            saveCuadreSuccess: true
           });
         }),
         catchError((error) => {
-          console.error('❌ Store: Error al guardar cuadre:', error);
           this.patch({
             saveCuadreError: error,
-            saveCuadreLoading: false
+            saveCuadreLoading: false,
+            saveCuadreSuccess: false
           });
           return of(null);
         })
       )
       .subscribe();
+  }
+
+  /**
+   * Resetear estado de guardado
+   */
+  resetSaveState(): void {
+    this.patch({
+      saveCuadreLoading: false,
+      saveCuadreSuccess: false,
+      saveCuadreError: null
+    });
   }
 
   /**

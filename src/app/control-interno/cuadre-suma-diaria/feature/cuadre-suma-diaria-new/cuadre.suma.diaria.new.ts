@@ -92,7 +92,7 @@ export class CuadreSumaDiariaNew implements OnInit {
                 this.cuadreData = vm.cuadreData;
             }
 
-            // Manejar errores
+            // Manejar errores de carga
             if (vm.cuadreError) {
                 console.error('❌ Effect: Error en el store:', vm.cuadreError);
                 this.confirmationService.error(
@@ -103,6 +103,29 @@ export class CuadreSumaDiariaNew implements OnInit {
 
             // Actualizar estado de guardado
             this.isGuardando = vm.saveCuadreLoading;
+
+            // Manejar éxito del guardado
+            if (vm.saveCuadreSuccess && !this.isGuardando) {
+                console.log('✅ Effect: Cuadre guardado exitosamente');
+                this.confirmationService.success(
+                    'Cuadre guardado',
+                    'El cuadre de suma diaria se ha guardado correctamente'
+                );
+                // Limpiar datos
+                this.cuadreData = null;
+                this.dateRangeControl.setValue(null);
+                // Resetear estado de guardado en el store
+                this.cuadreSumaDiariaStore.resetSaveState();
+            }
+
+            // Manejar errores de guardado
+            if (vm.saveCuadreError) {
+                console.error('❌ Effect: Error al guardar:', vm.saveCuadreError);
+                this.confirmationService.error(
+                    'Error al guardar',
+                    'No se pudo guardar el cuadre. Por favor, intenta nuevamente.'
+                );
+            }
         });
     }
 
@@ -183,7 +206,7 @@ export class CuadreSumaDiariaNew implements OnInit {
      * Obtener cantidad registrada de un item en una fecha
      */
     getCantidadRegistrada(item: any, fecha: string): number {
-        return item.registrado[fecha] || 0;
+        return item.registrado[fecha] * 1 || 0;
     }
 
     /**
@@ -223,7 +246,7 @@ export class CuadreSumaDiariaNew implements OnInit {
 
         return this.cuadreData.categorias.reduce((sum: number, categoria: any) => {
             return sum + categoria.items.reduce((itemSum: number, item: any) => {
-                return itemSum + this.getCantidadRegistrada(item, fecha);
+                return itemSum * 1 + this.getCantidadRegistrada(item, fecha);
             }, 0);
         }, 0);
     }
@@ -236,7 +259,7 @@ export class CuadreSumaDiariaNew implements OnInit {
 
         return this.cuadreData.categorias.reduce((sum: number, categoria: any) => {
             return sum + categoria.items.reduce((itemSum: number, item: any) => {
-                return itemSum + (item.control[fecha] || 0);
+                return itemSum * 1 + (item.control[fecha] * 1 || 0);
             }, 0);
         }, 0);
     }
@@ -312,19 +335,32 @@ export class CuadreSumaDiariaNew implements OnInit {
      * Procesar el guardado del cuadre
      */
     private procesarGuardado(): void {
-        this.isGuardando = true;
+        console.log('💾 Procesando guardado del cuadre');
 
-        // Simular guardado (luego reemplazar con llamada real al store)
-        setTimeout(() => {
-            this.isGuardando = false;
-            this.confirmationService.success(
-                'Cuadre guardado',
-                'El cuadre de suma diaria se ha guardado correctamente'
-            );
-            // Limpiar datos
-            this.cuadreData = null;
-            this.dateRangeControl.setValue(null);
-        }, 1500);
+        // Preparar datos para enviar al backend
+        const cuadreParaGuardar = {
+            fechas: this.cuadreData.fechas,
+            categorias: this.cuadreData.categorias.map((categoria: any) => ({
+                categoria_id: categoria.id,
+                nombre: categoria.nombre,
+                tipo_operacion: categoria.tipo_operacion,
+                items: categoria.items.map((item: any) => ({
+                    item_id: item.id,
+                    nombre: item.nombre,
+                    registros: this.cuadreData.fechas.map((fecha: string) => ({
+                        fecha: fecha,
+                        cantidad_control: item.control[fecha] || 0,
+                        cantidad_registrada: this.getCantidadRegistrada(item, fecha),
+                        diferencia: this.getDiferencia(item, fecha)
+                    }))
+                }))
+            }))
+        };
+
+        console.log('📤 Datos a enviar:', cuadreParaGuardar);
+
+        // Llamar al store para guardar
+        this.cuadreSumaDiariaStore.guardarCuadre(cuadreParaGuardar);
     }
 }
 

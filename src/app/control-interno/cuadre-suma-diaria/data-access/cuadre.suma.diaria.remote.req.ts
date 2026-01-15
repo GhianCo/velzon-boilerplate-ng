@@ -23,6 +23,6 @@ export class CuadreSumaDiariaRemoteReq {
    * @param data Datos del cuadre a guardar
    */
   requestGuardarCuadre(data: any): Observable<any> {
-    return this.httpService.post('cuadre-suma-diaria', data);
+    return this.httpService.post(this.REMOTE_API_URI + 'resumencontrolinterno/guardar-resumen', data);
   }
 }
