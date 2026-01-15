@@ -18,7 +18,6 @@ import {cloneDeep} from "lodash";
 import {FlatpickrModule} from "angularx-flatpickr";
 import {HotTableComponent, HotTableModule} from "@handsontable/angular-wrapper";
 import Handsontable from "handsontable";
-import {InventarioEfectivoStore} from "@app/inventario-efectivo/data-access/inventario.efectivo.store";
 import {CommonModule} from "@angular/common";
 import {SimplebarAngularModule} from "simplebar-angular";
 import {EmptyStateComponent} from "@shared/components/empty-state/empty-state.component";
@@ -26,6 +25,7 @@ import {LoadingSpinnerComponent} from "@shared/components/loading-spinner/loadin
 import {AperturaTurnoValidatorService} from "@app/inventario-efectivo/services/apertura-turno-validator.service";
 import {InventarioPdfService} from "@app/inventario-efectivo/services/inventario-pdf.service";
 import {InventarioEfectivoRemoteReq} from "@app/inventario-efectivo/data-access/inventario.efectivo.remote.req";
+import {CuadreSumaDiariaStore} from "@app/control-interno/cuadre-suma-diaria/data-access/cuadre.suma.diaria.store";
 
 @Component({
   standalone: true,
@@ -194,14 +194,14 @@ export class CuadreSumaDiariaList {
               public service: PaginationService,
               private formBuilder: UntypedFormBuilder,
               private store: Store<{ data: RootReducerState }>,
-              public inventarioEfectivoStore: InventarioEfectivoStore,
+              public cuadreSumaDiariaStore: CuadreSumaDiariaStore,
               private offcanvasService: NgbOffcanvas,
               private aperturaTurnoValidator: AperturaTurnoValidatorService,
               private inventarioPdfService: InventarioPdfService,
               private inventarioRemoteReq: InventarioEfectivoRemoteReq,
   ) {
     // Inicializar FormControl con el rango de fechas del store
-    this.dateRangeControl = new FormControl(this.inventarioEfectivoStore.getDateRangeForComponent());
+    this.dateRangeControl = new FormControl(this.cuadreSumaDiariaStore.getDateRangeForComponent());
 
     // Configurar flatpickr (los filtros ya están inicializados por el resolver)
     this.configureFlatpickr();
@@ -249,15 +249,15 @@ export class CuadreSumaDiariaList {
         const isSameDay = dates[0].getFullYear() === dates[1].getFullYear() &&
                          dates[0].getMonth() === dates[1].getMonth() &&
                          dates[0].getDate() === dates[1].getDate();
-        this.inventarioEfectivoStore.setDateRange([dates[0], dates[1]]);
+        this.cuadreSumaDiariaStore.setDateRange([dates[0], dates[1]]);
       } else if (dates.length === 1) {
         // Si solo hay una fecha, usar el mismo día como inicio y fin
-        this.inventarioEfectivoStore.setDateRange([dates[0], dates[0]]);
+        this.cuadreSumaDiariaStore.setDateRange([dates[0], dates[0]]);
       }
     });
 
     effect(() => {
-      const data: any = this.inventarioEfectivoStore.vm().inventarioEfectivoData;
+      const data: any = this.cuadreSumaDiariaStore.vm().cuadreSumaDiariaData;
       const colHeaders = data?.header?.filter((h: any) => h.visible).map((h: any) => h.alias);
       this.hotSettings = {
         ...this.hotSettings,
@@ -268,7 +268,7 @@ export class CuadreSumaDiariaList {
 
     // Sincronizar selectedTurnoId con el store
     effect(() => {
-      const turnoId = this.inventarioEfectivoStore.vm().filtersToApply?.turno_id;
+      const turnoId = this.cuadreSumaDiariaStore.vm().filtersToApply?.turno_id;
       if (turnoId !== undefined) {
         this.selectedTurnoId = turnoId;
       }
@@ -279,7 +279,7 @@ export class CuadreSumaDiariaList {
     this.flatpickrOptions = {
       mode: 'range',
       dateFormat: 'd/m/Y',
-      defaultDate: this.inventarioEfectivoStore.getDateRangeForComponent(),
+      defaultDate: this.cuadreSumaDiariaStore.getDateRangeForComponent(),
       locale: {
         firstDayOfWeek: 1,
         weekdays: {
@@ -296,13 +296,13 @@ export class CuadreSumaDiariaList {
         if (selectedDates && selectedDates.length >= 1) {
           if (selectedDates.length === 1) {
             // Solo se seleccionó una fecha, usar el mismo día como inicio y fin
-            this.inventarioEfectivoStore.setDateRange([selectedDates[0], selectedDates[0]]);
+            this.cuadreSumaDiariaStore.setDateRange([selectedDates[0], selectedDates[0]]);
           } else if (selectedDates.length === 2) {
             // Verificar si es el mismo día
             const isSameDay = selectedDates[0].getFullYear() === selectedDates[1].getFullYear() &&
                              selectedDates[0].getMonth() === selectedDates[1].getMonth() &&
                              selectedDates[0].getDate() === selectedDates[1].getDate();
-            this.inventarioEfectivoStore.setDateRange([selectedDates[0], selectedDates[1]]);
+            this.cuadreSumaDiariaStore.setDateRange([selectedDates[0], selectedDates[1]]);
           }
         }
       }
@@ -405,7 +405,7 @@ export class CuadreSumaDiariaList {
   }
 
   changePage(pageNumber: number) {
-    this.inventarioEfectivoStore.changePagination(pageNumber)
+    this.cuadreSumaDiariaStore.changePagination(pageNumber)
   }
 
   // Search Data
@@ -696,7 +696,7 @@ export class CuadreSumaDiariaList {
 
   openFilters(content: TemplateRef<any>) {
     // Guardar el estado original de los filtros ANTES de abrir el modal
-    const currentFilters = this.inventarioEfectivoStore.vm().filtersToApply;
+    const currentFilters = this.cuadreSumaDiariaStore.vm().filtersToApply;
     this.originalFilters = {
       turno_id: currentFilters?.turno_id ?? -1,
       sala_id: currentFilters?.sala_id ?? -1,
@@ -734,7 +734,7 @@ export class CuadreSumaDiariaList {
 
   aplicarFiltros() {
     // Aplicar filtros (hace la llamada REST)
-    this.inventarioEfectivoStore.applyFilters();
+    this.cuadreSumaDiariaStore.applyFilters();
 
     // Cerrar offcanvas con razón 'apply' para indicar que se aplicaron los filtros
     this.offcanvasService.dismiss('apply');
@@ -747,14 +747,14 @@ export class CuadreSumaDiariaList {
   cancelarFiltros() {
     // Restaurar los filtros originales en el store (sin aplicar)
     if (this.originalFilters) {
-      this.inventarioEfectivoStore.setFilters({
+      this.cuadreSumaDiariaStore.setFilters({
         turno_id: this.originalFilters.turno_id,
         sala_id: this.originalFilters.sala_id,
       });
 
       // Restaurar el rango de fechas si existe
       if (this.originalFilters.startDate && this.originalFilters.endDate) {
-        this.inventarioEfectivoStore.setDateRange([
+        this.cuadreSumaDiariaStore.setDateRange([
           this.originalFilters.startDate,
           this.originalFilters.endDate
         ]);
@@ -776,13 +776,13 @@ export class CuadreSumaDiariaList {
 
   limpiarFiltros() {
     // Resetear filtros en el store
-    this.inventarioEfectivoStore.clearFilters();
+    this.cuadreSumaDiariaStore.clearFilters();
 
     // Resetear el turno seleccionado
     this.selectedTurnoId = -1;
 
     // Actualizar el FormControl con las nuevas fechas
-    const newDateRange = this.inventarioEfectivoStore.getDateRangeForComponent();
+    const newDateRange = this.cuadreSumaDiariaStore.getDateRangeForComponent();
     this.dateRangeControl.setValue(newDateRange);
 
     // Actualizar la configuración de flatpickr con las nuevas fechas
@@ -796,21 +796,21 @@ export class CuadreSumaDiariaList {
   onTurnoChangeFromModal(event: any) {
     const value = event?.value;
     const turnoId = value === 'null' || value === '' ? -1 : parseInt(value);
-    this.inventarioEfectivoStore.setFilters({ turno_id: turnoId });
+    this.cuadreSumaDiariaStore.setFilters({ turno_id: turnoId });
     // NO aplicar filtros aquí - solo actualizar el estado
   }
 
   // Método para remover el badge de turno (SÍ aplica filtros automáticamente)
   onTurnoRemove() {
-    this.inventarioEfectivoStore.setFilters({ turno_id: -1 });
+    this.cuadreSumaDiariaStore.setFilters({ turno_id: -1 });
     // Aplicar filtros automáticamente (hace la llamada REST)
-    this.inventarioEfectivoStore.applyFilters();
+    this.cuadreSumaDiariaStore.applyFilters();
   }
 
   onSalaChange(event: any) {
     const value = event?.value;
     const salaId = value === 'null' || value === '' ? -1 : parseInt(value);
-    this.inventarioEfectivoStore.setFilters({ sala_id: salaId });
+    this.cuadreSumaDiariaStore.setFilters({ sala_id: salaId });
     // NO aplicar filtros aquí - solo actualizar el estado
   }
 

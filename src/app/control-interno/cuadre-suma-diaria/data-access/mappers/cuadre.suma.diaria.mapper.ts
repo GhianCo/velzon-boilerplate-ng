@@ -6,10 +6,9 @@ export class CuadreSumaDiariaMapper extends MainMapper<any, any> {
   protected map(inventario_efectivo: any): any {
     return {
       ...inventario_efectivo,
-      apertura: DateTimeService.formatearFecha(inventario_efectivo.apertura),
-      cierre: DateTimeService.formatearFecha(inventario_efectivo.cierre),
-      sumadiaria: NumberFormatterService.formatNumber(inventario_efectivo.sumadiaria),
-      totalinventario: NumberFormatterService.formatNumber(inventario_efectivo.totalinventario),
+      fecha: DateTimeService.formatearFecha(inventario_efectivo.fecha),
+      inicio: DateTimeService.formatearFechaSinHora(inventario_efectivo.inicio),
+      fin: DateTimeService.formatearFechaSinHora(inventario_efectivo.fin)
     }
   }
 

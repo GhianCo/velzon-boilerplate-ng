@@ -1,7 +1,7 @@
 <!-- Start Breadcrumbs -->
 <app-breadcrumbs title="Cuadrar suma diaria" [breadcrumbItems]="breadCrumbItems"></app-breadcrumbs>
 <!-- End Breadcrumbs -->
-@if (inventarioEfectivoStore.vm(); as vm) {
+@if (cuadreSumaDiariaStore.vm(); as vm) {
   <div class="row">
     <div class="col-xl-12 col-lg-12">
       <div>
@@ -24,7 +24,7 @@
                       <hr class="dropdown-divider">
                     </li>
                     <li>
-                      <a class="dropdown-item" (click)="inventarioEfectivoStore.loadAllInvetarioEfectivoStore()">
+                      <a class="dropdown-item" (click)="cuadreSumaDiariaStore.applyFilters()">
                         <i class="ri-refresh-line align-bottom me-1"></i> Actualizar
                       </a>
                     </li>
@@ -54,23 +54,6 @@
                               <span><strong>Rango de fechas:</strong> Seleccionar</span>
                             }
                           </span>
-
-                          <!-- Filtro de Turno (removible) -->
-                          @if (vm.filtersToApply?.turno_id &&
-                               vm.filtersToApply.turno_id !== -1) {
-                            @for (turno of vm.turnosData; track turno.turno_id) {
-                              @if (turno.turno_id === vm.filtersToApply.turno_id) {
-                                <span class="badge bg-primary-subtle text-primary border border-primary d-flex align-items-center gap-2 py-2 px-3">
-                                  <i class="ri-time-line"></i>
-                                  <span><strong>Turno:</strong> {{ turno.turno_nombre }}</span>
-                                  <button type="button"
-                                          class="btn-close btn-close-sm"
-                                          style="font-size: 0.65rem; padding: 0; margin: 0;"
-                                          (click)="$event.stopPropagation(); onTurnoRemove()"></button>
-                                </span>
-                              }
-                            }
-                          }
                         </div>
                       </div>
 
@@ -87,9 +70,9 @@
               </div>
             </div>
           </div>
-          @if (!vm.inventarioEfectivoLoading){
+          @if (!vm.cuadreSumaDiariaLoading){
             <div class="card-body">
-              @if (vm.inventarioEfectivoData.length) {
+              @if (vm.cuadreSumaDiariaData.length) {
               <div class="my-3">
                 <div class="table-card gridjs-border-none">
                   <div class="table-responsive">
@@ -97,69 +80,41 @@
                       <thead>
                       <tr class="bg-light text-muted">
                           <th scope="col">
-                            Fecha apertura
+                            Fecha registro
                           </th>
                           <th scope="col">
-                            Fecha cierre
+                            Periodo inicio
                           </th>
                           <th scope="col">
-                            Gerente
+                            Periodo fin
                           </th>
                           <th scope="col">
-                            Supervisor
+                            Usuario
                           </th>
                           <th scope="col">
-                            Inventario inicial de efectivo
-                          </th>
-                          <th scope="col">
-                            Inventario final de efectivo
+                            Total diferencias
                           </th>
                           <th scope="col">
                             Sala
-                          </th>
-                          <th scope="col">
-                            Turno
                           </th>
                         <th class="text-center">Acciones</th>
                       </tr>
                       </thead>
                       <tbody>
-                        @for (inventarioEfectivo of vm.inventarioEfectivoData; track $index) {
+                        @for (cuadreSumaDiaria of vm.cuadreSumaDiariaData; track $index) {
                           <tr>
-                            <td>{{ inventarioEfectivo.apertura }}</td>
-                            <td>
-                              @if (inventarioEfectivo.abierta === 1 || inventarioEfectivo.abierta === '1') {
-                                <span class="badge bg-danger">
-                                <i class="ri-time-line align-middle me-1"></i>Turno aperturado
-                              </span>
-                              } @else {
-                                {{ inventarioEfectivo.cierre }}
-                              }
-                            </td>
+                            <td>{{ cuadreSumaDiaria.fecha }}</td>
+                            <td>{{ cuadreSumaDiaria.inicio }}</td>
+                            <td>{{ cuadreSumaDiaria.fin }}</td>
                             <td>
                               <div class="d-flex align-items-center">
                                 <div class="flex-grow-1">
-                                  <h5 class="fs-14 mb-1">{{ inventarioEfectivo.gerente }}</h5>
+                                  <h5 class="fs-14 mb-1">{{ cuadreSumaDiaria.usuario }}</h5>
                                 </div>
                               </div>
                             </td>
-                            <td>
-                              <div class="d-flex align-items-center">
-                                <div class="flex-grow-1">
-                                  <h5 class="fs-14 mb-1">{{ inventarioEfectivo.supervisor }}</h5>
-                                </div>
-                              </div>
-                            </td>
-                            <td>{{inventarioEfectivo.moneda }} {{ inventarioEfectivo.totalinventario }}</td>
-                            <td>
-                              @if (inventarioEfectivo.abierta == 1) {
-                                -
-                              } @else {
-                                {{inventarioEfectivo.moneda }} {{ inventarioEfectivo.sumadiaria }}
-                              }
-                            </td>
-                            <td>{{ inventarioEfectivo.sala }}</td>
-                            <td>{{ inventarioEfectivo.turno }}</td>
+                            <td>{{cuadreSumaDiaria.moneda }} {{ cuadreSumaDiaria.total_diferencias }}</td>
+                            <td>{{ cuadreSumaDiaria.sala }}</td>
                             <td class="text-center">
                               <div class="dropdown" ngbDropdown>
                                 <button class="btn btn-soft-secondary btn-sm dropdown arrow-none" type="button"
@@ -167,27 +122,27 @@
                                   <i class="ri-more-fill"></i>
                                 </button>
                                 <ul class="dropdown-menu dropdown-menu-end" ngbDropdownMenu>
-                                  @if (inventarioEfectivo.abierta == 1) {
+                                  @if (cuadreSumaDiaria.abierta == 1) {
                                     <li>
                                       <a class="dropdown-item"
-                                         (click)="cerrarTurno(inventarioEfectivo.operacionturno_id)"><i
+                                         (click)="cerrarTurno(cuadreSumaDiaria.operacionturno_id)"><i
                                         class="ri-lock-2-fill align-bottom me-2 text-muted"></i> Cerrar </a>
                                     </li>
                                   } @else {
-                                    @if (inventarioEfectivo.ultimo_turno != 1 && $index === 0) {
+                                    @if (cuadreSumaDiaria.ultimo_turno != 1 && $index === 0) {
                                       <li>
                                         <a class="dropdown-item"
-                                           (click)="replicarInventario(inventarioEfectivo.operacionturno_id)"><i
+                                           (click)="replicarInventario(cuadreSumaDiaria.operacionturno_id)"><i
                                           class="ri-lock-unlock-fill align-bottom me-2 text-muted"></i> Abrir de este
                                           inventario </a>
                                       </li>
                                     }
                                     <li>
-                                      <a class="dropdown-item" (click)="visualizarInventario(inventarioEfectivo.operacionturno_id)"><i
+                                      <a class="dropdown-item" (click)="visualizarInventario(cuadreSumaDiaria.operacionturno_id)"><i
                                         class="ri-eye-fill align-bottom me-2 text-muted"></i> Visualizar</a>
                                     </li>
                                     <li>
-                                      <a class="dropdown-item" (click)="descargarPdfInventario(inventarioEfectivo.operacionturno_id)"><i
+                                      <a class="dropdown-item" (click)="descargarPdfInventario(cuadreSumaDiaria.operacionturno_id)"><i
                                         class="ri-download-2-fill align-bottom me-2 text-muted"></i> Descargar PDF</a>
                                     </li>
                                   }
@@ -206,17 +161,17 @@
                   <div class="col-sm-12 col-md-5">
                     <div class="dataTables_info mb-2" id="tickets-table_info" role="status" aria-live="polite">
                       Mostrando
-                      {{ vm.inventarioEfectivoPagination?.currentPage }} a
-                      {{ vm.inventarioEfectivoPagination?.totalPages }}
-                      de {{ vm.inventarioEfectivoPagination?.totalRows }}
+                      {{ vm.cuadreSumaDiariaPagination?.currentPage }} a
+                      {{ vm.cuadreSumaDiariaPagination?.totalPages }}
+                      de {{ vm.cuadreSumaDiariaPagination?.totalRows }}
                       registros
                     </div>
                   </div>
                   <!-- Pagination -->
                   <div class="col-sm-12 col-md-5">
                     <div class="text-md-right float-md-end pagination-rounded gridjs-pagination mb-3">
-                      <ngb-pagination [collectionSize]="vm.inventarioEfectivoPagination?.totalRows"
-                                      [pageSize]="vm.inventarioEfectivoPagination?.perPage"
+                      <ngb-pagination [collectionSize]="vm.cuadreSumaDiariaPagination?.totalRows"
+                                      [pageSize]="vm.cuadreSumaDiariaPagination?.perPage"
                                       (pageChange)="changePage($event)">
                       </ngb-pagination>
                     </div>
@@ -286,18 +241,6 @@
                mwlFlatpickr
                [formControl]="dateRangeControl"
                [options]="flatpickrOptions">
-      </div>
-      <div class="mb-4">
-        <label class="form-label text-muted text-uppercase fw-semibold mb-3">Turno</label>
-        <select class="form-control"
-                [(ngModel)]="selectedTurnoId"
-                [ngModelOptions]="{standalone: true}"
-                (ngModelChange)="onTurnoChangeFromModal({value: $event})">
-          <option [value]="-1">Todos los turnos</option>
-          @for (turno of vm.turnosData; track turno.turno_id) {
-            <option [value]="turno.turno_id">{{ turno.turno_nombre }}</option>
-          }
-        </select>
       </div>
     </div>
     <!--end offcanvas-body-->

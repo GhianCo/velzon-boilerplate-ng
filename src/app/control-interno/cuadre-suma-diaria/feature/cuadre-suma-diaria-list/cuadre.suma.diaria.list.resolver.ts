@@ -1,15 +1,14 @@
 import {inject} from '@angular/core';
-import {InventarioEfectivoStore} from "@app/inventario-efectivo/data-access/inventario.efectivo.store";
+import {CuadreSumaDiariaStore} from "@app/control-interno/cuadre-suma-diaria/data-access/cuadre.suma.diaria.store";
 
 export const CuadreSumaDiariaListResolver = () => {
-  const inventarioEfectivoStore = inject(InventarioEfectivoStore);
+  const cuadreSumaDiariaStore = inject(CuadreSumaDiariaStore);
 
-  // Inicializar filtros por defecto (primer día del mes hasta hoy, turno y sala en -1)
-  inventarioEfectivoStore.initDefaultFilters();
+  // Inicializar filtros con fechas por defecto (primer día del mes hasta hoy)
+  cuadreSumaDiariaStore.initializeDefaultFilters();
 
-  // Cargar turnos
-  inventarioEfectivoStore.loadTurnos();
+  // Aplicar filtros (carga la lista)
+  cuadreSumaDiariaStore.applyFilters();
 
-  // Cargar inventarios con los filtros ya inicializados
-  return inventarioEfectivoStore.loadAllInvetarioEfectivoStore();
+  return true;
 }
