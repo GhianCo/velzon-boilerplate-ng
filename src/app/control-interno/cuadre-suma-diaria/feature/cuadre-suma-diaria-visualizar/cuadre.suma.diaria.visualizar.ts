@@ -118,7 +118,7 @@ export class CuadreSumaDiariaVisualizar implements OnInit {
 
   ngOnInit(): void {
     this.breadCrumbItems = [
-      {label: 'Inventario efectivo'},
+      {label: 'Cuadre de suma diaria'},
       {label: 'Visualizar resumen', active: true}
     ];
 
