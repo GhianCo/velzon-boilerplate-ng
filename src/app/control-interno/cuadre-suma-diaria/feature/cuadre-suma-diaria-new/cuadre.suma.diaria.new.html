@@ -169,7 +169,7 @@
                                     'text-danger': getDiferencia(item, fecha) < 0,
                                     'text-success': getDiferencia(item, fecha) > 0
                                   }">
-                              {{ getDiferencia(item, fecha) }}
+                              {{ getDiferencia(item, fecha).toFixed(2) }}
                             </span>
                           </td>
                         }
