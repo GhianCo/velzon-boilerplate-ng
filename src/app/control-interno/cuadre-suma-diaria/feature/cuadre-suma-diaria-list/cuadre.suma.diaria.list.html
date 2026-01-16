@@ -122,30 +122,14 @@
                                   <i class="ri-more-fill"></i>
                                 </button>
                                 <ul class="dropdown-menu dropdown-menu-end" ngbDropdownMenu>
-                                  @if (cuadreSumaDiaria.abierta == 1) {
-                                    <li>
-                                      <a class="dropdown-item"
-                                         (click)="cerrarTurno(cuadreSumaDiaria.operacionturno_id)"><i
-                                        class="ri-lock-2-fill align-bottom me-2 text-muted"></i> Cerrar </a>
-                                    </li>
-                                  } @else {
-                                    @if (cuadreSumaDiaria.ultimo_turno != 1 && $index === 0) {
-                                      <li>
-                                        <a class="dropdown-item"
-                                           (click)="replicarInventario(cuadreSumaDiaria.operacionturno_id)"><i
-                                          class="ri-lock-unlock-fill align-bottom me-2 text-muted"></i> Abrir de este
-                                          inventario </a>
-                                      </li>
-                                    }
-                                    <li>
-                                      <a class="dropdown-item" (click)="visualizarInventario(cuadreSumaDiaria.operacionturno_id)"><i
-                                        class="ri-eye-fill align-bottom me-2 text-muted"></i> Visualizar</a>
-                                    </li>
-                                    <li>
-                                      <a class="dropdown-item" (click)="descargarPdfInventario(cuadreSumaDiaria.operacionturno_id)"><i
-                                        class="ri-download-2-fill align-bottom me-2 text-muted"></i> Descargar PDF</a>
-                                    </li>
-                                  }
+                                  <li>
+                                    <a class="dropdown-item" (click)="visualizarInventario(cuadreSumaDiaria.operacionturno_id)"><i
+                                      class="ri-eye-fill align-bottom me-2 text-muted"></i> Visualizar</a>
+                                  </li>
+                                  <li>
+                                    <a class="dropdown-item" (click)="descargarPdfInventario(cuadreSumaDiaria.operacionturno_id)"><i
+                                      class="ri-download-2-fill align-bottom me-2 text-muted"></i> Descargar excel</a>
+                                  </li>
                                 </ul>
                               </div>
                             </td>
