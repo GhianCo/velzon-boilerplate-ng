@@ -49,23 +49,18 @@ export class CuadreSumaDiariaNew implements OnInit {
         locale: Spanish.es,
         maxDate: new Date(),
         onChange: (selectedDates: Date[], dateStr: string) => {
-            console.log('📅 Flatpickr onChange:', { selectedDates, dateStr });
 
             if (selectedDates.length === 2) {
                 const diffTime = Math.abs(selectedDates[1].getTime() - selectedDates[0].getTime());
                 const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
 
-                console.log('📊 Diferencia de días:', diffDays);
-
                 if (diffDays > 7) {
-                    console.warn('⚠️ Rango mayor a 7 días');
                     this.confirmationService.warning(
                         'Rango inválido',
                         'El rango de fechas no puede ser mayor a 7 días'
                     );
                     this.dateRangeControl.setValue(null);
                 } else {
-                    console.log('✅ Rango válido, actualizando control:', dateStr);
                     // Asegurarse de que el valor se actualice correctamente
                     this.dateRangeControl.setValue(dateStr);
                 }
@@ -88,13 +83,11 @@ export class CuadreSumaDiariaNew implements OnInit {
 
             // Actualizar cuadreData cuando llegan datos del backend
             if (vm.cuadreData) {
-                console.log('📦 Effect: Datos recibidos del store:', vm.cuadreData);
                 this.cuadreData = vm.cuadreData;
             }
 
             // Manejar errores de carga
             if (vm.cuadreError) {
-                console.error('❌ Effect: Error en el store:', vm.cuadreError);
                 this.confirmationService.error(
                     'Error al cargar datos',
                     'No se pudieron cargar los datos del cuadre. Por favor, intenta nuevamente.'
@@ -106,7 +99,6 @@ export class CuadreSumaDiariaNew implements OnInit {
 
             // Manejar éxito del guardado
             if (vm.saveCuadreSuccess && !this.isGuardando) {
-                console.log('✅ Effect: Cuadre guardado exitosamente');
                 this.confirmationService.success(
                     'Cuadre guardado',
                     'El cuadre de suma diaria se ha guardado correctamente'
@@ -120,7 +112,6 @@ export class CuadreSumaDiariaNew implements OnInit {
 
             // Manejar errores de guardado
             if (vm.saveCuadreError) {
-                console.error('❌ Effect: Error al guardar:', vm.saveCuadreError);
                 this.confirmationService.error(
                     'Error al guardar',
                     'No se pudo guardar el cuadre. Por favor, intenta nuevamente.'
@@ -130,25 +121,17 @@ export class CuadreSumaDiariaNew implements OnInit {
     }
 
     ngOnInit(): void {
-        console.log('🚀 CuadreSumaDiariaNew inicializado');
         this.breadCrumbItems = [
             {label: 'Control Interno'},
             {label: 'Cuadre de Suma Diaria', active: true}
         ];
-
-        // Verificar que Flatpickr esté configurado
-        console.log('⚙️ Flatpickr options:', this.flatpickrOptions);
     }
 
     /**
      * Buscar sumas diarias por rango de fechas
      */
     buscarSumasDiarias(): void {
-        console.log('🎯 Método buscarSumasDiarias ejecutado');
-        console.log('📅 Valor del dateRangeControl:', this.dateRangeControl.value);
-
         if (!this.dateRangeControl.value) {
-            console.warn('⚠️ dateRangeControl.value está vacío');
             this.confirmationService.warning(
                 'Selecciona un rango de fechas',
                 'Por favor, selecciona un rango de fechas para buscar'
@@ -158,10 +141,8 @@ export class CuadreSumaDiariaNew implements OnInit {
 
         // El separador en español es " a " no " to "
         const dateRange = this.dateRangeControl.value.split(' a ');
-        console.log('📊 Rango parseado:', dateRange);
 
         if (dateRange.length !== 2) {
-            console.warn('⚠️ El rango no tiene 2 fechas:', dateRange.length);
             this.confirmationService.warning(
                 'Rango inválido',
                 'Por favor, selecciona un rango de fechas válido (fecha inicio y fecha fin)'
@@ -172,12 +153,6 @@ export class CuadreSumaDiariaNew implements OnInit {
         // Convertir fechas de formato DD/MM/YYYY a YYYY-MM-DD
         const startDate = this.convertirFechaAFormatoISO(dateRange[0].trim());
         const endDate = this.convertirFechaAFormatoISO(dateRange[1].trim());
-
-        console.log('🔍 Buscando sumas diarias:', {
-            rangoOriginal: dateRange,
-            startDate,
-            endDate
-        });
 
         this.isLoading = true;
 
@@ -276,36 +251,12 @@ export class CuadreSumaDiariaNew implements OnInit {
      */
     onCantidadControlChange(item: any, fecha: string): void {
         // Aquí podrías agregar lógica adicional si es necesario
-        console.log('Cantidad control cambiada:', item.nombre, fecha, item.control[fecha]);
-    }
-
-    /**
-     * Verificar si hay cambios en el cuadre
-     */
-    hayCambios(): boolean {
-        if (!this.cuadreData) return false;
-
-        return this.cuadreData.categorias.some((categoria: any) => {
-            return categoria.items.some((item: any) => {
-                return this.cuadreData.fechas.some((fecha: string) => {
-                    return (item.control[fecha] || 0) > 0;
-                });
-            });
-        });
     }
 
     /**
      * Guardar el cuadre
      */
     guardarCuadre(): void {
-        if (!this.hayCambios()) {
-            this.confirmationService.warning(
-                'Sin cambios',
-                'No hay cambios para guardar'
-            );
-            return;
-        }
-
         // Verificar si hay diferencias
         const hayDiferencias = this.cuadreData.fechas.some((fecha: string) => {
             return this.getTotalDiferenciaPorFecha(fecha) !== 0;
@@ -335,8 +286,6 @@ export class CuadreSumaDiariaNew implements OnInit {
      * Procesar el guardado del cuadre
      */
     private procesarGuardado(): void {
-        console.log('💾 Procesando guardado del cuadre');
-
         // Preparar datos para enviar al backend
         const cuadreParaGuardar = {
             fechas: this.cuadreData.fechas,
@@ -356,8 +305,6 @@ export class CuadreSumaDiariaNew implements OnInit {
                 }))
             }))
         };
-
-        console.log('📤 Datos a enviar:', cuadreParaGuardar);
 
         // Llamar al store para guardar
         this.cuadreSumaDiariaStore.guardarCuadre(cuadreParaGuardar);

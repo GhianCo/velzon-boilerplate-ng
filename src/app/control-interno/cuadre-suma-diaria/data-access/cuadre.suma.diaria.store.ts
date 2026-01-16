@@ -264,7 +264,7 @@ export class CuadreSumaDiariaStore extends SignalStore<IState> {
     this.remoteReq.requestGuardarCuadre(data)
       .pipe(
         tap((response: any) => {
-          this._router.navigate(['./'], {relativeTo: this._activatedRoute})
+          this._router.navigate(['cuadre-suma-diaria'])
           this.patch({
             saveCuadreLoading: false,
             saveCuadreSuccess: true

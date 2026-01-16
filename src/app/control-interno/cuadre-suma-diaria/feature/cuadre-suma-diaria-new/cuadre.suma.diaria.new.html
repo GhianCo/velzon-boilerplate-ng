@@ -67,7 +67,7 @@
               <button
                 type="button"
                 class="btn btn-success"
-                [disabled]="!hayCambios() || isGuardando"
+                [disabled]="isGuardando"
                 (click)="guardarCuadre()">
                 @if (isGuardando) {
                   <span class="spinner-border spinner-border-sm me-1" role="status"></span>
