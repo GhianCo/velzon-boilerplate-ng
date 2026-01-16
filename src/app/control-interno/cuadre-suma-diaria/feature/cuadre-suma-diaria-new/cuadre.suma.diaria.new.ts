@@ -1,4 +1,4 @@
-import {Component, inject, OnInit, effect} from '@angular/core';
+import {Component, inject, OnInit, OnDestroy, effect} from '@angular/core';
 import {FormsModule, ReactiveFormsModule, FormControl} from "@angular/forms";
 import {NgClass, DatePipe} from "@angular/common";
 import {CuadreSumaDiariaStore} from "@app/control-interno/cuadre-suma-diaria/data-access/cuadre.suma.diaria.store";
@@ -32,7 +32,7 @@ import {ConfirmationService} from "@sothy/services/confirmation.service";
         }
     `]
 })
-export class CuadreSumaDiariaNew implements OnInit {
+export class CuadreSumaDiariaNew implements OnInit, OnDestroy {
 
     breadCrumbItems!: Array<{}>;
     cuadreSumaDiariaStore = inject(CuadreSumaDiariaStore);
@@ -121,6 +121,12 @@ export class CuadreSumaDiariaNew implements OnInit {
             {label: 'Control Interno'},
             {label: 'Cuadre de Suma Diaria', active: true}
         ];
+    }
+
+    ngOnDestroy(): void {
+        // Limpiar los datos del cuadre cuando se sale de la vista
+        this.cuadreSumaDiariaStore.clearCuadreData();
+        this.cuadreSumaDiariaStore.resetSaveState();
     }
 
     /**

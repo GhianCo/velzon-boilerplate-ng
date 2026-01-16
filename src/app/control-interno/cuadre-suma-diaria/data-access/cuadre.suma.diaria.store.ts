@@ -299,10 +299,11 @@ export class CuadreSumaDiariaStore extends SignalStore<IState> {
             'Cuadre guardado',
             'El cuadre de suma diaria se ha guardado correctamente'
           );
-          this._router.navigate(['cuadre-suma-diaria'])
+          this._router.navigate(['cuadre-suma-diaria']);
           this.patch({
             saveCuadreLoading: false,
-            saveCuadreSuccess: true
+            saveCuadreSuccess: true,
+            cuadreData: null // Limpiar datos después de guardar
           });
         }),
         catchError((error) => {
