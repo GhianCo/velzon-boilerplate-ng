@@ -4,6 +4,7 @@ import {CuadreSumaDiariaRemoteReq} from "./cuadre.suma.diaria.remote.req";
 import {catchError, finalize, tap} from "rxjs/operators";
 import {of} from "rxjs";
 import {ActivatedRoute, Router} from "@angular/router";
+import {ConfirmationService} from "@sothy/services/confirmation.service";
 import {PARAM} from "@shared/constants/app.const";
 
 export type IState = {
@@ -78,6 +79,7 @@ export class CuadreSumaDiariaStore extends SignalStore<IState> {
     private remoteReq: CuadreSumaDiariaRemoteReq,
     private _activatedRoute: ActivatedRoute,
     private _router: Router,
+    private confirmationService: ConfirmationService,
   ) {
     super();
     this.initialize(initialState);
@@ -224,8 +226,6 @@ export class CuadreSumaDiariaStore extends SignalStore<IState> {
    * Cargar categorías con registros por rango de fechas
    */
   loadCategoriasConRegistros(startDate: string, endDate: string): void {
-    console.log('🏪 Store: Cargando categorías con registros', { startDate, endDate });
-
     this.patch({
       cuadreLoading: true,
       cuadreError: null
@@ -254,16 +254,51 @@ export class CuadreSumaDiariaStore extends SignalStore<IState> {
   /**
    * Guardar cuadre
    */
-  guardarCuadre(data: any): void {
+  guardarCuadre(): void {
+    const cuadreData = this.state().cuadreData;
+
+    if (!cuadreData) {
+      console.error('No hay datos de cuadre para guardar');
+      return;
+    }
+
     this.patch({
       saveCuadreLoading: true,
       saveCuadreSuccess: false,
       saveCuadreError: null
     });
 
-    this.remoteReq.requestGuardarCuadre(data)
+    // Preparar datos para enviar al backend
+    const cuadreParaGuardar = {
+      fechas: cuadreData.fechas,
+      categorias: cuadreData.categorias.map((categoria: any) => ({
+        categoria_id: categoria.id,
+        nombre: categoria.nombre,
+        tipo_operacion: categoria.tipo_operacion,
+        items: categoria.items.map((item: any) => ({
+          item_id: item.id,
+          nombre: item.nombre,
+          registros: cuadreData.fechas.map((fecha: string) => {
+            const registrado = item.registrado[fecha] * 1 || 0;
+            const control = item.control[fecha] || 0;
+            return {
+              fecha: fecha,
+              cantidad_control: control,
+              cantidad_registrada: registrado,
+              diferencia: control - registrado
+            };
+          })
+        }))
+      }))
+    };
+
+    this.remoteReq.requestGuardarCuadre(cuadreParaGuardar)
       .pipe(
         tap((response: any) => {
+          this.confirmationService.success(
+            'Cuadre guardado',
+            'El cuadre de suma diaria se ha guardado correctamente'
+          );
           this._router.navigate(['cuadre-suma-diaria'])
           this.patch({
             saveCuadreLoading: false,

@@ -99,10 +99,6 @@ export class CuadreSumaDiariaNew implements OnInit {
 
             // Manejar éxito del guardado
             if (vm.saveCuadreSuccess && !this.isGuardando) {
-                this.confirmationService.success(
-                    'Cuadre guardado',
-                    'El cuadre de suma diaria se ha guardado correctamente'
-                );
                 // Limpiar datos
                 this.cuadreData = null;
                 this.dateRangeControl.setValue(null);
@@ -286,28 +282,8 @@ export class CuadreSumaDiariaNew implements OnInit {
      * Procesar el guardado del cuadre
      */
     private procesarGuardado(): void {
-        // Preparar datos para enviar al backend
-        const cuadreParaGuardar = {
-            fechas: this.cuadreData.fechas,
-            categorias: this.cuadreData.categorias.map((categoria: any) => ({
-                categoria_id: categoria.id,
-                nombre: categoria.nombre,
-                tipo_operacion: categoria.tipo_operacion,
-                items: categoria.items.map((item: any) => ({
-                    item_id: item.id,
-                    nombre: item.nombre,
-                    registros: this.cuadreData.fechas.map((fecha: string) => ({
-                        fecha: fecha,
-                        cantidad_control: item.control[fecha] || 0,
-                        cantidad_registrada: this.getCantidadRegistrada(item, fecha),
-                        diferencia: this.getDiferencia(item, fecha)
-                    }))
-                }))
-            }))
-        };
-
-        // Llamar al store para guardar
-        this.cuadreSumaDiariaStore.guardarCuadre(cuadreParaGuardar);
+        // Llamar al store para guardar (el store obtiene cuadreData de su estado)
+        this.cuadreSumaDiariaStore.guardarCuadre();
     }
 }
 
