@@ -144,7 +144,7 @@
                         @for (fecha of cuadreData.fechas; track fecha) {
                           <!-- Registrado -->
                           <td class="text-center align-middle">
-                            <span class="text-muted">{{ getCantidadRegistrada(item, fecha) }}</span>
+                            <span class="text-muted">{{ item.registrado_formatted[fecha] }}</span>
                           </td>
 
                           <!-- Control (editable) -->

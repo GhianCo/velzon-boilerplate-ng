@@ -183,7 +183,7 @@ export class CuadreSumaDiariaNew implements OnInit, OnDestroy {
      * Obtener cantidad registrada de un item en una fecha
      */
     getCantidadRegistrada(item: any, fecha: string): number {
-        return item.registrado[fecha] * 1 || 0;
+        return item.registrado[fecha] || 0;
     }
 
     /**

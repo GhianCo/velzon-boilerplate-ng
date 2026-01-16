@@ -6,7 +6,8 @@ import {PersistenceService} from "@sothy/services/persistence.service";
 import {map} from "rxjs/operators";
 import {InventarioEfectivoMapper} from "@app/inventario-efectivo/data-access/mappers/inventario.efectivo.mapper";
 import {
-  CuadreSumaDiariaMapper
+  CuadreSumaDiariaMapper,
+  CategoriasConRegistrosMapper
 } from "@app/control-interno/cuadre-suma-diaria/data-access/mappers/cuadre.suma.diaria.mapper";
 
 @Injectable({
@@ -51,7 +52,15 @@ export class CuadreSumaDiariaRemoteReq {
    * @param endDate Fecha fin en formato YYYY-MM-DD
    */
   requestCategoriasConRegistros(startDate: string, endDate: string): Observable<any> {
-    return this.httpService.get(this.REMOTE_API_URI + `operacionturno/categorias-con-registros/${startDate}/${endDate}`);
+    return this.httpService.get(this.REMOTE_API_URI + `operacionturno/categorias-con-registros/${startDate}/${endDate}`)
+      .pipe(
+        map((response: any) => {
+          if (response.data) {
+            response.data = CategoriasConRegistrosMapper.transform(response.data);
+          }
+          return response;
+        })
+      );
   }
 
   /**

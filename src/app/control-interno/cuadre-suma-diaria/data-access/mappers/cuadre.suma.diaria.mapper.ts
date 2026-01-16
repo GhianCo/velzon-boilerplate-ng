@@ -11,5 +11,33 @@ export class CuadreSumaDiariaMapper extends MainMapper<any, any> {
       fin: DateTimeService.formatearFechaSinHora(inventario_efectivo.fin)
     }
   }
+}
 
+export class CategoriasConRegistrosMapper {
+  static transform(data: any): any {
+    if (!data || !data.categorias) {
+      return data;
+    }
+
+    return {
+      ...data,
+      categorias: data.categorias.map((categoria: any) => ({
+        ...categoria,
+        items: categoria.items.map((item: any) => {
+          // Mantener los valores originales y agregar versiones formateadas
+          const registradoFormateado: any = {};
+          if (item.registrado) {
+            Object.keys(item.registrado).forEach(fecha => {
+              registradoFormateado[fecha] = NumberFormatterService.formatNumber(item.registrado[fecha]);
+            });
+          }
+          
+          return {
+            ...item,
+            registrado_formatted: registradoFormateado
+          };
+        })
+      }))
+    };
+  }
 }
