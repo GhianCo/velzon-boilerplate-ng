@@ -26,6 +26,11 @@ export type IState = {
   saveCuadreSuccess: boolean,
   saveCuadreError: any,
 
+  // Visualización de categorías con control
+  categoriasControlLoading: boolean,
+  categoriasControlData: any,
+  categoriasControlError: any,
+
 }
 
 const initialState: IState = {
@@ -53,6 +58,11 @@ const initialState: IState = {
   saveCuadreLoading: false,
   saveCuadreSuccess: false,
   saveCuadreError: null,
+
+  // Visualización de categorías con control
+  categoriasControlLoading: false,
+  categoriasControlData: null,
+  categoriasControlError: null,
 }
 
 @Injectable({
@@ -73,6 +83,9 @@ export class CuadreSumaDiariaStore extends SignalStore<IState> {
     'saveCuadreLoading',
     'saveCuadreSuccess',
     'saveCuadreError',
+    'categoriasControlLoading',
+    'categoriasControlData',
+    'categoriasControlError',
   ]);
 
   constructor(
@@ -336,6 +349,45 @@ export class CuadreSumaDiariaStore extends SignalStore<IState> {
     this.patch({
       cuadreData: null,
       cuadreError: null
+    });
+  }
+
+  /**
+   * Cargar categorías con control por ID
+   */
+  loadCategoriasConControl(id: string): void {
+    this.patch({
+      categoriasControlLoading: true,
+      categoriasControlError: null
+    });
+
+    this.remoteReq.requestCategoriasConControl(id)
+      .pipe(
+        tap((response: any) => {
+          this.patch({
+            categoriasControlData: response.data,
+            categoriasControlLoading: false
+          });
+        }),
+        catchError((error) => {
+          this.patch({
+            categoriasControlError: error,
+            categoriasControlLoading: false,
+            categoriasControlData: null
+          });
+          return of(null);
+        })
+      )
+      .subscribe();
+  }
+
+  /**
+   * Limpiar datos de categorías con control
+   */
+  clearCategoriasControlData(): void {
+    this.patch({
+      categoriasControlData: null,
+      categoriasControlError: null
     });
   }
 

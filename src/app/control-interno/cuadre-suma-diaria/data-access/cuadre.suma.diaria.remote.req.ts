@@ -70,4 +70,12 @@ export class CuadreSumaDiariaRemoteReq {
   requestGuardarCuadre(data: any): Observable<any> {
     return this.httpService.post(this.REMOTE_API_URI + 'resumencontrolinterno/guardar-resumen', data);
   }
+
+  /**
+   * Obtener categorías con control por ID de resumen
+   * @param id ID del resumen de control interno
+   */
+  requestCategoriasConControl(id: string): Observable<any> {
+    return this.httpService.get(this.REMOTE_API_URI + `resumencontrolinterno/categorias-con-control/${id}`);
+  }
 }

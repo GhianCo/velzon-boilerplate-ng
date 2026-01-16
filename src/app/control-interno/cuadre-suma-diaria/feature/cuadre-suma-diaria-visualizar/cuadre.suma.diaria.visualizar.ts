@@ -1,15 +1,15 @@
-import {Component, inject, OnInit} from '@angular/core';
+import {Component, inject, OnInit, effect} from '@angular/core';
 import {BreadcrumbsComponent} from "@velzon/components/breadcrumbs/breadcrumbs.component";
 import {ActivatedRoute} from "@angular/router";
 import {CommonModule} from "@angular/common";
-import {InventarioEfectivoStore} from "@app/inventario-efectivo/data-access/inventario.efectivo.store";
+import {CuadreSumaDiariaStore} from "@app/control-interno/cuadre-suma-diaria/data-access/cuadre.suma.diaria.store";
 
 /**
- * Componente para visualizar el resumen de una operación de turno
- * Muestra 3 tablas: Inventario Apertura, Inventario Cierre y Suma Diaria
+ * Componente para visualizar las categorías con control de un resumen
+ * Muestra una tabla con fechas, categorías, items y totales
  */
 @Component({
-  selector: 'app-inventario-efectivo-visualizar',
+  selector: 'app-cuadre-suma-diaria-visualizar',
   templateUrl: './cuadre.suma.diaria.visualizar.html',
   standalone: true,
   imports: [
@@ -110,153 +110,200 @@ import {InventarioEfectivoStore} from "@app/inventario-efectivo/data-access/inve
 export class CuadreSumaDiariaVisualizar implements OnInit {
   breadCrumbItems!: Array<{}>;
   private route = inject(ActivatedRoute);
-  inventarioEfectivoStore = inject(InventarioEfectivoStore);
+  cuadreSumaDiariaStore = inject(CuadreSumaDiariaStore);
 
-  operacionTurnoId: string | null = null;
+  resumenId: string | null = null;
+  isLoading: boolean = false;
+  hasError: boolean = false;
+  categoriasData: any = null;
 
-  constructor() {}
+  constructor() {
+    // Effect para sincronizar datos del store con el componente
+    effect(() => {
+      const vm = this.cuadreSumaDiariaStore.vm();
+      
+      // Actualizar isLoading
+      this.isLoading = vm.categoriasControlLoading;
+      
+      // Actualizar datos
+      if (vm.categoriasControlData) {
+        this.categoriasData = vm.categoriasControlData;
+      }
+      
+      // Actualizar hasError
+      this.hasError = !!vm.categoriasControlError;
+    });
+  }
 
   ngOnInit(): void {
     this.breadCrumbItems = [
       {label: 'Cuadre de suma diaria'},
-      {label: 'Visualizar resumen', active: true}
+      {label: 'Visualizar categorías con control', active: true}
     ];
 
-    // Obtener ID de la ruta y cargar resumen
+    // Obtener ID de la ruta y cargar datos
     this.route.params.subscribe(params => {
-      this.operacionTurnoId = params['id'];
-      if (this.operacionTurnoId) {
-        this.loadResumen(this.operacionTurnoId);
+      this.resumenId = params['id'];
+      if (this.resumenId) {
+        this.loadCategoriasConControl(this.resumenId);
       }
     });
   }
 
   /**
-   * Cargar el resumen de la operación de turno a través del store
+   * Cargar las categorías con control
    */
-  loadResumen(operacionTurnoId: string) {
-    this.inventarioEfectivoStore.loadResumenOperacionTurno(operacionTurnoId).subscribe();
+  loadCategoriasConControl(id: string) {
+    this.cuadreSumaDiariaStore.loadCategoriasConControl(id);
   }
 
   /**
-   * Getter para acceder a los datos del resumen desde el store
+   * Calcular subtotal de una columna (registrado, control o diferencia)
    */
-  get resumenData() {
-    return this.inventarioEfectivoStore.vm().resumenOperacionData;
+  getSubtotal(items: any[], fecha: string, tipo: 'registrado' | 'control'): number {
+    if (!items || !Array.isArray(items)) return 0;
+    
+    return items.reduce((sum, item) => {
+      const valor = parseFloat(item[tipo][fecha]) || 0;
+      return sum + valor;
+    }, 0);
   }
 
   /**
-   * Getter para el estado de loading
+   * Calcular diferencia de una columna
    */
-  get isLoading() {
-    return this.inventarioEfectivoStore.vm().resumenOperacionLoading;
+  getDiferenciaTotal(items: any[], fecha: string): number {
+    if (!items || !Array.isArray(items)) return 0;
+    
+    return items.reduce((sum, item) => {
+      const registrado = parseFloat(item.registrado[fecha]) || 0;
+      const control = parseFloat(item.control[fecha]) || 0;
+      return sum + (control - registrado);
+    }, 0);
   }
 
   /**
-   * Getter para el estado de error
+   * Calcular total general por columna
    */
-  get hasError() {
-    return !!this.inventarioEfectivoStore.vm().resumenOperacionError;
-  }
-
-  /**
-   * Calcular el número máximo de filas necesarias
-   * Toma el mayor entre el total de denominaciones y el total de items de suma diaria
-   */
-  getMaxRows(): number {
-    if (!this.resumenData) return 0;
-
-    // Contar total de denominaciones
-    let totalDenominaciones = 0;
-    if (this.resumenData.inventario_apertura?.valores) {
-      this.resumenData.inventario_apertura.valores.forEach((valor: any) => {
-        totalDenominaciones += valor.denominaciones?.length || 0;
-      });
-    }
-
-    // Contar total de items de suma diaria
-    let totalItemsSumaDiaria = 0;
-    if (this.resumenData.suma_diaria?.categorias) {
-      this.resumenData.suma_diaria.categorias.forEach((categoria: any) => {
-        totalItemsSumaDiaria += categoria.items?.length || 0;
-      });
-    }
-
-    // Retornar el mayor
-    return Math.max(totalDenominaciones, totalItemsSumaDiaria);
-  }
-
-  /**
-   * Obtener la denominación correspondiente a un índice global de fila
-   */
-  getDenominacionByGlobalIndex(globalIndex: number): any {
-    if (!this.resumenData || !this.resumenData.inventario_apertura) return null;
-
-    let currentIndex = 0;
-    for (const valor of this.resumenData.inventario_apertura.valores) {
-      if (!valor.denominaciones) continue;
-
-      for (const denominacion of valor.denominaciones) {
-        if (currentIndex === globalIndex) {
-          return { valor, denominacion };
+  getTotalGeneral(tipo: 'registrado' | 'control'): { [fecha: string]: number } {
+    if (!this.categoriasData || !this.categoriasData.categorias) return {};
+    
+    const totales: { [fecha: string]: number } = {};
+    
+    this.categoriasData.fechas.forEach((fecha: string) => {
+      let total = 0;
+      
+      this.categoriasData.categorias.forEach((categoria: any) => {
+        if (categoria.tipo_operacion === '+') {
+          // Sumar ingresos
+          total += this.getSubtotal(categoria.items, fecha, tipo);
+        } else if (categoria.tipo_operacion === '-') {
+          // Restar egresos
+          total -= this.getSubtotal(categoria.items, fecha, tipo);
+        } else if (categoria.tipo_operacion === 'diff') {
+          // Las diferencias se suman al final
+          total += this.getSubtotal(categoria.items, fecha, tipo);
         }
-        currentIndex++;
-      }
-    }
-
-    return null;
-  }
-
-  /**
-   * Obtener la denominación de CIERRE correspondiente a un índice global de fila
-   */
-  getDenominacionCierreByGlobalIndex(globalIndex: number): any {
-    if (!this.resumenData || !this.resumenData.inventario_cierre) return null;
-
-    let currentIndex = 0;
-    for (const valor of this.resumenData.inventario_cierre.valores) {
-      if (!valor.denominaciones) continue;
-
-      for (const denominacion of valor.denominaciones) {
-        if (currentIndex === globalIndex) {
-          return { valor, denominacion };
-        }
-        currentIndex++;
-      }
-    }
-
-    return null;
-  }
-
-  /**
-   * Obtener el item de suma diaria correspondiente a un índice global de fila
-   */
-  getSumaDiariaItemByGlobalIndex(globalIndex: number): any {
-    if (!this.resumenData || !this.resumenData.suma_diaria?.categorias) return null;
-
-    // Aplanar todos los items en un solo array
-    const allItems: any[] = [];
-    this.resumenData.suma_diaria.categorias.forEach((categoria: any) => {
-      if (categoria.items && Array.isArray(categoria.items)) {
-        categoria.items.forEach((item: any) => {
-          allItems.push({
-            ...item,
-            tipo_operacion: categoria.tipo_operacion,
-            categoria_nombre: categoria.nombre
-          });
-        });
-      }
+      });
+      
+      totales[fecha] = total;
     });
-
-    return allItems[globalIndex] || null;
+    
+    return totales;
   }
 
   /**
-   * Crear un array de índices para iterar sobre el máximo de filas
+   * Calcular total general de diferencia
    */
-  getRowIndices(): number[] {
-    const maxRows = this.getMaxRows();
-    return Array.from({ length: maxRows }, (_, i) => i);
+  getTotalGeneralDiferencia(): { [fecha: string]: number } {
+    if (!this.categoriasData || !this.categoriasData.categorias) return {};
+    
+    const totalesRegistrado = this.getTotalGeneral('registrado');
+    const totalesControl = this.getTotalGeneral('control');
+    const totalesDiferencia: { [fecha: string]: number } = {};
+    
+    this.categoriasData.fechas.forEach((fecha: string) => {
+      totalesDiferencia[fecha] = (totalesControl[fecha] || 0) - (totalesRegistrado[fecha] || 0);
+    });
+    
+    return totalesDiferencia;
+  }
+
+  /**
+   * Calcular suma total de una columna (para la última columna de totales)
+   */
+  getSumaTotalColumna(items: any[], tipo: 'registrado' | 'control'): number {
+    if (!items || !Array.isArray(items) || !this.categoriasData) return 0;
+    
+    let total = 0;
+    this.categoriasData.fechas.forEach((fecha: string) => {
+      total += this.getSubtotal(items, fecha, tipo);
+    });
+    return total;
+  }
+
+  /**
+   * Calcular suma total de diferencias por item
+   */
+  getSumaTotalDiferenciaItems(items: any[]): number {
+    if (!items || !Array.isArray(items) || !this.categoriasData) return 0;
+    
+    let total = 0;
+    this.categoriasData.fechas.forEach((fecha: string) => {
+      total += this.getDiferenciaTotal(items, fecha);
+    });
+    return total;
+  }
+
+  /**
+   * Calcular suma total de registrado para un item específico
+   */
+  getSumaTotalRegistradoItem(item: any): number {
+    if (!item || !this.categoriasData) return 0;
+    
+    return this.categoriasData.fechas.reduce((sum: number, fecha: string) => {
+      return sum + (parseFloat(item.registrado[fecha]) || 0);
+    }, 0);
+  }
+
+  /**
+   * Calcular suma total de control para un item específico
+   */
+  getSumaTotalControlItem(item: any): number {
+    if (!item || !this.categoriasData) return 0;
+    
+    return this.categoriasData.fechas.reduce((sum: number, fecha: string) => {
+      return sum + (parseFloat(item.control[fecha]) || 0);
+    }, 0);
+  }
+
+  /**
+   * Calcular suma total de diferencia para un item específico
+   */
+  getSumaTotalDiferenciaItem(item: any): number {
+    if (!item || !this.categoriasData) return 0;
+    
+    return this.categoriasData.fechas.reduce((sum: number, fecha: string) => {
+      const registrado = parseFloat(item.registrado[fecha]) || 0;
+      const control = parseFloat(item.control[fecha]) || 0;
+      return sum + (control - registrado);
+    }, 0);
+  }
+
+  /**
+   * Calcular suma total general de todas las fechas
+   */
+  getSumaTotalGeneralPorTipo(tipo: 'registrado' | 'control'): number {
+    const totales = this.getTotalGeneral(tipo);
+    return Object.values(totales).reduce((sum, val) => sum + val, 0);
+  }
+
+  /**
+   * Calcular suma total general de diferencias
+   */
+  getSumaTotalGeneralDiferencia(): number {
+    const totales = this.getTotalGeneralDiferencia();
+    return Object.values(totales).reduce((sum, val) => sum + val, 0);
   }
 
   /**
