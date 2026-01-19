@@ -9,6 +9,7 @@ import {
   CuadreSumaDiariaMapper,
   CategoriasConRegistrosMapper
 } from "@app/control-interno/cuadre-suma-diaria/data-access/mappers/cuadre.suma.diaria.mapper";
+import {CategoriasConControlMapper} from "@app/control-interno/cuadre-suma-diaria/data-access/mappers/categorias.con.control.mapper";
 
 @Injectable({
   providedIn: 'root'
@@ -76,6 +77,14 @@ export class CuadreSumaDiariaRemoteReq {
    * @param id ID del resumen de control interno
    */
   requestCategoriasConControl(id: string): Observable<any> {
-    return this.httpService.get(this.REMOTE_API_URI + `resumencontrolinterno/categorias-con-control/${id}`);
+    return this.httpService.get(this.REMOTE_API_URI + `resumencontrolinterno/categorias-con-control/${id}`)
+      .pipe(
+        map((response: any) => {
+          if (response.data) {
+            response.data = CategoriasConControlMapper.transform(response.data);
+          }
+          return response;
+        })
+      );
   }
 }

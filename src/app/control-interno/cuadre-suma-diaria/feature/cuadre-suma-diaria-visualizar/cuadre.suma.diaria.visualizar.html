@@ -110,62 +110,50 @@
                         @for (fecha of categoriasData.fechas; track fecha) {
                           <!-- Registrado -->
                           <td class="text-center align-middle">
-                            <span class="text-muted">{{ item.registrado[fecha] }}</span>
+                            <span class="text-muted">{{ item.registradoFormateado[fecha] }}</span>
                           </td>
 
                           <!-- Control -->
                           <td class="text-center align-middle">
-                            @if (categoria.nombre === 'INDICADORES') {
-                              <span class="text-muted">-</span>
-                            } @else {
-                              <span class="fw-medium">{{ item.control[fecha] }}</span>
-                            }
+                            <span [ngClass]="categoria.nombre === 'INDICADORES' ? 'text-muted' : 'fw-medium'">
+                              {{ item.controlFormateado[fecha] }}
+                            </span>
                           </td>
 
                           <!-- Diferencia -->
                           <td class="text-center align-middle"
-                              [ngClass]="{'bg-danger bg-opacity-10': categoria.nombre !== 'INDICADORES' && (item.control[fecha] - item.registrado[fecha]) !== 0}">
-                            @if (categoria.nombre === 'INDICADORES') {
-                              <span class="text-muted">-</span>
-                            } @else {
-                              <span class="fw-bold"
-                                    [ngClass]="{
-                                      'text-danger': (item.control[fecha] - item.registrado[fecha]) < 0,
-                                      'text-success': (item.control[fecha] - item.registrado[fecha]) > 0
-                                    }">
-                                {{ (item.control[fecha] - item.registrado[fecha]).toFixed(2) }}
-                              </span>
-                            }
+                              [ngClass]="{'bg-danger bg-opacity-10': categoria.nombre !== 'INDICADORES' && item.totales.diferencia !== 0}">
+                            <span class="fw-bold"
+                                  [ngClass]="{
+                                    'text-muted': categoria.nombre === 'INDICADORES',
+                                    'text-danger': categoria.nombre !== 'INDICADORES' && item.totales.diferencia < 0,
+                                    'text-success': categoria.nombre !== 'INDICADORES' && item.totales.diferencia > 0
+                                  }">
+                              {{ item.diferenciaFormateado[fecha] }}
+                            </span>
                           </td>
                         }
 
                         <!-- Columna Total -->
                         <td class="text-center align-middle" style="background-color: #bee5eb;">
                           <span class="fw-medium">
-                            {{ getSumaTotalRegistradoItem(item).toFixed(2) }}
+                            {{ item.totalesFormateados.registrado }}
                           </span>
                         </td>
                         <td class="text-center align-middle" style="background-color: #ffeeba;">
-                          @if (categoria.nombre === 'INDICADORES') {
-                            <span class="text-muted">-</span>
-                          } @else {
-                            <span class="fw-medium">
-                              {{ getSumaTotalControlItem(item).toFixed(2) }}
-                            </span>
-                          }
+                          <span [ngClass]="categoria.nombre === 'INDICADORES' ? 'text-muted' : 'fw-medium'">
+                            {{ item.totalesFormateados.control }}
+                          </span>
                         </td>
                         <td class="text-center align-middle" style="background-color: #f5c6cb;">
-                          @if (categoria.nombre === 'INDICADORES') {
-                            <span class="text-muted">-</span>
-                          } @else {
-                            <span class="fw-bold"
-                                  [ngClass]="{
-                                    'text-danger': getSumaTotalDiferenciaItem(item) < 0,
-                                    'text-success': getSumaTotalDiferenciaItem(item) > 0
-                                  }">
-                              {{ getSumaTotalDiferenciaItem(item).toFixed(2) }}
-                            </span>
-                          }
+                          <span class="fw-bold"
+                                [ngClass]="{
+                                  'text-muted': categoria.nombre === 'INDICADORES',
+                                  'text-danger': categoria.nombre !== 'INDICADORES' && item.totales.diferencia < 0,
+                                  'text-success': categoria.nombre !== 'INDICADORES' && item.totales.diferencia > 0
+                                }">
+                            {{ item.totalesFormateados.diferencia }}
+                          </span>
                         </td>
                       </tr>
                     }
