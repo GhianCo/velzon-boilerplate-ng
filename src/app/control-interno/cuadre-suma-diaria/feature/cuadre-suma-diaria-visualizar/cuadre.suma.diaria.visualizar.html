@@ -115,19 +115,27 @@
 
                           <!-- Control -->
                           <td class="text-center align-middle">
-                            <span class="fw-medium">{{ item.control[fecha] }}</span>
+                            @if (categoria.nombre === 'INDICADORES') {
+                              <span class="text-muted">-</span>
+                            } @else {
+                              <span class="fw-medium">{{ item.control[fecha] }}</span>
+                            }
                           </td>
 
                           <!-- Diferencia -->
                           <td class="text-center align-middle"
-                              [ngClass]="{'bg-danger bg-opacity-10': (item.control[fecha] - item.registrado[fecha]) !== 0}">
-                            <span class="fw-bold"
-                                  [ngClass]="{
-                                    'text-danger': (item.control[fecha] - item.registrado[fecha]) < 0,
-                                    'text-success': (item.control[fecha] - item.registrado[fecha]) > 0
-                                  }">
-                              {{ (item.control[fecha] - item.registrado[fecha]).toFixed(2) }}
-                            </span>
+                              [ngClass]="{'bg-danger bg-opacity-10': categoria.nombre !== 'INDICADORES' && (item.control[fecha] - item.registrado[fecha]) !== 0}">
+                            @if (categoria.nombre === 'INDICADORES') {
+                              <span class="text-muted">-</span>
+                            } @else {
+                              <span class="fw-bold"
+                                    [ngClass]="{
+                                      'text-danger': (item.control[fecha] - item.registrado[fecha]) < 0,
+                                      'text-success': (item.control[fecha] - item.registrado[fecha]) > 0
+                                    }">
+                                {{ (item.control[fecha] - item.registrado[fecha]).toFixed(2) }}
+                              </span>
+                            }
                           </td>
                         }
 
@@ -138,49 +146,29 @@
                           </span>
                         </td>
                         <td class="text-center align-middle" style="background-color: #ffeeba;">
-                          <span class="fw-medium">
-                            {{ getSumaTotalControlItem(item).toFixed(2) }}
-                          </span>
+                          @if (categoria.nombre === 'INDICADORES') {
+                            <span class="text-muted">-</span>
+                          } @else {
+                            <span class="fw-medium">
+                              {{ getSumaTotalControlItem(item).toFixed(2) }}
+                            </span>
+                          }
                         </td>
                         <td class="text-center align-middle" style="background-color: #f5c6cb;">
-                          <span class="fw-bold"
-                                [ngClass]="{
-                                  'text-danger': getSumaTotalDiferenciaItem(item) < 0,
-                                  'text-success': getSumaTotalDiferenciaItem(item) > 0
-                                }">
-                            {{ getSumaTotalDiferenciaItem(item).toFixed(2) }}
-                          </span>
+                          @if (categoria.nombre === 'INDICADORES') {
+                            <span class="text-muted">-</span>
+                          } @else {
+                            <span class="fw-bold"
+                                  [ngClass]="{
+                                    'text-danger': getSumaTotalDiferenciaItem(item) < 0,
+                                    'text-success': getSumaTotalDiferenciaItem(item) > 0
+                                  }">
+                              {{ getSumaTotalDiferenciaItem(item).toFixed(2) }}
+                            </span>
+                          }
                         </td>
                       </tr>
                     }
-
-                    <!-- Subtotal de categoría -->
-                    <tr class="fw-bold" style="background-color: #f8f9fa;">
-                      <td class="ps-4" style="position: sticky; left: 0; background-color: #f8f9fa; z-index: 10;">
-                        Subtotal {{ categoria.nombre }}
-                      </td>
-                      @for (fecha of categoriasData.fechas; track fecha) {
-                        <td class="text-center" style="background-color: #e3f2fd;">
-                          {{ getSubtotal(categoria.items, fecha, 'registrado').toFixed(2) }}
-                        </td>
-                        <td class="text-center" style="background-color: #fff3cd;">
-                          {{ getSubtotal(categoria.items, fecha, 'control').toFixed(2) }}
-                        </td>
-                        <td class="text-center" style="background-color: #f8d7da;">
-                          {{ getDiferenciaTotal(categoria.items, fecha).toFixed(2) }}
-                        </td>
-                      }
-                      <!-- Subtotal total de la categoría -->
-                      <td class="text-center" style="background-color: #bee5eb;">
-                        {{ getSumaTotalColumna(categoria.items, 'registrado').toFixed(2) }}
-                      </td>
-                      <td class="text-center" style="background-color: #ffeeba;">
-                        {{ getSumaTotalColumna(categoria.items, 'control').toFixed(2) }}
-                      </td>
-                      <td class="text-center" style="background-color: #f5c6cb;">
-                        {{ getSumaTotalDiferenciaItems(categoria.items).toFixed(2) }}
-                      </td>
-                    </tr>
                   }
 
                   <!-- Fila de TOTAL GENERAL 
