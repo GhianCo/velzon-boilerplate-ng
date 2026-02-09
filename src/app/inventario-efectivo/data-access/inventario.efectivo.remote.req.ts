@@ -71,7 +71,7 @@ export class InventarioEfectivoRemoteReq {
   }
 
   requestSaveInventario(inventarioWithDetails: any): Observable<IResponse> {
-    return this.http.post(this.REMOTE_API_URI + 'inventario/saveWithDetails', inventarioWithDetails)
+    return this.http.post(this.REMOTE_API_URI + 'operacionturno/saveWithDetails', inventarioWithDetails)
   }
 
   requestAllCajasBySala(sala_id: number, de_apertura: any): Observable<IResponse> {
