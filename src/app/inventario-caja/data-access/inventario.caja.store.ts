@@ -868,12 +868,8 @@ export class InventarioCajaStore extends SignalStore<IState> {
   public setSelectedCajaId(cajaId: string | null) {
     this.patch({selectedCajaId: cajaId});
     const state = this.vm();
-    
-    if (state.selectedOperacion == 'apertura') {
-      this.loadCajas(PARAM.SI);
-    } else {
+    if (state.selectedOperacion != 'apertura') {
       this.loadCatMovWithDetails();
-      this.loadCajas(PARAM.UNDEFINED);
     }
   }
 
