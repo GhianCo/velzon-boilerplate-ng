@@ -8,9 +8,9 @@ export const InventarioCajaReplicarResolver = () => {
 
   const id = activatedRoute.snapshot.params['id'];
 
-  // Cargar valores, cajas y última operación
+  // Cargar valores y última operación
+  // Las cajas ahora se cargan globalmente desde el CajaGlobalService (topbar)
   inventarioCajaStore.loadValoresWithDetails();
-  inventarioCajaStore.loadCajas();
   inventarioCajaStore.loadLastOperacionCaja();
 
   if (id) {

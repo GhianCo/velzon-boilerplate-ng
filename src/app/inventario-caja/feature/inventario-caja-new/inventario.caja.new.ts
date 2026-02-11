@@ -8,6 +8,7 @@ import {CountUpModule} from "ngx-countup";
 import {ConfirmationService} from "@sothy/services/confirmation.service";
 import {EmptyStateComponent} from "@shared/components/empty-state/empty-state.component";
 import {NgbOffcanvas} from "@ng-bootstrap/ng-bootstrap";
+import {CajaGlobalService} from "@sothy/services/caja-global.service";
 
 @Component({
     selector: 'app-inventario-caja-new',
@@ -143,6 +144,7 @@ export class InventarioCajaNew implements OnInit {
     private route = inject(ActivatedRoute);
     private confirmationService = inject(ConfirmationService);
     private offcanvasService = inject(NgbOffcanvas);
+    public cajaGlobalService = inject(CajaGlobalService);
 
     // ViewChild para el template del modal
     @ViewChild('diferenciaModal', { static: false }) diferenciaModal!: TemplateRef<any>;
@@ -174,24 +176,25 @@ export class InventarioCajaNew implements OnInit {
             }
         });
 
-        // Effect para seleccionar automáticamente la caja si solo hay una disponible
+        // Effect para sincronizar la caja seleccionada globalmente con el store local
         effect(() => {
-            const cajasDisponibles = this.inventarioCajaStore.cajasDisponibles();
+            const selectedCajaId = this.cajaGlobalService.selectedCajaId();
             const vm = this.inventarioCajaStore.vm();
-            const selectedCajaId = vm.selectedCajaId;
-
-            // Si hay exactamente una caja disponible y no hay ninguna seleccionada, seleccionarla automáticamente
-            if (cajasDisponibles.length === 1 && !selectedCajaId) {
-                const cajaId = cajasDisponibles[0].caja_id;
-                this.inventarioCajaStore.setSelectedCajaId(cajaId);
+            
+            // Si la caja seleccionada globalmente es diferente a la del store, actualizar el store
+            if (selectedCajaId && selectedCajaId != vm.selectedCajaId) {
+                this.inventarioCajaStore.setSelectedCajaId(String(selectedCajaId));
             }
-
-            // Si la caja seleccionada ya no está disponible, limpiar la selección
-            if (selectedCajaId && cajasDisponibles.length > 0) {
-                const cajaExiste = cajasDisponibles.find((c: any) => c.caja_id == selectedCajaId);
-                if (!cajaExiste) {
-                    this.inventarioCajaStore.setSelectedCajaId(null);
-                }
+        });
+        
+        // Effect para sincronizar las cajas del servicio global con el store
+        effect(() => {
+            const cajas = this.cajaGlobalService.cajas();
+            const vm = this.inventarioCajaStore.vm();
+            
+            // Actualizar cajasData en el store si es diferente
+            if (cajas && cajas.length > 0 && JSON.stringify(vm.cajasData) !== JSON.stringify(cajas)) {
+                this.inventarioCajaStore.setCajasData(cajas);
             }
         });
     }
@@ -533,14 +536,6 @@ export class InventarioCajaNew implements OnInit {
     }
 
     // ===== FIN MÉTODO AUXILIAR =====
-
-    // ===== MÉTODOS PARA ACTUALIZAR CAJA Y OPERACIÓN =====
-
-    onCajaChange(operacionCajaId: string) {
-        this.inventarioCajaStore.setSelectedCajaId(operacionCajaId);
-    }
-
-    // ===== FIN MÉTODOS PARA ACTUALIZAR CAJA Y OPERACIÓN ====
 
     // ===== FIN MÉTODOS CAJA Y OPERACIÓN =====
 

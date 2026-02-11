@@ -12,8 +12,8 @@ export const InventarioCajaNewResolver = () => {
   // Inicializar valores y denominaciones
   inventarioCajaStore.loadValoresWithDetails();
 
-  // Cargar cajas y última operación de caja
-  inventarioCajaStore.loadCajas();
+  // Cargar última operación de caja
+  // Las cajas ahora se cargan globalmente desde el CajaGlobalService (topbar)
   inventarioCajaStore.loadLastOperacionCaja();
 
   if (id) {

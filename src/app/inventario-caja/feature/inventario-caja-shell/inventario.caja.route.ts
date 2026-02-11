@@ -17,6 +17,7 @@ import {
   InventarioCajaVisualizar
 } from "@app/inventario-caja/feature/inventario-caja-visualizar/inventario.caja.visualizar";
 import { AperturaCajaGuard } from "@app/inventario-caja/guards/apertura-caja.guard";
+import { CajaSelectionGuard } from "@app/inventario-caja/guards/caja-selection.guard";
 
 export default [
   {
@@ -26,6 +27,7 @@ export default [
       {
         path: '',
         component: InventarioCajaList,
+        canActivate: [CajaSelectionGuard],
         resolve: {
           data: InventarioCajaListResolver,
         },
@@ -33,7 +35,7 @@ export default [
       {
         path: "nuevo",
         component: InventarioCajaNew,
-        canActivate: [AperturaCajaGuard],
+        canActivate: [CajaSelectionGuard, AperturaCajaGuard],
         resolve: {
           data: InventarioCajaNewResolver,
         },
@@ -41,6 +43,7 @@ export default [
       {
         path: "cerrar/:id",
         component: InventarioCajaNew,
+        canActivate: [CajaSelectionGuard],
         resolve: {
           data: InventarioCajaNewResolver,
         },
@@ -48,6 +51,7 @@ export default [
       {
         path: "replicar/:id",
         component: InventarioCajaNew,
+        canActivate: [CajaSelectionGuard],
         resolve: {
           data: InventarioCajaReplicarResolver,
         },

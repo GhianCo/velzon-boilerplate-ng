@@ -881,6 +881,13 @@ export class InventarioCajaStore extends SignalStore<IState> {
     this.patch({selectedOperacion: operacion});
   }
 
+  /**
+   * Establece las cajas disponibles (usado por el servicio global)
+   */
+  public setCajasData(cajas: any[]) {
+    this.patch({cajasData: cajas});
+  }
+
   // ===== MÉTODOS PARA GESTIONAR CAJAS =====
 
   /**
