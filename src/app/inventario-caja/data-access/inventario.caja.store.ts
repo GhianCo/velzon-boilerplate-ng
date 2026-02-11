@@ -505,49 +505,47 @@ export class InventarioCajaStore extends SignalStore<IState> {
     this.patch({saveInventarioCajaLoading: true, saveInventarioCajaError: null});
     const state = this.vm();
 
-    // Transformar inventario_efectivo_detalle con array de cajas por denominación
+    // Obtener la caja seleccionada actual
+    const cajaSeleccionada = state.cajasData?.find(
+      (caja: any) => caja.caja_id == state.selectedCajaId
+    );
+
+    if (!cajaSeleccionada) {
+      console.error('No hay caja seleccionada');
+      this.patch({
+        saveInventarioCajaLoading: false,
+        saveInventarioCajaError: 'No hay caja seleccionada'
+      });
+      return;
+    }
+
+    const cajaNombre = cajaSeleccionada.caja_nombre;
+
+    // Transformar inventario_efectivo_detalle - solo con la cantidad de la caja actual
     const inventarioDetallePorDenominacion: any[] = [];
 
     state.valoresWithDetailsData?.forEach((valorDetail: any) => {
       valorDetail.denominaciones?.forEach((denominacion: any) => {
-        // Construir array de cajas para esta denominación
-        const cajas: any[] = [];
+        // Obtener solo la cantidad de la caja actual
+        const cantidadCaja = denominacion.cajas?.[cajaNombre] || 0;
 
-        if (denominacion.cajas) {
-          // Obtener todas las cajas del sistema
-          state.cajasData?.forEach((cajaInfo: any) => {
-            const cajaNombre = cajaInfo.caja_nombre;
-            const cantidadCaja = denominacion.cajas[cajaNombre] || 0;
-
-            // Agregar TODAS las cajas, incluso con cantidad 0
-            cajas.push({
-              caja_id: cajaInfo.caja_id,
-              caja_nombre: cajaNombre,
-              cantidad: cantidadCaja
-            });
-          });
-        }
-
-        // Agregar la denominación con su array de cajas
+        // Agregar la denominación con caja_id y cantidad
         inventarioDetallePorDenominacion.push({
           valor_id: valorDetail.id || valorDetail.valor_id,
           denominacion_id: denominacion.id || denominacion.denominacion_id,
           denominacion_descripcion: denominacion.descripcion,
           denominacion_valor: denominacion.valor,
           tipo_cambio: valorDetail.current_tc || 1,
-          cajas: cajas
+          caja_id: cajaSeleccionada.caja_id,
+          cantidad: cantidadCaja
         });
       });
     });
 
-    const caja = state.cajasData.find(
-      (caja: any) => caja.caja_id == state.selectedCajaId
-    );
-
-    // Construir el payload con caja y tipo de operación
+    // Construir el payload con caja_id y tipo de operación
     const inventario = {
       caja_id: state.selectedCajaId,
-      caja: caja?.caja_nombre || '',
+      caja: cajaNombre,
       operacioncaja_id: operacionCajaId || null,
       tipo_operacion: state.selectedOperacion,
       total: state.valoresSummary.totalConvertido,
@@ -555,9 +553,10 @@ export class InventarioCajaStore extends SignalStore<IState> {
       suma_diaria: state.valoresSummary.suma_diaria_efectivo,
       tipocambio: state.valoresSummary.tipocambio,
       inventario_efectivo_detalle: inventarioDetallePorDenominacion,
-      suma_diaria_detalle: state.catMovWithDetailsData,
-      cajas: state.cajasData
+      suma_diaria_detalle: state.catMovWithDetailsData
     };
+
+    console.log('📤 Payload enviado al backend:', JSON.stringify(inventario, null, 2));
 
     this._inventarioCajaRemoteReq.requestSaveInventario(inventario).pipe(
       tap(async ({data, pagination}) => {
