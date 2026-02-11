@@ -18,6 +18,10 @@ export const appRoutes: Route[] = [
         loadChildren: () => import('@app/inventario-efectivo/feature/inventario-efectivo-shell/inventario.efectivo.route')
       },
       {
+        path: "inventario-caja",
+        loadChildren: () => import('@app/inventario-caja/feature/inventario-caja-shell/inventario.caja.route')
+      },
+      {
         path: "cuadre-suma-diaria",
         loadChildren: () => import('@app/control-interno/cuadre-suma-diaria/feature/cuadre-suma-diaria-shell/cuadre.suma.diaria.route')
       },

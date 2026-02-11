@@ -1,0 +1,85 @@
+import {Injectable} from '@angular/core';
+import {map} from "rxjs/operators";
+import {environment} from "@environments/environment";
+import {Observable} from "rxjs";
+import {InventarioCajaMapper} from "@app/inventario-caja/data-access/mappers/inventario.caja.mapper";
+import {IResponse} from "@sothy/interfaces/IResponse";
+import {HttpService} from "@sothy/services/http.service";
+import {ControlActivosApiService} from "@sothy/services/control.activos.api.service";
+
+@Injectable({
+  providedIn: 'root'
+})
+
+export class InventarioCajaRemoteReq {
+
+  private inventarioCajaMapper = new InventarioCajaMapper();
+  private REMOTE_API_URI = environment.apiRest;
+
+  constructor(
+    private http: HttpService,
+    private _controlActivosApiService: ControlActivosApiService,
+  ) {
+  }
+
+  requestSearchByCriteria(criteria: any): Observable<IResponse> {
+    return this.http.post(this.REMOTE_API_URI + 'operacioncaja/searchByParams', criteria)
+      .pipe(
+        map((response: any) => {
+          if (response.data) {
+            response.data = this.inventarioCajaMapper.transform(response.data);
+          }
+          return response;
+        })
+      );
+  }
+
+  requestGetOperacionCajaById(id: number): Observable<IResponse> {
+    return this.http.get(this.REMOTE_API_URI + 'operacioncaja/' + id);
+  }
+
+  requestGetLastOperacionCaja(): Observable<IResponse> {
+    return this.http.get(this.REMOTE_API_URI + 'operacioncaja/last');
+  }
+
+  requestOperacionCajaWithDetails(operacioncaja_id: any): Observable<IResponse> {
+    return this.http.get(this.REMOTE_API_URI + `operacioncaja/${operacioncaja_id}/details`);
+  }
+
+  /**
+   * Obtener el resumen completo de una operación de caja
+   * Incluye: inventario de apertura, inventario de cierre y suma diaria
+   */
+  requestResumenOperacionCaja(operacioncaja_id: any): Observable<IResponse> {
+    return this.http.get(this.REMOTE_API_URI + `operacioncaja/${operacioncaja_id}/resumen`)
+      .pipe(
+        map((response: any) => {
+          if (response.data) {
+            response.data = this.inventarioCajaMapper.transform(response.data);
+          }
+          return response;
+        })
+      );
+  }
+
+  requestGetValoresWithDetails(): Observable<IResponse> {
+    return this.http.get(this.REMOTE_API_URI + 'valor/withDetails')
+  }
+
+  requestGetCatMovWithDetails(): Observable<IResponse> {
+    return this.http.get(this.REMOTE_API_URI + 'sumdiacatmovimiento/withDetails')
+  }
+
+  requestSaveInventario(inventarioWithDetails: any): Observable<IResponse> {
+    return this.http.post(this.REMOTE_API_URI + 'operacioncaja/saveWithDetails', inventarioWithDetails)
+  }
+
+  requestAllCajasBySala(sala_id: number, de_apertura: any): Observable<IResponse> {
+    return this._controlActivosApiService.get(this.REMOTE_API_URI + 'caja?sala='+sala_id+'&de_apertura='+de_apertura)
+  }
+
+  requestGetTurnos(sala_id: number): Observable<IResponse> {
+    return this._controlActivosApiService.get(this.REMOTE_API_URI + 'turno?sala='+sala_id)
+  }
+
+}

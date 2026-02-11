@@ -21,6 +21,19 @@ export const MENU: MenuItem[] = [
   },
   {
     id: 3,
+    label: 'Caja',
+    icon: 'ri-safe-2-line',
+    subItems: [
+      {
+        id: 1,
+        label: 'Apertura y cierre',
+        link: '/inventario-caja',
+        parentId: 3
+      },
+    ]
+  },
+  {
+    id: 4,
     label: 'Control interno',
     icon: 'ri-number-2',
     subItems: [
@@ -28,20 +41,20 @@ export const MENU: MenuItem[] = [
         id: 1,
         label: 'Cuadrar suma diaria',
         link: '/cuadre-suma-diaria',
-        parentId: 3
+        parentId: 4
       },
     ]
   },
   {
-    id: 4,
+    id: 5,
     label: 'Maestras',
     icon: 'ri-number-3',
     subItems: [
       {
-        id: 5,
+        id: 1,
         label: 'Valores',
         link: '/valor',
-        parentId: 4
+        parentId: 5
       },
     ]
   },
