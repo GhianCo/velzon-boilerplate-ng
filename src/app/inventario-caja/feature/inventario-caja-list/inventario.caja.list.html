@@ -287,18 +287,6 @@
                [formControl]="dateRangeControl"
                [options]="flatpickrOptions">
       </div>
-      <div class="mb-4">
-        <label class="form-label text-muted text-uppercase fw-semibold mb-3">Caja</label>
-        <select class="form-control"
-                [(ngModel)]="selectedCajaId"
-                [ngModelOptions]="{standalone: true}"
-                (ngModelChange)="onCajaChangeFromModal({value: $event})">
-          <option [value]="-1">Todas las cajas</option>
-          @for (caja of vm.cajasData; track caja.caja_id) {
-            <option [value]="caja.caja_id">{{ caja.caja_nombre }}</option>
-          }
-        </select>
-      </div>
     </div>
     <!--end offcanvas-body-->
     <div class="offcanvas-footer border-top p-3 text-center hstack gap-2">
