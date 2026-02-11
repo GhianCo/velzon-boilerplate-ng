@@ -529,23 +529,18 @@ export class InventarioCajaStore extends SignalStore<IState> {
         // Obtener solo la cantidad de la caja actual
         const cantidadCaja = denominacion.cajas?.[cajaNombre] || 0;
 
-        // Agregar la denominación con caja_id y cantidad
         inventarioDetallePorDenominacion.push({
           valor_id: valorDetail.id || valorDetail.valor_id,
           denominacion_id: denominacion.id || denominacion.denominacion_id,
           denominacion_descripcion: denominacion.descripcion,
           denominacion_valor: denominacion.valor,
           tipo_cambio: valorDetail.current_tc || 1,
-          caja_id: cajaSeleccionada.caja_id,
           cantidad: cantidadCaja
         });
       });
     });
 
-    // Construir el payload con caja_id y tipo de operación
     const inventario = {
-      caja_id: state.selectedCajaId,
-      caja: cajaNombre,
       operacioncaja_id: operacionCajaId || null,
       tipo_operacion: state.selectedOperacion,
       total: state.valoresSummary.totalConvertido,
@@ -555,8 +550,6 @@ export class InventarioCajaStore extends SignalStore<IState> {
       inventario_efectivo_detalle: inventarioDetallePorDenominacion,
       suma_diaria_detalle: state.catMovWithDetailsData
     };
-
-    console.log('📤 Payload enviado al backend:', JSON.stringify(inventario, null, 2));
 
     this._inventarioCajaRemoteReq.requestSaveInventario(inventario).pipe(
       tap(async ({data, pagination}) => {
