@@ -113,7 +113,7 @@
                         <div class="table-responsive" style="overflow-x: auto; max-height: 70vh;">
                             <table class="table table-bordered mb-0 w-100">
                                 <thead>
-                                <!-- Fila 1: Inventario Apertura e Inventario Cierre -->
+                                <!-- Fila 1: Headers principales -->
                                 <tr>
                                     <!-- Columna Descripción (sticky) -->
                                     <th rowspan="2" class="text-center align-middle"
@@ -122,61 +122,55 @@
                                     </th>
 
                                     <!-- Inventario de Apertura -->
-                                    <th [attr.colspan]="resumenData.inventario_apertura.cajas.length + 1"
-                                        class="text-center" style="background-color: #e3f2fd;">
+                                    <th colspan="2" class="text-center" style="background-color: #e3f2fd;">
                                         Apertura
                                     </th>
 
                                     <!-- Inventario de Cierre -->
-                                    <th [attr.colspan]="resumenData.inventario_cierre.cajas.length + 1"
-                                        class="text-center" style="background-color: #fce4ec;">
+                                    <th colspan="2" class="text-center" style="background-color: #fce4ec;">
                                         Cierre
                                     </th>
                                 </tr>
 
-                                <!-- Fila 2: Cajas individuales -->
+                                <!-- Fila 2: Cantidad e Importe -->
                                 <tr>
-                                    <!-- Cajas Apertura -->
-                                    @for (caja of resumenData.inventario_apertura.cajas; track caja.caja_id) {
-                                        <th class="text-center" style="min-width: 100px; font-size: 0.85rem; background-color: #e3f2fd;">
-                                            {{ caja.caja_nombre }}
-                                        </th>
-                                    }
-                                    <th class="text-center" style="min-width: 100px; background-color: #bbdefb; font-weight: bold;">
-                                        Total
+                                    <!-- Apertura -->
+                                    <th class="text-center" style="min-width: 100px; background-color: #e3f2fd;">
+                                        Cantidad
+                                    </th>
+                                    <th class="text-center" style="min-width: 120px; background-color: #bbdefb; font-weight: bold;">
+                                        Importe
                                     </th>
 
-                                    <!-- Cajas Cierre -->
-                                    @for (caja of resumenData.inventario_cierre.cajas; track caja.caja_id) {
-                                        <th class="text-center" style="min-width: 100px; font-size: 0.85rem; background-color: #fce4ec;">
-                                            {{ caja.caja_nombre }}
-                                        </th>
-                                    }
-                                    <th class="text-center" style="min-width: 100px; background-color: #f8bbd0; font-weight: bold;">
-                                        Total
+                                    <!-- Cierre -->
+                                    <th class="text-center" style="min-width: 100px; background-color: #fce4ec;">
+                                        Cantidad
+                                    </th>
+                                    <th class="text-center" style="min-width: 120px; background-color: #f8bbd0; font-weight: bold;">
+                                        Importe
                                     </th>
                                 </tr>
                                 </thead>
                                 <tbody>
-                                <!-- Iterar por valores (Fichas, Soles, Dólares) -->
+                                <!-- Iterar por valores (Fichas, Soles, Dólares) de apertura -->
                                 @for (valor of resumenData.inventario_apertura.valores; track valor.valor_id; let vIdx = $index) {
                                     <!-- Header de grupo -->
                                     <tr style="background-color: #f8f9fa;">
                                         <td class="fw-bold" style="position: sticky; left: 0; background-color: #f8f9fa; z-index: 10;">
                                             <i class="ri-checkbox-blank-circle-fill me-2" style="font-size: 8px;"></i>
-                                            {{ valor.nombre }}
+                                            {{ valor.nombre }} ({{ valor.simbolo }})
                                         </td>
-                                        <td [attr.colspan]="resumenData.inventario_apertura.cajas.length + resumenData.inventario_cierre.cajas.length + 2"></td>
+                                        <td colspan="4"></td>
                                     </tr>
 
-                                    <!-- Fila de Tipo de Cambio (solo para USD) -->
-                                    @if (valor.codigo === 'USD') {
+                                    <!-- Fila de Tipo de Cambio (solo si existe tc) -->
+                                    @if (valor.tc) {
                                         <tr style="background-color: #fff3cd;">
                                             <td class="fw-medium fst-italic" style="position: sticky; left: 0; background-color: #fff3cd; z-index: 10;">
                                                 <i class="ri-exchange-line me-2"></i>Tipo de cambio
                                             </td>
-                                            <td class="text-center align-middle fw-bold" [attr.colspan]="(resumenData.inventario_apertura.cajas.length + resumenData.inventario_cierre.cajas.length) + 2">
-                                                S/. {{ valor.tc || '0.00' }}
+                                            <td class="text-center align-middle fw-bold" colspan="4">
+                                                {{ resumenData.simbolo_moneda }} {{ valor.tc }}
                                             </td>
                                         </tr>
                                     }
@@ -189,32 +183,27 @@
                                                 {{ denominacion.descripcion }}
                                             </td>
 
-                                            <!-- Cantidades Apertura -->
-                                            @for (cajaData of denominacion.cajas; track cajaData.caja_id) {
-                                                <td class="text-center align-middle">
-                                                    <span class="fw-medium">{{ cajaData.cantidad }}</span>
-                                                </td>
-                                            }
-                                            <!-- Total Apertura -->
-                                            <td class="text-center align-middle" style="background-color: #e3f2fd;">
+                                            <!-- Cantidad Apertura -->
+                                            <td class="text-center align-middle">
+                                                <span class="fw-medium">{{ denominacion.total_cantidad }}</span>
+                                            </td>
+                                            <!-- Importe Apertura -->
+                                            <td class="text-end align-middle" style="background-color: #e3f2fd;">
                                                 <strong>{{ resumenData.simbolo_moneda }} {{ denominacion.total_importe }}</strong>
                                             </td>
 
-                                            <!-- Cantidades Cierre -->
+                                            <!-- Buscar denominación correspondiente en cierre -->
                                             @if (resumenData.inventario_cierre.valores[vIdx]?.denominaciones[dIdx]) {
-                                                @for (cajaData of resumenData.inventario_cierre.valores[vIdx].denominaciones[dIdx].cajas; track cajaData.caja_id) {
-                                                    <td class="text-center align-middle">
-                                                        <span class="fw-medium">{{ cajaData.cantidad }}</span>
-                                                    </td>
-                                                }
-                                                <!-- Total Cierre -->
-                                                <td class="text-center align-middle" style="background-color: #fce4ec;">
+                                                <!-- Cantidad Cierre -->
+                                                <td class="text-center align-middle">
+                                                    <span class="fw-medium">{{ resumenData.inventario_cierre.valores[vIdx].denominaciones[dIdx].total_cantidad }}</span>
+                                                </td>
+                                                <!-- Importe Cierre -->
+                                                <td class="text-end align-middle" style="background-color: #fce4ec;">
                                                     <strong>{{ resumenData.simbolo_moneda }} {{ resumenData.inventario_cierre.valores[vIdx].denominaciones[dIdx].total_importe }}</strong>
                                                 </td>
                                             } @else {
-                                                @for (caja of resumenData.inventario_cierre.cajas; track caja.caja_id) {
-                                                    <td class="text-center"><span class="text-muted">−</span></td>
-                                                }
+                                                <td class="text-center"><span class="text-muted">−</span></td>
                                                 <td class="text-center" style="background-color: #fce4ec;">
                                                     <span class="text-muted">−</span>
                                                 </td>
@@ -228,12 +217,12 @@
                                     <td style="position: sticky; left: 0; background-color: #e9ecef; z-index: 10;">
                                         TOTAL
                                     </td>
-                                    <td [attr.colspan]="resumenData.inventario_apertura.cajas.length" class="text-end"></td>
-                                    <td class="text-center" style="background-color: #bbdefb;">
+                                    <td class="text-end"></td>
+                                    <td class="text-end" style="background-color: #bbdefb;">
                                         {{ resumenData.simbolo_moneda }} {{ resumenData.inventario_apertura.total }}
                                     </td>
-                                    <td [attr.colspan]="resumenData.inventario_cierre.cajas.length" class="text-end"></td>
-                                    <td class="text-center" style="background-color: #f8bbd0;">
+                                    <td class="text-end"></td>
+                                    <td class="text-end" style="background-color: #f8bbd0;">
                                         {{ resumenData.simbolo_moneda }} {{ resumenData.inventario_cierre.total }}
                                     </td>
                                 </tr>
