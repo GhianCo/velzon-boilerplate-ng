@@ -1216,4 +1216,12 @@ export class InventarioCajaStore extends SignalStore<IState> {
 
   // ===== FIN MÉTODOS PARA VISUALIZAR RESUMEN =====
 
+  /**
+   * Resetea el store a su estado inicial
+   * Útil para limpiar todo el estado cuando se cierra sesión
+   */
+  public resetStore(): void {
+    this.patch(initialState);
+  }
+
 }

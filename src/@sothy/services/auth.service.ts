@@ -3,11 +3,13 @@ import {Observable, of} from 'rxjs';
 import {PersistenceService} from "@sothy/services/persistence.service";
 import {PKEY} from "@shared/constants/persistence.const";
 import {AuthUtils} from "@sothy/services/auth.utils";
+import {CajaGlobalService} from "@sothy/services/caja-global.service";
 
 @Injectable({providedIn: 'root'})
 export class AuthService {
 
     persistence = inject(PersistenceService);
+    cajaGlobalService = inject(CajaGlobalService);
 
     /**
      * Setter & getter for access token
@@ -29,6 +31,9 @@ export class AuthService {
         this.persistence.remove(PKEY.PERMISOS_USER);
         this.persistence.remove(PKEY.PERMISOS_LIST);
         this.persistence.remove(PKEY.USUARIO_LOGEAD);
+        
+        // Limpiar el estado del servicio de cajas
+        this.cajaGlobalService.clearAll();
 
         // Return the observable
         return of(true);

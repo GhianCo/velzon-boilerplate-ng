@@ -54,8 +54,11 @@ export class CajaGlobalService {
   public readonly hasSelectedCaja = computed(() => !!this._selectedCajaId());
 
   constructor() {
-    // Intentar recuperar la caja seleccionada del storage al iniciar
-    this.loadSelectedCajaFromStorage();
+    // Solo intentar recuperar la caja si hay un token válido
+    const hasToken = this.persistenceService.get('token');
+    if (hasToken) {
+      this.loadSelectedCajaFromStorage();
+    }
   }
 
   /**
@@ -194,5 +197,15 @@ export class CajaGlobalService {
    */
   getSelectedCaja(): Caja | null {
     return this.selectedCaja();
+  }
+
+  /**
+   * Limpia todo el estado del servicio (útil para logout)
+   */
+  clearAll(): void {
+    this._cajas.set([]);
+    this._selectedCajaId.set(null);
+    this._loading.set(false);
+    this._error.set(null);
   }
 }
