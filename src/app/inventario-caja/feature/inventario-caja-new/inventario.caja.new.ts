@@ -189,12 +189,15 @@ export class InventarioCajaNew implements OnInit {
         
         // Effect para sincronizar las cajas del servicio global con el store
         effect(() => {
-            const cajas = this.cajaGlobalService.cajas();
+            const caja = this.cajaGlobalService.selectedCaja();
             const vm = this.inventarioCajaStore.vm();
             
-            // Actualizar cajasData en el store si es diferente
-            if (cajas && cajas.length > 0 && JSON.stringify(vm.cajasData) !== JSON.stringify(cajas)) {
-                this.inventarioCajaStore.setCajasData(cajas);
+            // Si hay una caja seleccionada, crear un array con esa caja para mantener compatibilidad
+            if (caja) {
+                const cajasArray = [caja];
+                if (JSON.stringify(vm.cajasData) !== JSON.stringify(cajasArray)) {
+                    this.inventarioCajaStore.setCajasData(cajasArray);
+                }
             }
         });
     }
@@ -309,6 +312,14 @@ export class InventarioCajaNew implements OnInit {
     private proceedToSave() {
         const vm = this.inventarioCajaStore.vm();
         const cajaInfo = this.isCerrarMode ? vm.cajaData : this.getSelectedCaja();
+        
+        if (!cajaInfo) {
+            this.confirmationService.warning(
+                '⚠️ No hay caja seleccionada',
+                'Debes seleccionar una caja antes de guardar.'
+            );
+            return;
+        }
 
         this.confirmationService.openAndHandle({
             title: '✅ ¿Todos los datos son correctos?',
@@ -348,12 +359,28 @@ export class InventarioCajaNew implements OnInit {
 
     // ===== MÉTODOS DELEGADOS AL STORE - CAJAS =====
 
-    getCajas(denominacion: any): any {
-        return denominacion.cajas || {};
+    /**
+     * Obtiene la cantidad de la denominación para la caja actual
+     */
+    getDenominacionCantidad(denominacion: any): number {
+        const cajaActual = this.cajaGlobalService.selectedCaja();
+        if (!cajaActual) return 0;
+        
+        const cajas = denominacion.cajas || {};
+        return cajas[cajaActual.caja_nombre] || 0;
     }
 
-    onCantidadCajaChange(denominacion: any, caja: string, event: any) {
-        this.inventarioCajaStore.onCantidadCajaChange(denominacion, caja, event);
+    /**
+     * Maneja el cambio de cantidad para la caja actual
+     */
+    onCantidadChange(denominacion: any, event: any) {
+        const cajaActual = this.cajaGlobalService.selectedCaja();
+        if (!cajaActual) return;
+        
+        // Extraer el valor del input
+        const valor = event.target?.value ?? event;
+        
+        this.inventarioCajaStore.onCantidadCajaChange(denominacion, cajaActual.caja_nombre, valor);
     }
 
     // ===== MÉTODOS DELEGADOS AL STORE - MOVIMIENTOS =====
@@ -372,12 +399,8 @@ export class InventarioCajaNew implements OnInit {
 
     // Método para obtener la caja seleccionada
     getSelectedCaja(): any {
-        const vm = this.inventarioCajaStore.vm();
-        if (!vm.selectedCajaId) return null;
-
-        if (!vm.cajasData) return null;
-
-        return vm.cajasData.find((caja: any) => caja.caja_id.toString() === vm.selectedCajaId);
+        // Usar directamente el servicio global en lugar de buscar en cajasData
+        return this.cajaGlobalService.selectedCaja();
     }
 
     // Método para calcular diferencia entre total inventario y total suma diaria
