@@ -50,7 +50,7 @@ export const CajaSelectionGuard: CanActivateFn = async (route, state) => {
 
     if (result && result.cajaId) {
         // Usuario seleccionó una caja
-        cajaGlobalService.setSelectedCaja(result.cajaId);
+        await cajaGlobalService.setSelectedCaja(result.cajaId);
         return true;
     } else {
         // Usuario canceló o cerró el modal sin seleccionar

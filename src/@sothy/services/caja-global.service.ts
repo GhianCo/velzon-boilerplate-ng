@@ -53,11 +53,8 @@ export class CajaGlobalService {
   // Verificar si hay una caja seleccionada
   public readonly hasSelectedCaja = computed(() => !!this._selectedCajaId());
 
-  // Clave para localStorage
-  private readonly STORAGE_KEY = 'selected_caja_id';
-
   constructor() {
-    // Intentar recuperar la caja seleccionada del localStorage al iniciar
+    // Intentar recuperar la caja seleccionada del storage al iniciar
     this.loadSelectedCajaFromStorage();
   }
 
@@ -108,9 +105,9 @@ export class CajaGlobalService {
    * Establece la caja seleccionada
    * @param cajaId - ID de la caja a seleccionar
    */
-  setSelectedCaja(cajaId: string | number | null): void {
+  async setSelectedCaja(cajaId: string | number | null): Promise<void> {
     if (cajaId === null) {
-      this.clearSelectedCaja();
+      await this.clearSelectedCaja();
       return;
     }
     
@@ -122,15 +119,15 @@ export class CajaGlobalService {
     }
     
     this._selectedCajaId.set(cajaId);
-    this.saveSelectedCajaToStorage(cajaId);
+    await this.saveSelectedCajaToStorage(cajaId);
   }
 
   /**
    * Limpia la caja seleccionada
    */
-  clearSelectedCaja(): void {
+  async clearSelectedCaja(): Promise<void> {
     this._selectedCajaId.set(null);
-    this.removeSelectedCajaFromStorage();
+    await this.removeSelectedCajaFromStorage();
   }
 
   /**
@@ -141,38 +138,47 @@ export class CajaGlobalService {
   }
 
   /**
-   * Guarda el ID de la caja seleccionada en localStorage
+   * Guarda el ID de la caja seleccionada regenerando el JWT con la nueva propiedad
    */
-  private saveSelectedCajaToStorage(cajaId: string | number): void {
+  private async saveSelectedCajaToStorage(cajaId: string | number): Promise<void> {
     try {
-      localStorage.setItem(this.STORAGE_KEY, String(cajaId));
+      // Usar la secret key desde environment para regenerar el JWT
+      await this.persistenceService.updateTokenProperty(
+        'caja_id', 
+        String(cajaId), 
+        environment.jwtSecret
+      );
     } catch (error) {
-      console.error('Error al guardar caja en localStorage:', error);
+      console.error('Error al guardar caja en token:', error);
     }
   }
 
   /**
-   * Carga el ID de la caja seleccionada desde localStorage
+   * Carga el ID de la caja seleccionada desde el payload del JWT
    */
   private loadSelectedCajaFromStorage(): void {
     try {
-      const savedCajaId = localStorage.getItem(this.STORAGE_KEY);
+      const savedCajaId = this.persistenceService.getTokenProperty('caja_id');
       if (savedCajaId) {
         this._selectedCajaId.set(savedCajaId);
       }
     } catch (error) {
-      console.error('Error al cargar caja desde localStorage:', error);
+      console.error('Error al cargar caja desde token:', error);
     }
   }
 
   /**
-   * Elimina el ID de la caja seleccionada del localStorage
+   * Elimina el ID de la caja seleccionada regenerando el JWT sin la propiedad
    */
-  private removeSelectedCajaFromStorage(): void {
+  private async removeSelectedCajaFromStorage(): Promise<void> {
     try {
-      localStorage.removeItem(this.STORAGE_KEY);
+      // Usar la secret key desde environment para regenerar el JWT
+      await this.persistenceService.removeTokenProperty(
+        'caja_id', 
+        environment.jwtSecret
+      );
     } catch (error) {
-      console.error('Error al eliminar caja de localStorage:', error);
+      console.error('Error al eliminar caja del token:', error);
     }
   }
 

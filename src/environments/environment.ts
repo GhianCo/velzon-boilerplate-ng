@@ -15,6 +15,7 @@ export const environment = {
   api: 'http://localhost/cash-control-back',
   apiRest: 'api/',
   publicRest: 'public/',
+  jwtSecret: 'D3v3lop3rQullqi2022@!*!',
   endpoints: {
     auth: {
       signIn: 'auth/sign-in',

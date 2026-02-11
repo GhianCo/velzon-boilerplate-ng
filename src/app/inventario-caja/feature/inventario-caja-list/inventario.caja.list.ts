@@ -26,6 +26,8 @@ import {LoadingSpinnerComponent} from "@shared/components/loading-spinner/loadin
 import {AperturaCajaValidatorService} from "@app/inventario-caja/services/apertura-caja-validator.service";
 import {InventarioCajaPdfService} from "@app/inventario-caja/services/inventario-caja-pdf.service";
 import {InventarioCajaRemoteReq} from "@app/inventario-caja/data-access/inventario.caja.remote.req";
+import {CajaGlobalService} from "@sothy/services/caja-global.service";
+import {computed} from '@angular/core';
 
 @Component({
   standalone: true,
@@ -199,6 +201,7 @@ export class InventarioCajaList {
               private aperturaCajaValidator: AperturaCajaValidatorService,
               private inventarioCajaPdfService: InventarioCajaPdfService,
               private inventarioRemoteReq: InventarioCajaRemoteReq,
+              public cajaGlobalService: CajaGlobalService,
   ) {
     // Inicializar FormControl con el rango de fechas del store
     this.dateRangeControl = new FormControl(this.inventarioCajaStore.getDateRangeForComponent());
@@ -332,6 +335,17 @@ export class InventarioCajaList {
 
     console.warn(`⚠️ [parseDate] No se pudo parsear: "${dateStr}"`);
     return null;
+  }
+
+  /**
+   * Título dinámico que incluye el nombre de la caja seleccionada
+   */
+  get breadcrumbTitle(): string {
+    const selectedCaja = this.cajaGlobalService.selectedCaja();
+    if (selectedCaja && selectedCaja.caja_nombre) {
+      return `Apertura y cierre de ${selectedCaja.caja_nombre}`;
+    }
+    return 'Apertura y cierre de caja';
   }
 
   ngOnInit(): void {
