@@ -45,6 +45,9 @@ export class CajaGlobalService {
   private _turnos = signal<Turno[]>([]);
   private _selectedTurnoId = signal<string | number | null>(null);
   
+  // Señal reactiva para supervisor
+  private _selectedSupervisor = signal<string | null>(null);
+  
   // Señales de estado
   private _loading = signal<boolean>(false);
   private _error = signal<any>(null);
@@ -56,6 +59,27 @@ export class CajaGlobalService {
   // Señales computadas para turnos
   public readonly turnos = computed(() => this._turnos());
   public readonly selectedTurnoId = computed(() => this._selectedTurnoId());
+  
+  // Señal computada para supervisor
+  public readonly selectedSupervisor = computed(() => this._selectedSupervisor());
+  
+  // Supervisores disponibles (extraídos de los turnos)
+  public readonly supervisoresDisponibles = computed(() => {
+    const turnosData = this._turnos();
+    if (!turnosData || turnosData.length === 0) {
+      return [];
+    }
+    
+    // Extraer supervisores únicos
+    const supervisoresSet = new Set<string>();
+    turnosData.forEach((turno: any) => {
+      if (turno['supervisor'] && turno['supervisor'].trim() !== '') {
+        supervisoresSet.add(turno['supervisor']);
+      }
+    });
+    
+    return Array.from(supervisoresSet).sort();
+  });
   
   // Señales de estado
   public readonly loading = computed(() => this._loading());
@@ -78,6 +102,7 @@ export class CajaGlobalService {
   // Verificadores
   public readonly hasSelectedCaja = computed(() => !!this._selectedCajaId());
   public readonly hasSelectedTurno = computed(() => !!this._selectedTurnoId());
+  public readonly hasSelectedSupervisor = computed(() => !!this._selectedSupervisor());
 
   constructor() {
     // Solo intentar recuperar datos si hay un token válido
@@ -85,6 +110,7 @@ export class CajaGlobalService {
     if (hasToken) {
       this.loadSelectedCajaFromStorage();
       this.loadSelectedTurnoFromStorage();
+      this.loadSelectedSupervisorFromStorage();
     }
   }
 
@@ -219,6 +245,12 @@ export class CajaGlobalService {
     }
     
     this._selectedTurnoId.set(turnoId);
+    
+    // Auto-seleccionar el supervisor del turno si existe
+    if (turno['supervisor']) {
+      this._selectedSupervisor.set(turno['supervisor']);
+    }
+    
     await this.saveSelectedTurnoToStorage(turnoId);
   }
 
@@ -227,7 +259,31 @@ export class CajaGlobalService {
    */
   async clearSelectedTurno(): Promise<void> {
     this._selectedTurnoId.set(null);
+    this._selectedSupervisor.set(null);
     await this.removeSelectedTurnoFromStorage();
+    await this.removeSelectedSupervisorFromStorage();
+  }
+
+  /**
+   * Establece el supervisor seleccionado
+   * @param supervisor - Nombre del supervisor
+   */
+  async setSelectedSupervisor(supervisor: string | null): Promise<void> {
+    if (supervisor === null) {
+      await this.clearSelectedSupervisor();
+      return;
+    }
+    
+    this._selectedSupervisor.set(supervisor);
+    await this.saveSelectedSupervisorToStorage(supervisor);
+  }
+
+  /**
+   * Limpia el supervisor seleccionado
+   */
+  async clearSelectedSupervisor(): Promise<void> {
+    this._selectedSupervisor.set(null);
+    await this.removeSelectedSupervisorFromStorage();
   }
 
   /**
@@ -355,6 +411,48 @@ export class CajaGlobalService {
   }
 
   /**
+   * Guarda el supervisor seleccionado regenerando el JWT
+   */
+  private async saveSelectedSupervisorToStorage(supervisor: string): Promise<void> {
+    try {
+      await this.persistenceService.updateTokenProperties(
+        { supervisor: supervisor },
+        environment.jwtSecret
+      );
+    } catch (error) {
+      console.error('Error al guardar supervisor en token:', error);
+    }
+  }
+
+  /**
+   * Carga el supervisor seleccionado desde el payload del JWT
+   */
+  private loadSelectedSupervisorFromStorage(): void {
+    try {
+      const savedSupervisor = this.persistenceService.getTokenProperty('supervisor');
+      if (savedSupervisor) {
+        this._selectedSupervisor.set(savedSupervisor);
+      }
+    } catch (error) {
+      console.error('Error al cargar supervisor desde token:', error);
+    }
+  }
+
+  /**
+   * Elimina el supervisor seleccionado regenerando el JWT sin la propiedad
+   */
+  private async removeSelectedSupervisorFromStorage(): Promise<void> {
+    try {
+      await this.persistenceService.removeTokenProperties(
+        ['supervisor'], 
+        environment.jwtSecret
+      );
+    } catch (error) {
+      console.error('Error al eliminar supervisor del token:', error);
+    }
+  }
+
+  /**
    * Obtiene el ID de la caja seleccionada (método de conveniencia)
    */
   getSelectedCajaId(): string | number | null {
@@ -376,6 +474,7 @@ export class CajaGlobalService {
     this._selectedCajaId.set(null);
     this._turnos.set([]);
     this._selectedTurnoId.set(null);
+    this._selectedSupervisor.set(null);
     this._loading.set(false);
     this._error.set(null);
   }

@@ -21,6 +21,7 @@ export class CajaSelectionModalComponent implements OnInit {
   // Selecciones
   selectedCajaId: string | number | null = null;
   selectedTurnoId: string | number | null = null;
+  selectedSupervisor: string | null = null;
   
   // Datos
   cajas: any[] = [];
@@ -63,6 +64,10 @@ export class CajaSelectionModalComponent implements OnInit {
         // Auto-seleccionar si solo hay un turno
         if (this.turnos.length === 1) {
           this.selectedTurnoId = this.turnos[0].turno_id;
+          // Auto-seleccionar supervisor del turno
+          if (this.turnos[0]['supervisor']) {
+            this.selectedSupervisor = this.turnos[0]['supervisor'];
+          }
         }
       },
       error: (error) => {
@@ -78,6 +83,16 @@ export class CajaSelectionModalComponent implements OnInit {
 
   onTurnoSelect(turnoId: string | number): void {
     this.selectedTurnoId = turnoId;
+    
+    // Auto-seleccionar el supervisor del turno seleccionado
+    const turno = this.turnos.find(t => t.turno_id == turnoId);
+    if (turno && turno['supervisor']) {
+      this.selectedSupervisor = turno['supervisor'];
+    }
+  }
+
+  onSupervisorChange(supervisor: string): void {
+    this.selectedSupervisor = supervisor;
   }
 
   goToTurnoStep(): void {
@@ -93,17 +108,19 @@ export class CajaSelectionModalComponent implements OnInit {
   }
 
   async onConfirm(): Promise<void> {
-    if (!this.selectedCajaId || !this.selectedTurnoId) {
+    if (!this.selectedCajaId || !this.selectedTurnoId || !this.selectedSupervisor) {
       return;
     }
     
-    // Guardar AMBOS en el token al confirmar
+    // Guardar TODOS (caja, turno, supervisor) en el token al confirmar
     await this.cajaGlobalService.setSelectedCaja(this.selectedCajaId);
     await this.cajaGlobalService.setSelectedTurno(this.selectedTurnoId);
+    await this.cajaGlobalService.setSelectedSupervisor(this.selectedSupervisor);
     
     this.activeModal.close({ 
       cajaId: this.selectedCajaId,
-      turnoId: this.selectedTurnoId
+      turnoId: this.selectedTurnoId,
+      supervisor: this.selectedSupervisor
     });
   }
 

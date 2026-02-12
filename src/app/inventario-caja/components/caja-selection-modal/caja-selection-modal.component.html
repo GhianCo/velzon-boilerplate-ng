@@ -152,6 +152,27 @@
               </button>
             }
           </div>
+          
+          <!-- Selector de Supervisor (se muestra si hay turno seleccionado) -->
+          @if (selectedTurnoId && cajaGlobalService.supervisoresDisponibles().length > 0) {
+            <div class="mt-4 p-3 bg-light rounded">
+              <div class="d-flex align-items-center justify-content-between mb-2">
+                <h6 class="text-muted text-uppercase fs-13 mb-0">
+                  <i class="ri-user-star-line me-1"></i>
+                  Supervisor del turno
+                </h6>
+              </div>
+              <select 
+                class="form-select" 
+                [(ngModel)]="selectedSupervisor"
+                (ngModelChange)="onSupervisorChange($event)">
+                <option [value]="null" disabled>Selecciona supervisor</option>
+                @for (supervisor of cajaGlobalService.supervisoresDisponibles(); track supervisor) {
+                  <option [value]="supervisor">{{ supervisor }}</option>
+                }
+              </select>
+            </div>
+          }
         </div>
       }
     </div>
@@ -176,7 +197,7 @@
       <button 
         type="button" 
         class="btn btn-success" 
-        [disabled]="!selectedTurnoId || loading"
+        [disabled]="!selectedTurnoId || !selectedSupervisor || loading"
         (click)="onConfirm()">
         <i class="ri-check-line align-middle me-1"></i>
         Confirmar Selección
