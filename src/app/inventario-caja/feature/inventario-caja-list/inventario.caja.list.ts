@@ -338,11 +338,15 @@ export class InventarioCajaList {
   }
 
   /**
-   * Título dinámico que incluye el nombre de la caja seleccionada
+   * Título dinámico que incluye el nombre de la caja y turno seleccionados
    */
   get breadcrumbTitle(): string {
     const selectedCaja = this.cajaGlobalService.selectedCaja();
-    if (selectedCaja && selectedCaja.caja_nombre) {
+    const selectedTurno = this.cajaGlobalService.selectedTurno();
+    
+    if (selectedCaja && selectedTurno) {
+      return `Apertura y cierre de ${selectedCaja.caja_nombre} - ${selectedTurno.turno_nombre}`;
+    } else if (selectedCaja) {
       return `Apertura y cierre de ${selectedCaja.caja_nombre}`;
     }
     return 'Apertura y cierre de caja';
