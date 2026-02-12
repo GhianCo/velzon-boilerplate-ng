@@ -1,90 +1,186 @@
 <div class="modal-content">
-  <div class="modal-header bg-primary-subtle">
-    <h5 class="modal-title text-primary d-flex align-items-center gap-2">
-      <i class="ri-wallet-3-line fs-20"></i>
-      <span>Seleccionar Caja</span>
-    </h5>
-  </div>
-  
-  <div class="modal-body p-4">
-    @if (loading) {
-      <div class="text-center py-5">
-        <div class="spinner-border text-primary" role="status">
-          <span class="visually-hidden">Cargando...</span>
+  <!-- PASO 1: Seleccionar Caja -->
+  @if (currentStep === 'caja') {
+    <div class="modal-header bg-primary-subtle">
+      <h5 class="modal-title text-primary d-flex align-items-center gap-2">
+        <i class="ri-wallet-3-line fs-20"></i>
+        <span>Seleccionar Caja</span>
+      </h5>
+    </div>
+    
+    <div class="modal-body p-4">
+      @if (loading) {
+        <div class="text-center py-5">
+          <div class="spinner-border text-primary" role="status">
+            <span class="visually-hidden">Cargando...</span>
+          </div>
+          <p class="mt-3 text-muted">Cargando cajas disponibles...</p>
         </div>
-        <p class="mt-3 text-muted">Cargando cajas disponibles...</p>
-      </div>
-    } @else if (cajas.length === 0) {
-      <div class="text-center py-4">
-        <i class="ri-inbox-line display-4 text-muted"></i>
-        <p class="mt-3 text-muted">No hay cajas disponibles en este momento</p>
-      </div>
-    } @else {
-      <div class="mb-3">
-        <p class="text-muted mb-3">
-          <i class="ri-information-line text-info"></i>
-          Por favor, selecciona una caja para continuar trabajando en el módulo.
-        </p>
-        
-        <div class="list-group">
-          @for (caja of cajas; track caja.caja_id) {
-            <button 
-              type="button" 
-              class="list-group-item list-group-item-action d-flex align-items-center justify-content-between"
-              [class.active]="caja.caja_id == selectedCajaId"
-              (click)="onCajaSelect(caja.caja_id)">
-              <div class="d-flex align-items-center gap-3">
-                <div class="avatar-sm">
-                  <div class="avatar-title rounded-circle" 
-                       [class.bg-primary]="caja.caja_id == selectedCajaId"
-                       [class.bg-light]="caja.caja_id != selectedCajaId">
-                    <i class="ri-wallet-line fs-18"
-                       [class.text-white]="caja.caja_id == selectedCajaId"
-                       [class.text-muted]="caja.caja_id != selectedCajaId"></i>
+      } @else if (cajas.length === 0) {
+        <div class="text-center py-4">
+          <i class="ri-inbox-line display-4 text-muted"></i>
+          <p class="mt-3 text-muted">No hay cajas disponibles en este momento</p>
+        </div>
+      } @else {
+        <div class="mb-3">
+          <p class="text-muted mb-3">
+            <i class="ri-information-line text-info"></i>
+            Selecciona la caja con la que trabajarás.
+          </p>
+          
+          <div class="list-group">
+            @for (caja of cajas; track caja.caja_id) {
+              <button 
+                type="button" 
+                class="list-group-item list-group-item-action d-flex align-items-center justify-content-between"
+                [class.active]="caja.caja_id == selectedCajaId"
+                (click)="onCajaSelect(caja.caja_id)">
+                <div class="d-flex align-items-center gap-3">
+                  <div class="avatar-sm">
+                    <div class="avatar-title rounded-circle" 
+                         [class.bg-primary]="caja.caja_id == selectedCajaId"
+                         [class.bg-light]="caja.caja_id != selectedCajaId">
+                      <i class="ri-wallet-line fs-18"
+                         [class.text-white]="caja.caja_id == selectedCajaId"
+                         [class.text-muted]="caja.caja_id != selectedCajaId"></i>
+                    </div>
+                  </div>
+                  <div>
+                    <h6 class="mb-0" 
+                        [class.text-white]="caja.caja_id == selectedCajaId">
+                      {{ caja.caja_nombre }}
+                    </h6>
+                    @if (caja['descripcion']) {
+                      <small class="text-muted"
+                             [class.text-white-50]="caja.caja_id == selectedCajaId">
+                        {{ caja['descripcion'] }}
+                      </small>
+                    }
                   </div>
                 </div>
-                <div>
-                  <h6 class="mb-0" 
-                      [class.text-white]="caja.caja_id == selectedCajaId">
-                    {{ caja.caja_nombre }}
-                  </h6>
-                  @if (caja.descripcion) {
-                    <small class="text-muted"
-                           [class.text-white-50]="caja.caja_id == selectedCajaId">
-                      {{ caja.descripcion }}
-                    </small>
-                  }
-                </div>
-              </div>
-              @if (caja.caja_id == selectedCajaId) {
-                <i class="ri-checkbox-circle-fill text-white fs-20"></i>
-              } @else {
-                <i class="ri-checkbox-blank-circle-line text-muted fs-20"></i>
-              }
-            </button>
-          }
+                @if (caja.caja_id == selectedCajaId) {
+                  <i class="ri-checkbox-circle-fill text-white fs-20"></i>
+                } @else {
+                  <i class="ri-checkbox-blank-circle-line text-muted fs-20"></i>
+                }
+              </button>
+            }
+          </div>
         </div>
-      </div>
-    }
-  </div>
-  
-  <div class="modal-footer">
-    @if (canCancel) {
+      }
+    </div>
+    
+    <div class="modal-footer">
+      @if (canCancel) {
+        <button 
+          type="button" 
+          class="btn btn-light" 
+          (click)="onCancel()">
+          <i class="ri-close-line align-middle me-1"></i>
+          Cancelar
+        </button>
+      }
+      <button 
+        type="button" 
+        class="btn btn-primary" 
+        [disabled]="!selectedCajaId || loading"
+        (click)="goToTurnoStep()">
+        <span>Siguiente</span>
+        <i class="ri-arrow-right-line align-middle ms-1"></i>
+      </button>
+    </div>
+  }
+
+  <!-- PASO 2: Seleccionar Turno -->
+  @if (currentStep === 'turno') {
+    <div class="modal-header bg-success-subtle">
+      <h5 class="modal-title text-success d-flex align-items-center gap-2">
+        <i class="ri-time-line fs-20"></i>
+        <span>Seleccionar Turno</span>
+      </h5>
+    </div>
+    
+    <div class="modal-body p-4">
+      @if (loading) {
+        <div class="text-center py-5">
+          <div class="spinner-border text-success" role="status">
+            <span class="visually-hidden">Cargando...</span>
+          </div>
+          <p class="mt-3 text-muted">Cargando turnos disponibles...</p>
+        </div>
+      } @else if (turnos.length === 0) {
+        <div class="text-center py-4">
+          <i class="ri-inbox-line display-4 text-muted"></i>
+          <p class="mt-3 text-muted">No hay turnos disponibles en este momento</p>
+        </div>
+      } @else {
+        <div class="mb-3">
+          <p class="text-muted mb-3">
+            <i class="ri-information-line text-info"></i>
+            Selecciona el turno en el que trabajarás.
+          </p>
+          
+          <div class="list-group">
+            @for (turno of turnos; track turno.turno_id) {
+              <button 
+                type="button" 
+                class="list-group-item list-group-item-action d-flex align-items-center justify-content-between"
+                [class.active]="turno.turno_id == selectedTurnoId"
+                (click)="onTurnoSelect(turno.turno_id)">
+                <div class="d-flex align-items-center gap-3">
+                  <div class="avatar-sm">
+                    <div class="avatar-title rounded-circle" 
+                         [class.bg-success]="turno.turno_id == selectedTurnoId"
+                         [class.bg-light]="turno.turno_id != selectedTurnoId">
+                      <i class="ri-time-line fs-18"
+                         [class.text-white]="turno.turno_id == selectedTurnoId"
+                         [class.text-muted]="turno.turno_id != selectedTurnoId"></i>
+                    </div>
+                  </div>
+                  <div>
+                    <h6 class="mb-0" 
+                        [class.text-white]="turno.turno_id == selectedTurnoId">
+                      {{ turno.turno_nombre }}
+                    </h6>
+                  </div>
+                </div>
+                @if (turno.turno_id == selectedTurnoId) {
+                  <i class="ri-checkbox-circle-fill text-white fs-20"></i>
+                } @else {
+                  <i class="ri-checkbox-blank-circle-line text-muted fs-20"></i>
+                }
+              </button>
+            }
+          </div>
+        </div>
+      }
+    </div>
+    
+    <div class="modal-footer">
       <button 
         type="button" 
         class="btn btn-light" 
-        (click)="onCancel()">
-        <i class="ri-close-line align-middle me-1"></i>
-        Cancelar
+        (click)="goBackToCaja()">
+        <i class="ri-arrow-left-line align-middle me-1"></i>
+        Atrás
       </button>
-    }
-    <button 
-      type="button" 
-      class="btn btn-primary" 
-      [disabled]="!selectedCajaId || loading"
-      (click)="onConfirm()">
-      <i class="ri-check-line align-middle me-1"></i>
-      Confirmar Selección
-    </button>
-  </div>
+      @if (canCancel) {
+        <button 
+          type="button" 
+          class="btn btn-light" 
+          (click)="onCancel()">
+          <i class="ri-close-line align-middle me-1"></i>
+          Cancelar
+        </button>
+      }
+      <button 
+        type="button" 
+        class="btn btn-success" 
+        [disabled]="!selectedTurnoId || loading"
+        (click)="onConfirm()">
+        <i class="ri-check-line align-middle me-1"></i>
+        Confirmar Selección
+      </button>
+    </div>
+  }
 </div>

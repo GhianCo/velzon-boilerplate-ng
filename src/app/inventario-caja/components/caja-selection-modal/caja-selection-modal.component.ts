@@ -15,8 +15,18 @@ export class CajaSelectionModalComponent implements OnInit {
   activeModal = inject(NgbActiveModal);
   cajaGlobalService = inject(CajaGlobalService);
 
+  // Control de pasos
+  currentStep: 'caja' | 'turno' = 'caja';
+  
+  // Selecciones
   selectedCajaId: string | number | null = null;
+  selectedTurnoId: string | number | null = null;
+  
+  // Datos
   cajas: any[] = [];
+  turnos: any[] = [];
+  
+  // Estado
   loading: boolean = false;
   canCancel: boolean = true; // Se establece desde el guard
 
@@ -43,16 +53,58 @@ export class CajaSelectionModalComponent implements OnInit {
     });
   }
 
+  loadTurnos(): void {
+    this.loading = true;
+    this.cajaGlobalService.loadTurnos().subscribe({
+      next: () => {
+        this.turnos = this.cajaGlobalService.turnos();
+        this.loading = false;
+        
+        // Auto-seleccionar si solo hay un turno
+        if (this.turnos.length === 1) {
+          this.selectedTurnoId = this.turnos[0].turno_id;
+        }
+      },
+      error: (error) => {
+        console.error('Error al cargar turnos:', error);
+        this.loading = false;
+      }
+    });
+  }
+
   onCajaSelect(cajaId: string | number): void {
     this.selectedCajaId = cajaId;
   }
 
-  onConfirm(): void {
-    if (!this.selectedCajaId) {
+  onTurnoSelect(turnoId: string | number): void {
+    this.selectedTurnoId = turnoId;
+  }
+
+  goToTurnoStep(): void {
+    if (!this.selectedCajaId) return;
+    
+    // Solo cambiar de paso, NO guardar en token todavía
+    this.currentStep = 'turno';
+    this.loadTurnos();
+  }
+
+  goBackToCaja(): void {
+    this.currentStep = 'caja';
+  }
+
+  async onConfirm(): Promise<void> {
+    if (!this.selectedCajaId || !this.selectedTurnoId) {
       return;
     }
     
-    this.activeModal.close({ cajaId: this.selectedCajaId });
+    // Guardar AMBOS en el token al confirmar
+    await this.cajaGlobalService.setSelectedCaja(this.selectedCajaId);
+    await this.cajaGlobalService.setSelectedTurno(this.selectedTurnoId);
+    
+    this.activeModal.close({ 
+      cajaId: this.selectedCajaId,
+      turnoId: this.selectedTurnoId
+    });
   }
 
   onCancel(): void {
