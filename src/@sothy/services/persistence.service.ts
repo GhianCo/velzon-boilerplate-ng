@@ -204,6 +204,67 @@ export class PersistenceService {
     }
 
     /**
+     * Decodifica Base64 (método base)
+     * Credits: https://github.com/atk
+     */
+    private base64Decode(str: string): string {
+        const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/=';
+        let output = '';
+
+        str = String(str).replace(/=+$/, '');
+
+        if (str.length % 4 === 1) {
+            throw new Error("'atob' failed: The string to be decoded is not correctly encoded.");
+        }
+
+        for (
+            let bc = 0, bs: any, buffer: any, idx = 0;
+            (buffer = str.charAt(idx++));
+            ~buffer && ((bs = bc % 4 ? bs * 64 + buffer : buffer), bc++ % 4)
+                ? (output += String.fromCharCode(255 & (bs >> ((-2 * bc) & 6))))
+                : 0
+        ) {
+            buffer = chars.indexOf(buffer);
+        }
+
+        return output;
+    }
+
+    /**
+     * Decodifica Base64 con soporte Unicode
+     */
+    private base64DecodeUnicode(str: string): string {
+        return decodeURIComponent(
+            Array.prototype.map
+                .call(
+                    this.base64Decode(str),
+                    (c: any) => '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2)
+                )
+                .join('')
+        );
+    }
+
+    /**
+     * Decodifica una cadena Base64URL a string con soporte Unicode
+     */
+    private base64UrlDecode(str: string): string {
+        let output = str.replace(/-/g, '+').replace(/_/g, '/');
+        switch (output.length % 4) {
+            case 0:
+                break;
+            case 2:
+                output += '==';
+                break;
+            case 3:
+                output += '=';
+                break;
+            default:
+                throw Error('Illegal base64url string!');
+        }
+        return this.base64DecodeUnicode(output);
+    }
+
+    /**
      * Crea un HMAC SHA256 (implementación simplificada)
      * NOTA: Esta es una implementación para cliente. En producción, idealmente 
      * el backend debería re-generar el token.
@@ -243,8 +304,8 @@ export class PersistenceService {
             }
 
             // Decodificar header y payload
-            const header = JSON.parse(atob(parts[0].replace(/-/g, '+').replace(/_/g, '/')));
-            const payload = JSON.parse(atob(parts[1].replace(/-/g, '+').replace(/_/g, '/')));
+            const header = JSON.parse(this.base64UrlDecode(parts[0]));
+            const payload = JSON.parse(this.base64UrlDecode(parts[1]));
 
             // Actualizar o agregar la propiedad
             payload[property] = value;
@@ -315,8 +376,8 @@ export class PersistenceService {
                 }
 
                 // Decodificar header y payload
-                const header = JSON.parse(atob(parts[0].replace(/-/g, '+').replace(/_/g, '/')));
-                const payload = JSON.parse(atob(parts[1].replace(/-/g, '+').replace(/_/g, '/')));
+                const header = JSON.parse(this.base64UrlDecode(parts[0]));
+                const payload = JSON.parse(this.base64UrlDecode(parts[1]));
 
                 // Actualizar o agregar todas las propiedades
                 Object.keys(properties).forEach(key => {
@@ -362,8 +423,8 @@ export class PersistenceService {
                 const parts = currentToken.split('.');
                 if (parts.length !== 3) return;
 
-                const header = JSON.parse(atob(parts[0].replace(/-/g, '+').replace(/_/g, '/')));
-                const payload = JSON.parse(atob(parts[1].replace(/-/g, '+').replace(/_/g, '/')));
+                const header = JSON.parse(this.base64UrlDecode(parts[0]));
+                const payload = JSON.parse(this.base64UrlDecode(parts[1]));
 
                 // Eliminar la propiedad
                 delete payload[property];
@@ -413,8 +474,8 @@ export class PersistenceService {
                 const parts = currentToken.split('.');
                 if (parts.length !== 3) return;
 
-                const header = JSON.parse(atob(parts[0].replace(/-/g, '+').replace(/_/g, '/')));
-                const payload = JSON.parse(atob(parts[1].replace(/-/g, '+').replace(/_/g, '/')));
+                const header = JSON.parse(this.base64UrlDecode(parts[0]));
+                const payload = JSON.parse(this.base64UrlDecode(parts[1]));
 
                 // Eliminar todas las propiedades
                 properties.forEach(property => {
