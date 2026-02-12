@@ -334,6 +334,30 @@
                     </thead>
 
                     <tbody>
+                    <!-- Créditos Promocionales -->
+                    <tr class="table-info">
+                      <td class="align-middle">
+                        <span class="fw-bold">
+                          <i class="ri-gift-line me-2"></i>Créditos Promocionales
+                        </span>
+                      </td>
+                      <td>
+                        <div class="input-group input-group-sm justify-content-end">
+                          <span class="input-group-text">S/.</span>
+                          <input type="number" class="form-control text-center" min="0" step="0.01"
+                                 [(ngModel)]="vm.valoresSummary.creditos_promocionales"
+                                 (wheel)="$event.preventDefault()"
+                                 style="max-width: 150px;"
+                                 placeholder="0.00">
+                        </div>
+                      </td>
+                    </tr>
+                    
+                    <!-- Separador -->
+                    <tr style="height: 5px;">
+                      <td colspan="2" class="p-0 bg-light"></td>
+                    </tr>
+                    
                     <!-- Solo items de suma diaria -->
                       @for (catMovimiento of vm.catMovWithDetailsData; track $index) {
                         <!-- Header de categoría -->
