@@ -540,6 +540,10 @@ export class InventarioEfectivoNew implements OnInit {
         this.inventarioEfectivoStore.setSelectedTurnoId(operacionTurnoId);
     }
 
+    onSupervisorChange(supervisorId: string) {
+        this.inventarioEfectivoStore.setSelectedSupervisorId(supervisorId);
+    }
+
     // ===== FIN MÉTODOS PARA ACTUALIZAR TURNO Y OPERACIÓN ====
 
     // ===== FIN MÉTODOS TURNO Y OPERACIÓN =====

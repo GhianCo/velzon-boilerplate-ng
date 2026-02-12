@@ -202,11 +202,27 @@
                         }
                       </select>
                     </div>
-
                   </div>
+                  
+                  <!-- Selector de Supervisor -->
+                  @if (vm.selectedTurnoId) {
+                    <div class="d-flex align-items-center justify-content-between mb-3">
+                      <h5 class="text-muted text-uppercase fs-13 mb-0">Supervisor del turno</h5>
+                      <div>
+                        <select class="form-select form-select-sm"
+                                [ngModel]="vm.selectedSupervisorId"
+                                (ngModelChange)="onSupervisorChange($event)">
+                          <option [value]="null" disabled>Selecciona supervisor</option>
+                          @for (supervisor of inventarioEfectivoStore.supervisoresDisponibles(); track supervisor) {
+                            <option [value]="supervisor">{{ supervisor }}</option>
+                          }
+                        </select>
+                      </div>
+                    </div>
+                  }
                 }
                 <button type="button" class="btn btn-success w-100" (click)="onClickGuardarInventario()"
-                        [disabled]="vm.saveInventarioEfectivoLoading || vm.valoresSummary?.totalConvertido < 1 || !vm.selectedTurnoId">
+                        [disabled]="vm.saveInventarioEfectivoLoading || vm.valoresSummary?.totalConvertido < 1 || !vm.selectedTurnoId || (!isCerrarMode && !vm.selectedSupervisorId)">
                   <i class="ri-save-fill align-middle"></i> Guardar inventario
                 </button>
                 <div>

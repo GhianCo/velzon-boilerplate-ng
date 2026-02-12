@@ -45,6 +45,7 @@ export type IState = {
   // Campos para turno y tipo de operación seleccionados
   selectedTurnoId: string | null,
   selectedOperacion: string | null,
+  selectedSupervisorId: string | null,
 
   // Datos del turno cargado (para modo cierre)
   turnoDataLoading: boolean,
@@ -97,6 +98,7 @@ const initialState: IState = {
   // Inicializar campos de turno y operación
   selectedTurnoId: null,
   selectedOperacion: null,
+  selectedSupervisorId: null,
 
   // Inicializar datos del turno
   turnoDataLoading: false,
@@ -190,6 +192,7 @@ export class InventarioEfectivoStore extends SignalStore<IState> {
 
     'selectedTurnoId',
     'selectedOperacion',
+    'selectedSupervisorId',
 
     // Datos del turno cargado
     'turnoDataLoading',
@@ -254,6 +257,31 @@ export class InventarioEfectivoStore extends SignalStore<IState> {
     // (turnos con orden mayor o igual al siguiente)
     const siguienteOrden = ordenUltimoTurno + 1;
     return turnosData.filter((t: any) => (t.turno_orden || 0) >= siguienteOrden);
+  });
+
+  /**
+   * Computed signal que devuelve la lista de supervisores únicos
+   * extraídos de todos los turnos de la sala
+   */
+  public readonly supervisoresDisponibles = computed(() => {
+    const state = this.vm();
+    const turnosData = state.turnosData;
+
+    // Si no hay turnos, retornar array vacío
+    if (!turnosData || turnosData.length === 0) {
+      return [];
+    }
+
+    // Extraer supervisores únicos usando Set
+    const supervisoresSet = new Set<string>();
+    turnosData.forEach((turno: any) => {
+      if (turno.supervisor && turno.supervisor.trim() !== '') {
+        supervisoresSet.add(turno.supervisor);
+      }
+    });
+
+    // Convertir Set a Array y ordenar alfabéticamente
+    return Array.from(supervisoresSet).sort();
   });
 
   constructor(
@@ -581,7 +609,7 @@ export class InventarioEfectivoStore extends SignalStore<IState> {
       inventario_efectivo_detalle: inventarioDetallePorDenominacion,
       suma_diaria_detalle: state.catMovWithDetailsData,
       cajas: state.cajasData,
-      supervisor: turno.supervisor || '',
+      supervisor: state.selectedSupervisorId || turno.supervisor || '',
       ultimo_turno: turno.turno_ultimo || 0
     };
 
@@ -896,6 +924,12 @@ export class InventarioEfectivoStore extends SignalStore<IState> {
     const turno = state.turnosData.find(
       (turno: any) => turno.turno_id == turnoId
     );
+    
+    // Establecer automáticamente el supervisor del turno seleccionado
+    if (turno && turno.supervisor) {
+      this.patch({selectedSupervisorId: turno.supervisor});
+    }
+    
     if (state.selectedOperacion == 'apertura') {
       if (turno.turno_orden == ORDEN.PRIMERO){
         this.loadCajas(PARAM.SI);
@@ -906,6 +940,10 @@ export class InventarioEfectivoStore extends SignalStore<IState> {
       this.loadCatMovWithDetails();
       this.loadCajas(PARAM.UNDEFINED);
     }
+  }
+
+  public setSelectedSupervisorId(supervisorId: string | null) {
+    this.patch({selectedSupervisorId: supervisorId});
   }
 
   public setSelectedOperacion(operacion: string | null) {
