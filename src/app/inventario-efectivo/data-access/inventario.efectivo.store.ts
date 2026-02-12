@@ -117,7 +117,8 @@ const initialState: IState = {
     totalMovimientos: 0,
     total_real_turno: 0,
     suma_diaria_efectivo: 0,
-    tipocambio: 0
+    tipocambio: 0,
+    creditos_promocionales: 0
   },
   chartSummary: {
     series: [],
@@ -392,7 +393,8 @@ export class InventarioEfectivoStore extends SignalStore<IState> {
           totalMovimientos: 0,
           total_real_turno: totalConvertido,
           suma_diaria_efectivo: totalConvertido,
-          tipocambio: data.tipocambio || 0
+          tipocambio: data.tipocambio || 0,
+          creditos_promocionales: data.creditos_promocionales || 0
         };
 
         // Chart
@@ -606,6 +608,7 @@ export class InventarioEfectivoStore extends SignalStore<IState> {
       diferencia: state.valoresSummary.diferencia,
       suma_diaria: state.valoresSummary.suma_diaria_efectivo,
       tipocambio: state.valoresSummary.tipocambio,
+      creditos_promocionales: state.valoresSummary.creditos_promocionales || 0,
       inventario_efectivo_detalle: inventarioDetallePorDenominacion,
       suma_diaria_detalle: state.catMovWithDetailsData,
       cajas: state.cajasData,
