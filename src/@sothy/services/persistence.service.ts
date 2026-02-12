@@ -288,6 +288,63 @@ export class PersistenceService {
     }
 
     /**
+     * Actualiza múltiples propiedades en el token JWT de una sola vez
+     * @param properties - Objeto con las propiedades a actualizar {key: value}
+     * @param secret - Secret key para regenerar el token
+     */
+    async updateTokenProperties(properties: { [key: string]: any }, secret?: string): Promise<void> {
+        // Actualizar en caché
+        if (this._decodedToken) {
+            Object.keys(properties).forEach(key => {
+                this._decodedToken![key] = properties[key];
+            });
+        }
+        
+        // Si se proporciona secret, regenerar el token con todas las propiedades
+        if (secret) {
+            try {
+                const currentToken = this.get('token');
+                if (!currentToken) {
+                    throw new Error('No hay token disponible');
+                }
+
+                // Decodificar el token actual
+                const parts = currentToken.split('.');
+                if (parts.length !== 3) {
+                    throw new Error('Token JWT inválido');
+                }
+
+                // Decodificar header y payload
+                const header = JSON.parse(atob(parts[0].replace(/-/g, '+').replace(/_/g, '/')));
+                const payload = JSON.parse(atob(parts[1].replace(/-/g, '+').replace(/_/g, '/')));
+
+                // Actualizar o agregar todas las propiedades
+                Object.keys(properties).forEach(key => {
+                    payload[key] = properties[key];
+                });
+
+                // Regenerar el token
+                const headerEncoded = this.base64UrlEncode(header);
+                const payloadEncoded = this.base64UrlEncode(payload);
+                const signatureInput = `${headerEncoded}.${payloadEncoded}`;
+                const signature = await this.hmacSHA256(signatureInput, secret);
+
+                const newToken = `${headerEncoded}.${payloadEncoded}.${signature}`;
+                
+                // Guardar el nuevo token
+                this.set('token', newToken);
+                
+                // Actualizar cache
+                this._decodedToken = payload;
+            } catch (error) {
+                if (isDevMode()) {
+                    console.error('Error regenerando token con múltiples propiedades:', error);
+                }
+            }
+        }
+    }
+
+    /**
      * Elimina una propiedad del token JWT
      */
     async removeTokenProperty(property: string, secret?: string): Promise<void> {
@@ -318,11 +375,68 @@ export class PersistenceService {
                 const signature = await this.hmacSHA256(signatureInput, secret);
 
                 const newToken = `${headerEncoded}.${payloadEncoded}.${signature}`;
+                
+                // Guardar el nuevo token
                 this.set('token', newToken);
+                
+                // Actualizar cache
                 this._decodedToken = payload;
             } catch (error) {
                 if (isDevMode()) {
                     console.error('Error eliminando propiedad del token:', error);
+                }
+            }
+        }
+    }
+
+    /**
+     * Elimina múltiples propiedades del token JWT de una sola vez
+     * @param properties - Array con los nombres de las propiedades a eliminar
+     * @param secret - Secret key para regenerar el token
+     */
+    async removeTokenProperties(properties: string[], secret?: string): Promise<void> {
+        // Eliminar del caché
+        if (this._decodedToken) {
+            properties.forEach(property => {
+                if (this._decodedToken!.hasOwnProperty(property)) {
+                    delete this._decodedToken![property];
+                }
+            });
+        }
+        
+        // Si se proporciona secret, regenerar el token sin las propiedades
+        if (secret) {
+            try {
+                const currentToken = this.get('token');
+                if (!currentToken) return;
+
+                const parts = currentToken.split('.');
+                if (parts.length !== 3) return;
+
+                const header = JSON.parse(atob(parts[0].replace(/-/g, '+').replace(/_/g, '/')));
+                const payload = JSON.parse(atob(parts[1].replace(/-/g, '+').replace(/_/g, '/')));
+
+                // Eliminar todas las propiedades
+                properties.forEach(property => {
+                    delete payload[property];
+                });
+
+                // Regenerar el token
+                const headerEncoded = this.base64UrlEncode(header);
+                const payloadEncoded = this.base64UrlEncode(payload);
+                const signatureInput = `${headerEncoded}.${payloadEncoded}`;
+                const signature = await this.hmacSHA256(signatureInput, secret);
+
+                const newToken = `${headerEncoded}.${payloadEncoded}.${signature}`;
+                
+                // Guardar el nuevo token
+                this.set('token', newToken);
+                
+                // Actualizar cache
+                this._decodedToken = payload;
+            } catch (error) {
+                if (isDevMode()) {
+                    console.error('Error eliminando propiedades del token:', error);
                 }
             }
         }

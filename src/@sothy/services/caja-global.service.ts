@@ -141,14 +141,20 @@ export class CajaGlobalService {
   }
 
   /**
-   * Guarda el ID de la caja seleccionada regenerando el JWT con la nueva propiedad
+   * Guarda el ID y nombre de la caja seleccionada regenerando el JWT con las nuevas propiedades
    */
   private async saveSelectedCajaToStorage(cajaId: string | number): Promise<void> {
     try {
-      // Usar la secret key desde environment para regenerar el JWT
-      await this.persistenceService.updateTokenProperty(
-        'caja_id', 
-        String(cajaId), 
+      // Obtener el nombre de la caja
+      const caja = this._cajas().find(c => c.caja_id == cajaId);
+      const cajaNombre = caja?.caja_nombre || '';
+      
+      // Usar la secret key desde environment para regenerar el JWT con ambas propiedades
+      await this.persistenceService.updateTokenProperties(
+        {
+          caja_id: String(cajaId),
+          caja_nombre: cajaNombre
+        },
         environment.jwtSecret
       );
     } catch (error) {
@@ -157,13 +163,23 @@ export class CajaGlobalService {
   }
 
   /**
-   * Carga el ID de la caja seleccionada desde el payload del JWT
+   * Carga el ID y nombre de la caja seleccionada desde el payload del JWT
    */
   private loadSelectedCajaFromStorage(): void {
     try {
       const savedCajaId = this.persistenceService.getTokenProperty('caja_id');
+      const savedCajaNombre = this.persistenceService.getTokenProperty('caja_nombre');
+      
       if (savedCajaId) {
         this._selectedCajaId.set(savedCajaId);
+        
+        // Si tenemos el nombre pero no está en la lista de cajas, agregarlo temporalmente
+        if (savedCajaNombre && this._cajas().length === 0) {
+          this._cajas.set([{
+            caja_id: savedCajaId,
+            caja_nombre: savedCajaNombre
+          }]);
+        }
       }
     } catch (error) {
       console.error('Error al cargar caja desde token:', error);
@@ -171,13 +187,13 @@ export class CajaGlobalService {
   }
 
   /**
-   * Elimina el ID de la caja seleccionada regenerando el JWT sin la propiedad
+   * Elimina el ID y nombre de la caja seleccionada regenerando el JWT sin las propiedades
    */
   private async removeSelectedCajaFromStorage(): Promise<void> {
     try {
-      // Usar la secret key desde environment para regenerar el JWT
-      await this.persistenceService.removeTokenProperty(
-        'caja_id', 
+      // Usar la secret key desde environment para regenerar el JWT sin las propiedades
+      await this.persistenceService.removeTokenProperties(
+        ['caja_id', 'caja_nombre'], 
         environment.jwtSecret
       );
     } catch (error) {
