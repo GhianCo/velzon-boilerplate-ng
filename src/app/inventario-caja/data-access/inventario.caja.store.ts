@@ -1,5 +1,5 @@
 import {computed, Injectable} from "@angular/core";
-import {ActivatedRoute, Router} from "@angular/router";
+import {Router} from "@angular/router";
 import {SignalStore} from "@shared/data-access/signal.store";
 import {InventarioCajaRemoteReq} from "@app/inventario-caja/data-access/inventario.caja.remote.req";
 import {catchError, finalize, tap} from "rxjs/operators";
@@ -236,7 +236,6 @@ export class InventarioCajaStore extends SignalStore<IState> {
 
   constructor(
     private _inventarioCajaRemoteReq: InventarioCajaRemoteReq,
-    private _activatedRoute: ActivatedRoute,
     private _router: Router,
     private _persistenceService: PersistenceService,
   ) {
@@ -553,7 +552,7 @@ export class InventarioCajaStore extends SignalStore<IState> {
 
     this._inventarioCajaRemoteReq.requestSaveInventario(inventario).pipe(
       tap(async ({data, pagination}) => {
-        this._router.navigate(['./'], {relativeTo: this._activatedRoute});
+        this._router.navigate(['/inventario-caja']);
       }),
       finalize(async () => {
         this.patch({saveInventarioCajaLoading: false});
