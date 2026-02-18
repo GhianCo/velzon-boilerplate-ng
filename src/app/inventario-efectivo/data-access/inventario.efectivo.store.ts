@@ -46,7 +46,7 @@ export type IState = {
   selectedTurnoId: string | null,
   selectedOperacion: string | null,
   selectedSupervisorId: string | null,
-
+  operacionTurnoId: number | null,
   // Datos del turno cargado (para modo cierre)
   turnoDataLoading: boolean,
   turnoData: any,
@@ -99,6 +99,7 @@ const initialState: IState = {
   selectedTurnoId: null,
   selectedOperacion: null,
   selectedSupervisorId: null,
+  operacionTurnoId: null,
 
   // Inicializar datos del turno
   turnoDataLoading: false,
@@ -194,6 +195,7 @@ export class InventarioEfectivoStore extends SignalStore<IState> {
     'selectedTurnoId',
     'selectedOperacion',
     'selectedSupervisorId',
+    'operacionTurnoId',
 
     // Datos del turno cargado
     'turnoDataLoading',
@@ -463,7 +465,7 @@ export class InventarioEfectivoStore extends SignalStore<IState> {
 
   // Método para cargar datos de una operación turno por ID
   public loadOperacionTurnoById(operacionturno_id: number): void {
-    this.patch({turnoDataLoading: true, turnoDataError: null});
+    this.patch({turnoDataLoading: true, turnoDataError: null, operacionTurnoId: operacionturno_id});
 
     this._inventarioEfectivoRemoteReq.requestGetOperacionturnoById(operacionturno_id).pipe(
       tap(({data}) => {
@@ -536,9 +538,9 @@ export class InventarioEfectivoStore extends SignalStore<IState> {
     ).subscribe();
   };
 
-  public async loadCatMovWithDetails() {
+  public async loadCatMovWithDetails(operacionturno_id?: any) {
     this.patch({catMovWithDetailsLoading: true, catMovWithDetailsError: null});
-    this._inventarioEfectivoRemoteReq.requestGetCatMovWithDetails().pipe(
+    this._inventarioEfectivoRemoteReq.requestGetCatMovWithDetails(operacionturno_id).pipe(
       tap(async ({data, pagination}) => {
         this.patch({
           catMovWithDetailsData: data,
@@ -940,7 +942,8 @@ export class InventarioEfectivoStore extends SignalStore<IState> {
         this.loadCajas(PARAM.UNDEFINED);
       }
     } else {
-      this.loadCatMovWithDetails();
+      const state = this.vm();
+      this.loadCatMovWithDetails(state.operacionTurnoId);
       this.loadCajas(PARAM.UNDEFINED);
     }
   }
