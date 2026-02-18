@@ -419,6 +419,7 @@
                                        [(ngModel)]="detail.cantidad"
                                        (ngModelChange)="onCantidadMovimientoChange(detail, $event)"
                                        (wheel)="$event.preventDefault()"
+                                       [disabled]="detail.para_caja == 1"
                                        style="max-width: 200px;">
                               </div>
                             </td>
