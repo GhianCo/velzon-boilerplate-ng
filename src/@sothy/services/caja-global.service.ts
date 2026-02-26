@@ -216,7 +216,6 @@ export class CajaGlobalService {
     }
     
     this._selectedCajaId.set(cajaId);
-    await this.saveSelectedCajaToStorage(cajaId);
   }
 
   /**
@@ -250,8 +249,6 @@ export class CajaGlobalService {
     if (turno['supervisor']) {
       this._selectedSupervisor.set(turno['supervisor']);
     }
-    
-    await this.saveSelectedTurnoToStorage(turnoId);
   }
 
   /**
@@ -262,20 +259,6 @@ export class CajaGlobalService {
     this._selectedSupervisor.set(null);
     await this.removeSelectedTurnoFromStorage();
     await this.removeSelectedSupervisorFromStorage();
-  }
-
-  /**
-   * Establece el supervisor seleccionado
-   * @param supervisor - Nombre del supervisor
-   */
-  async setSelectedSupervisor(supervisor: string | null): Promise<void> {
-    if (supervisor === null) {
-      await this.clearSelectedSupervisor();
-      return;
-    }
-    
-    this._selectedSupervisor.set(supervisor);
-    await this.saveSelectedSupervisorToStorage(supervisor);
   }
 
   /**
@@ -291,28 +274,6 @@ export class CajaGlobalService {
    */
   reloadCajas(deApertura: number | string = -1): Observable<any> {
     return this.loadCajas(deApertura);
-  }
-
-  /**
-   * Guarda el ID y nombre de la caja seleccionada regenerando el JWT con las nuevas propiedades
-   */
-  private async saveSelectedCajaToStorage(cajaId: string | number): Promise<void> {
-    try {
-      // Obtener el nombre de la caja
-      const caja = this._cajas().find(c => c.caja_id == cajaId);
-      const cajaNombre = caja?.caja_nombre || '';
-      
-      // Usar la secret key desde environment para regenerar el JWT con ambas propiedades
-      await this.persistenceService.updateTokenProperties(
-        {
-          caja_id: String(cajaId),
-          caja_nombre: cajaNombre
-        },
-        environment.jwtSecret
-      );
-    } catch (error) {
-      console.error('Error al guardar caja en token:', error);
-    }
   }
 
   /**
@@ -352,27 +313,6 @@ export class CajaGlobalService {
       console.error('Error al eliminar caja del token:', error);
     }
   }
-
-  /**
-   * Guarda el ID y nombre del turno seleccionado regenerando el JWT con las nuevas propiedades
-   */
-  private async saveSelectedTurnoToStorage(turnoId: string | number): Promise<void> {
-    try {
-      const turno = this._turnos().find(t => t.turno_id == turnoId);
-      const turnoNombre = turno?.turno_nombre || '';
-      
-      await this.persistenceService.updateTokenProperties(
-        {
-          turno_id: String(turnoId),
-          turno_nombre: turnoNombre
-        },
-        environment.jwtSecret
-      );
-    } catch (error) {
-      console.error('Error al guardar turno en token:', error);
-    }
-  }
-
   /**
    * Carga el ID y nombre del turno seleccionado desde el payload del JWT
    */
@@ -407,20 +347,6 @@ export class CajaGlobalService {
       );
     } catch (error) {
       console.error('Error al eliminar turno del token:', error);
-    }
-  }
-
-  /**
-   * Guarda el supervisor seleccionado regenerando el JWT
-   */
-  private async saveSelectedSupervisorToStorage(supervisor: string): Promise<void> {
-    try {
-      await this.persistenceService.updateTokenProperties(
-        { supervisor: supervisor },
-        environment.jwtSecret
-      );
-    } catch (error) {
-      console.error('Error al guardar supervisor en token:', error);
     }
   }
 
