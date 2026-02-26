@@ -467,6 +467,20 @@ export class CajaGlobalService {
   }
 
   /**
+   * Actualiza las señales de caja, turno y supervisor sin modificar el token
+   * (útil cuando el token ya fue actualizado por el backend)
+   */
+  updateSelectionsFromBackend(
+    cajaId: string | number,
+    turnoId: string | number,
+    supervisor: string
+  ): void {
+    this._selectedCajaId.set(cajaId);
+    this._selectedTurnoId.set(turnoId);
+    this._selectedSupervisor.set(supervisor);
+  }
+
+  /**
    * Limpia todo el estado del servicio (útil para logout)
    */
   clearAll(): void {

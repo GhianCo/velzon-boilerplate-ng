@@ -39,4 +39,28 @@ export class AuthLoginRemoteReq {
     });
   }
 
+  /**
+   * Actualiza el token JWT con nuevas propiedades de caja, turno y supervisor
+   * @param cajaId - ID de la caja seleccionada
+   * @param cajaNombre - Nombre de la caja seleccionada
+   * @param turnoId - ID del turno seleccionado
+   * @param turnoNombre - Nombre del turno seleccionado
+   * @param supervisor - Nombre del supervisor seleccionado
+   */
+  requestRefreshToken(
+    cajaId: string | number,
+    cajaNombre: string,
+    turnoId: string | number,
+    turnoNombre: string,
+    supervisor: string
+  ): Observable<IResponse> {
+    return this._workersApiService.post(this.REMOTE_API_URI + 'liquidaciones/refresh-token', {
+      caja_id: String(cajaId),
+      caja_nombre: cajaNombre,
+      turno_id: String(turnoId),
+      turno_nombre: turnoNombre,
+      supervisor: supervisor
+    });
+  }
+
 }
