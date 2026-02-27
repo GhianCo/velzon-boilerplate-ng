@@ -519,9 +519,11 @@ export class InventarioEfectivoStore extends SignalStore<IState> {
   };
 
   public async loadValoresWithDetails() {
+    const state = this.vm();
+    const cajasOperativas = state.cajasData?.filter((c: any) => c.caja_operativa == 1) ?? [];
     this.patch({valoresWithDetailsLoading: true, valoresWithDetailsError: null});
     this.initialize(initialState);
-    this._inventarioEfectivoRemoteReq.requestGetValoresWithDetails().pipe(
+    this._inventarioEfectivoRemoteReq.requestGetValoresWithDetails(cajasOperativas, state.operacionTurnoId).pipe(
       tap(async ({data, pagination}) => {
         this.patch({
           valoresWithDetailsData: data,
