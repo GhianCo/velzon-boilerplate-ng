@@ -1282,7 +1282,7 @@ export class InventarioEfectivoStore extends SignalStore<IState> {
         if (true) {
           this._confirmationService.warning(
             '✅ Transferencia registrada',
-            `Se registró una transferencia de S/. ${payload.montoTransferencia?.toFixed(2)} para la caja ${payload.selectedCajaTransferencia?.caja_nombre}.`
+            `Se registró una transferencia de S/. ${payload.monto?.toFixed(2)} para la caja ${payload?.caja_nombre}.`
         );
         }
       }),

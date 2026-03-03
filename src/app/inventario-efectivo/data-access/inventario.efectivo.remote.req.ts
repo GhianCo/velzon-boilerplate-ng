@@ -83,7 +83,6 @@ export class InventarioEfectivoRemoteReq {
   }
 
   requestRegistrarTransferenciaCaja(payload: any): Observable<IResponse> {
-    const {operacionturno_id,caja_id,monto, observacion} = payload;
     return this.http.post(this.REMOTE_API_URI + 'transferenciacaja', payload);
   }
 
