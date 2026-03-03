@@ -146,6 +146,7 @@ export class InventarioEfectivoNew implements OnInit {
 
     // ViewChild para el template del modal
     @ViewChild('diferenciaModal', { static: false }) diferenciaModal!: TemplateRef<any>;
+    @ViewChild('transferenciaModal', { static: false }) transferenciaModal!: TemplateRef<any>;
 
     // Propiedades para modo cierre
     isCerrarMode: boolean = false;
@@ -154,6 +155,11 @@ export class InventarioEfectivoNew implements OnInit {
 
     // Propiedad para observaciones cuando hay diferencia
     observacionesDiferencia: string = '';
+
+    // Propiedades para transferencia de efectivo por caja
+    selectedCajaTransferencia: any = null;
+    montoTransferencia: number | null = null;
+    observacionTransferencia: string = '';
 
     // Propiedades para manejo de selección de filas (solo una fila)
     selectedRowId: string | null = null;
@@ -547,5 +553,50 @@ export class InventarioEfectivoNew implements OnInit {
     // ===== FIN MÉTODOS PARA ACTUALIZAR TURNO Y OPERACIÓN ====
 
     // ===== FIN MÉTODOS TURNO Y OPERACIÓN =====
+
+    // ===== MÉTODOS PARA TRANSFERENCIA DE EFECTIVO POR CAJA =====
+
+    openTransferenciaModal(caja: any): void {
+        this.selectedCajaTransferencia = caja;
+        this.montoTransferencia = null;
+        this.observacionTransferencia = '';
+        this.offcanvasService.open(this.transferenciaModal, {
+            position: 'end',
+            backdrop: 'static',
+            keyboard: false
+        });
+    }
+
+    onGuardarTransferencia(offcanvas: any): void {
+        if (!this.montoTransferencia || this.montoTransferencia <= 0) {
+            this.confirmationService.warning(
+                '⚠️ Monto requerido',
+                'Debes ingresar un monto mayor a cero para la transferencia.'
+            );
+            return;
+        }
+
+        if (!this.observacionTransferencia || this.observacionTransferencia.trim().length === 0) {
+            this.confirmationService.warning(
+                '⚠️ Observación requerida',
+                'Debes ingresar una observación para la transferencia.'
+            );
+            return;
+        }
+
+        const payload = {
+            operacionturno_id: Number(this.operacionTurnoId),
+            caja_id: this.selectedCajaTransferencia?.caja_id,
+            caja_nombre: this.selectedCajaTransferencia?.caja_nombre,
+            monto: this.montoTransferencia,
+            observacion: this.observacionTransferencia.trim()
+        };
+
+        this.inventarioEfectivoStore.registrarTransferenciaCaja(payload);
+
+        offcanvas.close('saved');
+    }
+
+    // ===== FIN MÉTODOS PARA TRANSFERENCIA DE EFECTIVO POR CAJA =====
 
 }

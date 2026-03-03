@@ -82,4 +82,9 @@ export class InventarioEfectivoRemoteReq {
     return this._controlActivosApiService.get(this.REMOTE_API_URI + 'turno?sala='+sala_id)
   }
 
+  requestRegistrarTransferenciaCaja(payload: any): Observable<IResponse> {
+    const {operacionturno_id,caja_id,monto, observacion} = payload;
+    return this.http.post(this.REMOTE_API_URI + 'transferenciacaja', payload);
+  }
+
 }

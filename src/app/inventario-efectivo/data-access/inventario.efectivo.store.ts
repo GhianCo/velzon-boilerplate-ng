@@ -6,6 +6,7 @@ import {catchError, finalize, tap} from "rxjs/operators";
 import {Observable, of} from "rxjs";
 import {ORDEN, PARAM} from "@shared/constants/app.const";
 import {PersistenceService} from "@sothy/services/persistence.service";
+import {ConfirmationService} from "@sothy/services/confirmation.service";
 
 export type IState = {
   inventarioEfectivoLoading: boolean,
@@ -56,6 +57,10 @@ export type IState = {
   resumenOperacionLoading: boolean,
   resumenOperacionData: any,
   resumenOperacionError: any,
+
+  // Transferencia de efectivo por caja
+  transferenciaLoading: boolean,
+  transferenciaError: any,
 }
 
 const initialState: IState = {
@@ -110,6 +115,10 @@ const initialState: IState = {
   resumenOperacionLoading: false,
   resumenOperacionData: null,
   resumenOperacionError: null,
+
+  // Transferencia de efectivo por caja
+  transferenciaLoading: false,
+  transferenciaError: null,
 
   valoresSummary: {
     diferencia: 0,
@@ -205,7 +214,11 @@ export class InventarioEfectivoStore extends SignalStore<IState> {
     // Propiedades para visualizar resumen
     'resumenOperacionLoading',
     'resumenOperacionData',
-    'resumenOperacionError'
+    'resumenOperacionError',
+
+    // Transferencia de efectivo
+    'transferenciaLoading',
+    'transferenciaError'
   ]);
 
   /**
@@ -292,6 +305,7 @@ export class InventarioEfectivoStore extends SignalStore<IState> {
     private _activatedRoute: ActivatedRoute,
     private _router: Router,
     private _persistenceService: PersistenceService,
+    private _confirmationService: ConfirmationService,
   ) {
     super();
     this.initialize(initialState);
@@ -1257,6 +1271,37 @@ export class InventarioEfectivoStore extends SignalStore<IState> {
   }
 
   // ===== FIN MÉTODOS PARA GESTIONAR MOVIMIENTOS =====
+
+  // ===== MÉTODOS PARA TRANSFERENCIA DE EFECTIVO POR CAJA =====
+
+  public registrarTransferenciaCaja(payload: any): void {
+    this.patch({transferenciaLoading: true, transferenciaError: null});
+    this._inventarioEfectivoRemoteReq.requestRegistrarTransferenciaCaja(payload).pipe(
+      tap(({data}) => {
+        this.patch({transferenciaLoading: false});
+        if (true) {
+          this._confirmationService.warning(
+            '✅ Transferencia registrada',
+            `Se registró una transferencia de S/. ${payload.montoTransferencia?.toFixed(2)} para la caja ${payload.selectedCajaTransferencia?.caja_nombre}.`
+        );
+        }
+      }),
+      finalize(() => {
+        this.patch({transferenciaLoading: false});
+      }),
+      catchError((error) => {
+        if (error?.status === 404) {
+          this._confirmationService.error(
+            'No encontrado',
+            error?.error?.error?.description || 'No se encontró el recurso solicitado para la transferencia.'
+          );
+        }
+        return of(this.patch({transferenciaError: error}));
+      }),
+    ).subscribe();
+  }
+
+  // ===== FIN MÉTODOS PARA TRANSFERENCIA DE EFECTIVO POR CAJA =====
 
   // ===== MÉTODOS PARA VISUALIZAR RESUMEN =====
 
