@@ -463,10 +463,10 @@ export class InventarioCajaStore extends SignalStore<IState> {
     ).subscribe();
   };
 
-  public async loadValoresWithDetails() {
+  public async loadValoresWithDetails(cajaId?: string | number | null) {
     this.patch({valoresWithDetailsLoading: true, valoresWithDetailsError: null});
     this.initialize(initialState);
-    this._inventarioCajaRemoteReq.requestGetValoresWithDetails().pipe(
+    this._inventarioCajaRemoteReq.requestGetValoresWithDetails(cajaId).pipe(
       tap(async ({data, pagination}) => {
         this.patch({
           valoresWithDetailsData: data,

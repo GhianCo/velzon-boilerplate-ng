@@ -62,8 +62,11 @@ export class InventarioCajaRemoteReq {
       );
   }
 
-  requestGetValoresWithDetails(): Observable<IResponse> {
-    return this.http.get(this.REMOTE_API_URI + 'valor/withDetails')
+  requestGetValoresWithDetails(cajaId?: string | number | null): Observable<IResponse> {
+    const url = this.REMOTE_API_URI + 'valor/withDetails';
+    return cajaId
+      ? this.http.get(url, {params: {caja_id: cajaId}})
+      : this.http.get(url);
   }
 
   requestGetCatMovWithDetails(): Observable<IResponse> {
