@@ -512,13 +512,42 @@
           </strong>
         </div>
       </div>
+
+      <!-- Campo de observaciones -->
+      <div class="mb-3">
+        <label for="observacionesDiferencia" class="form-label fw-semibold">
+          <i class="ri-file-text-line me-1"></i>Observaciones de la diferencia <span class="text-danger">*</span>
+        </label>
+        <textarea 
+          id="observacionesDiferencia" 
+          class="form-control" 
+          rows="4" 
+          [(ngModel)]="observacionesDiferencia"
+          [ngModelOptions]="{standalone: true}"
+          placeholder="Describe el motivo de la diferencia encontrada..."
+          required></textarea>
+        <small class="text-muted">
+          Es obligatorio registrar el motivo de la diferencia antes de cerrar la caja.
+        </small>
+      </div>
     </div>
     <!--end offcanvas-body-->
-    <div class="offcanvas-footer border-top p-3 text-center">
-      <button type="button" (click)="offcanvas.dismiss('Cross click')"
-              class="btn btn-danger w-100">
-        <i class="ri-alert-line align-middle me-1"></i>Validar nuevamente
-      </button>
+    <div class="offcanvas-footer border-top p-3">
+      <div class="row g-2">
+        <div class="col-6">
+          <button type="button" (click)="offcanvas.dismiss('Cross click')"
+                  class="btn btn-light w-100">
+            <i class="ri-close-line align-middle me-1"></i>Cancelar
+          </button>
+        </div>
+        <div class="col-6">
+          <button type="button" (click)="confirmGuardarInventario(offcanvas)"
+                  class="btn btn-danger w-100"
+                  [disabled]="!observacionesDiferencia || observacionesDiferencia.trim().length === 0">
+            <i class="ri-save-line align-middle me-1"></i>Registrar cierre
+          </button>
+        </div>
+      </div>
     </div>
     <!--end offcanvas-footer-->
   </form>

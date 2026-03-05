@@ -291,7 +291,7 @@ export class InventarioCajaNew implements OnInit {
     }
 
     // Método que se ejecuta al confirmar desde el modal de diferencia
-    confirmGuardarInventario() {
+    confirmGuardarInventario(offcanvas?: any) {
         // Validar que se haya ingresado observación
         if (!this.observacionesDiferencia || this.observacionesDiferencia.trim().length === 0) {
             this.confirmationService.warning(
@@ -301,11 +301,81 @@ export class InventarioCajaNew implements OnInit {
             return;
         }
 
-        // Cerrar el offcanvas
-        this.offcanvasService.dismiss();
+        const vm = this.inventarioCajaStore.vm();
+        const diferencia = this.getDiferenciaInventarioSuma();
 
-        // Proceder con el guardado
-        this.proceedToSave();
+        // Mostrar confirmación final con SweetAlert
+        this.confirmationService.openAndHandle({
+            title: '⚠️ Confirmar cierre con diferencia',
+            html: `
+                <div class="text-start">
+                    <p class="mb-3">Estás a punto de cerrar la caja con una diferencia detectada:</p>
+                    <div class="alert alert-danger">
+                        <strong>Diferencia:</strong> <span class="fs-5">S/. ${diferencia.toFixed(2)}</span>
+                    </div>
+                    <div class="p-3 bg-light rounded mb-3">
+                        <strong>Observaciones:</strong><br>
+                        <small class="text-muted">${this.observacionesDiferencia}</small>
+                    </div>
+                    <p class="text-danger mb-0">
+                        <i class="ri-error-warning-line me-1"></i>
+                        ¿Estás seguro de continuar con el cierre?
+                    </p>
+                </div>
+            `,
+            icon: {
+                show: true,
+                name: 'warning',
+                color: 'warn'
+            },
+            actions: {
+                confirm: {
+                    show: true,
+                    label: '✅ Sí, confirmar cierre',
+                    color: 'danger'
+                },
+                cancel: {
+                    show: true,
+                    label: '❌ Cancelar'
+                }
+            },
+            dismissible: false
+        }, () => {
+            // onConfirm callback
+            // Cerrar el offcanvas si existe
+            if (offcanvas) {
+                offcanvas.dismiss('Cross click');
+            } else {
+                this.offcanvasService.dismiss();
+            }
+            
+            // Proceder con el guardado (la diferencia y observaciones se guardarán automáticamente)
+            this.proceedToSaveWithDiferencia();
+        });
+    }
+
+    // Método privado para guardar con diferencia
+    private proceedToSaveWithDiferencia() {
+        const vm = this.inventarioCajaStore.vm();
+        const diferencia = this.getDiferenciaInventarioSuma();
+        
+        // Aquí puedes agregar la diferencia y observaciones al payload antes de guardar
+        // Por ahora, solo llamamos a proceedToSave que ya maneja el guardado
+        const cajaId = vm.cajaData?.caja_id || vm.selectedCajaId;
+        const operacionCajaId = this.operacionCajaId || null;
+        
+        // Guardar con la diferencia y observaciones
+        this.inventarioCajaStore.saveInventarioCajaWithDetails(
+            cajaId, 
+            operacionCajaId,
+            {
+                diferencia: diferencia,
+                observaciones_diferencia: this.observacionesDiferencia
+            }
+        );
+        
+        // Limpiar observaciones después de guardar
+        this.observacionesDiferencia = '';
     }
 
     // Método privado para proceder con el guardado

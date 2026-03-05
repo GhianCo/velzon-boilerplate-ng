@@ -502,7 +502,11 @@ export class InventarioCajaStore extends SignalStore<IState> {
     ).subscribe();
   };
 
-  public async saveInventarioCajaWithDetails(cajaId?: string, operacionCajaId?: string | null) {
+  public async saveInventarioCajaWithDetails(
+    cajaId?: string, 
+    operacionCajaId?: string | null,
+    diferenciaInfo?: { diferencia?: number; observaciones_diferencia?: string }
+  ) {
     this.patch({saveInventarioCajaLoading: true, saveInventarioCajaError: null});
     const state = this.vm();
 
@@ -545,7 +549,8 @@ export class InventarioCajaStore extends SignalStore<IState> {
       operacioncaja_id: operacionCajaId || null,
       tipo_operacion: state.selectedOperacion,
       total: state.valoresSummary.totalConvertido,
-      diferencia: state.valoresSummary.diferencia,
+      diff: diferenciaInfo?.diferencia || state.valoresSummary.diferencia,
+      diff_obs: diferenciaInfo?.observaciones_diferencia || null,
       suma_diaria: state.valoresSummary.suma_diaria_efectivo,
       tipocambio: state.valoresSummary.tipocambio,
       creditos_promocionales: state.valoresSummary.creditos_promocionales || 0,
