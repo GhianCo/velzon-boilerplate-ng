@@ -512,24 +512,25 @@ export class InventarioEfectivoStore extends SignalStore<IState> {
     ).subscribe();
   }
 
-  public async loadCajas(de_apertura = PARAM.UNDEFINED) {
+  public loadCajas(de_apertura = PARAM.UNDEFINED): Observable<any> {
     this.patch({cajasLoading: true, cajasError: null});
-    this._inventarioEfectivoRemoteReq.requestAllCajasBySala(this._persistenceService.getSalaId(), de_apertura).pipe(
-      tap(async ({data, pagination}) => {
+    return this._inventarioEfectivoRemoteReq.requestAllCajasBySala(this._persistenceService.getSalaId(), de_apertura).pipe(
+      tap(({data, pagination}) => {
         this.patch({
           cajasData: data,
         })
       }),
-      finalize(async () => {
+      finalize(() => {
         this.patch({cajasLoading: false});
       }),
       catchError((error) => {
-        return of(this.patch({
+        this.patch({
           cajasLoading: false,
           cajasError: error
-        }));
+        });
+        return of(null);
       }),
-    ).subscribe();
+    );
   };
 
   public async loadValoresWithDetails() {
@@ -552,25 +553,26 @@ export class InventarioEfectivoStore extends SignalStore<IState> {
     ).subscribe();
   };
 
-  public async loadValoresWithDetailsByCaja(operacionTurnoId?: any) {
+  public loadValoresWithDetailsByCaja(operacionTurnoId?: any): Observable<any> {
     const state = this.vm();
     this.patch({valoresWithDetailsLoading: true, valoresWithDetailsError: null});
     this.initialize(initialState);
-    this._inventarioEfectivoRemoteReq.requestGetValoresWithDetailsByCaja(state.cajasData, operacionTurnoId).pipe(
-      tap(async ({data, pagination}) => {
+    return this._inventarioEfectivoRemoteReq.requestGetValoresWithDetailsByCaja(state.cajasData, operacionTurnoId).pipe(
+      tap(({data, pagination}) => {
         this.patch({
           valoresWithDetailsData: data,
         })
       }),
-      finalize(async () => {
+      finalize(() => {
         this.patch({valoresWithDetailsLoading: false});
       }),
       catchError((error) => {
-        return of(this.patch({
+        this.patch({
           valoresWithDetailsError: error
-        }));
+        });
+        return of(null);
       }),
-    ).subscribe();
+    );
   };
 
   public async loadCatMovWithDetails(operacionturno_id?: any) {
@@ -972,14 +974,14 @@ export class InventarioEfectivoStore extends SignalStore<IState> {
     
     if (state.selectedOperacion == 'apertura') {
       if (turno.turno_orden == ORDEN.PRIMERO){
-        this.loadCajas(PARAM.SI);
+        this.loadCajas(PARAM.SI).subscribe();
       }else {
-        this.loadCajas(PARAM.UNDEFINED);
+        this.loadCajas(PARAM.UNDEFINED).subscribe();
       }
     } else {
       const state = this.vm();
       this.loadCatMovWithDetails(state.operacionTurnoId);
-      this.loadCajas(PARAM.UNDEFINED);
+      this.loadCajas(PARAM.UNDEFINED).subscribe();
     }
   }
 
