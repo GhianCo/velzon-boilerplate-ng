@@ -25,7 +25,6 @@ export type IState = {
   catMovWithDetailsError: any,
 
   valoresSummary: any,
-  chartSummary: any,
 
   saveInventarioCajaLoading: boolean,
   saveInventarioCajaError: any,
@@ -119,36 +118,6 @@ const initialState: IState = {
     tipocambio: 0,
     creditos_promocionales: 0
   },
-  chartSummary: {
-    series: [],
-    labels: [],
-    chart: {
-      type: "donut",
-      height: 100,
-    },
-    plotOptions: {
-      pie: {
-        offsetX: 0,
-        offsetY: 0,
-        donut: {
-          size: "70%",
-          labels: {
-            show: false,
-          }
-        },
-      },
-    },
-    dataLabels: {
-      enabled: false,
-    },
-    legend: {
-      show: false,
-    },
-    stroke: {
-      lineCap: "round",
-      width: 0
-    },
-  },
 
   saveInventarioCajaLoading: false,
   saveInventarioCajaError: null,
@@ -185,7 +154,6 @@ export class InventarioCajaStore extends SignalStore<IState> {
     'lastOperacionCajaError',
 
     'valoresSummary',
-    'chartSummary',
 
     'saveInventarioCajaLoading',
     'saveInventarioCajaError',
@@ -347,24 +315,6 @@ export class InventarioCajaStore extends SignalStore<IState> {
           creditos_promocionales: data.creditos_promocionales || 0
         };
 
-        // Chart
-        const valoresConDatos = valoresConPorcentaje?.filter((v: any) => v.acumuladoConvertido > 0) || [];
-        const chartSummary = {
-          series: valoresConDatos.map((v: any) => v.acumuladoConvertido),
-          labels: valoresConDatos.map((v: any) => v.name || 'Sin nombre'),
-          chart: { type: "donut", height: 100 },
-          plotOptions: {
-            pie: {
-              offsetX: 0,
-              offsetY: 0,
-              donut: { size: "70%", labels: { show: false } }
-            }
-          },
-          dataLabels: { enabled: false },
-          legend: { show: false },
-          stroke: { lineCap: "round", width: 0 }
-        };
-
         // Mezclar suma_diaria_detalle
         const currentCatMov = this.vm().catMovWithDetailsData || [];
         const sumaDiariaDelBackend = data.suma_diaria_detalle || [];
@@ -399,7 +349,6 @@ export class InventarioCajaStore extends SignalStore<IState> {
         this.patch({
           valoresWithDetailsData: valoresConPorcentaje,
           valoresSummary,
-          chartSummary,
           catMovWithDetailsData: catMovActualizado
         });
       }),
@@ -696,13 +645,7 @@ export class InventarioCajaStore extends SignalStore<IState> {
       suma_diaria_efectivo: totalConvertido + state.valoresSummary.diferencia
     };
 
-    const chartSummary = {
-      ...state.chartSummary,
-      series: valores.map((v: any) => v.acumuladoConvertido || 0),
-      labels: valores.map((v: any) => v.name || 'Sin nombre'),
-    };
-
-    this.patch({valoresWithDetailsData: valoresConPorcentaje, valoresSummary, chartSummary});
+    this.patch({valoresWithDetailsData: valoresConPorcentaje, valoresSummary});
   }
 
   public onDiferenciaChange(diff: any) {
@@ -1017,18 +960,9 @@ export class InventarioCajaStore extends SignalStore<IState> {
       suma_diaria_efectivo: totalRealCaja
     };
 
-    // Actualizar chart
-    const valoresConDatos = valoresConPorcentaje?.filter((v: any) => v.acumuladoConvertido > 0) || [];
-    const chartSummary = {
-      ...state.chartSummary,
-      series: valoresConDatos.map((v: any) => v.acumuladoConvertido),
-      labels: valoresConDatos.map((v: any) => v.name || 'Sin nombre')
-    };
-
     this.patch({
       valoresWithDetailsData: valoresConPorcentaje,
-      valoresSummary,
-      chartSummary
+      valoresSummary
     });
   }
 
@@ -1174,17 +1108,10 @@ export class InventarioCajaStore extends SignalStore<IState> {
     };
 
     // Actualizar chart
-    const valoresConDatos = valoresConPorcentaje?.filter((v: any) => (Number(v.acumuladoConvertido) || 0) > 0) || [];
-    const chartSummary = {
-      ...state.chartSummary,
-      series: valoresConDatos.map((v: any) => Number(v.acumuladoConvertido) || 0),
-      labels: valoresConDatos.map((v: any) => v.name || 'Sin nombre')
-    };
 
     this.patch({
       valoresWithDetailsData: valoresConPorcentaje,
-      valoresSummary,
-      chartSummary
+      valoresSummary
     });
   }
 
