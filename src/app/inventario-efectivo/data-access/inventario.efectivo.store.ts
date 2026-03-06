@@ -533,10 +533,30 @@ export class InventarioEfectivoStore extends SignalStore<IState> {
   };
 
   public async loadValoresWithDetails() {
+    this.patch({valoresWithDetailsLoading: true, valoresWithDetailsError: null});
+    this.initialize(initialState);
+    this._inventarioEfectivoRemoteReq.requestGetValoresWithDetails().pipe(
+      tap(async ({data, pagination}) => {
+        this.patch({
+          valoresWithDetailsData: data,
+        })
+      }),
+      finalize(async () => {
+        this.patch({valoresWithDetailsLoading: false});
+      }),
+      catchError((error) => {
+        return of(this.patch({
+          valoresWithDetailsError: error
+        }));
+      }),
+    ).subscribe();
+  };
+
+  public async loadValoresWithDetailsByCaja(operacionTurnoId?: any) {
     const state = this.vm();
     this.patch({valoresWithDetailsLoading: true, valoresWithDetailsError: null});
     this.initialize(initialState);
-    this._inventarioEfectivoRemoteReq.requestGetValoresWithDetails(state.cajasData, state.operacionTurnoId).pipe(
+    this._inventarioEfectivoRemoteReq.requestGetValoresWithDetailsByCaja(state.cajasData, operacionTurnoId).pipe(
       tap(async ({data, pagination}) => {
         this.patch({
           valoresWithDetailsData: data,

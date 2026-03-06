@@ -62,7 +62,11 @@ export class InventarioEfectivoRemoteReq {
       );;
   }
 
-  requestGetValoresWithDetails(cajasData: any, operacionTurnoId: number | null): Observable<IResponse> {
+  requestGetValoresWithDetails(): Observable<IResponse> {
+    return this.http.get(this.REMOTE_API_URI + 'valor/withDetails')
+  }
+
+  requestGetValoresWithDetailsByCaja(cajasData: any, operacionTurnoId: any): Observable<IResponse> {
     return this.http.post(this.REMOTE_API_URI + 'valor/withDetailsByCaja/' + operacionTurnoId, cajasData)
   }
 

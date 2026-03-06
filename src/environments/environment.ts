@@ -22,5 +22,5 @@ export const environment = {
     }
   },
   apiControlActivos: 'http://localhost/dev_masaris/control-activos-masaris',
-  apiWorkers: 'http://localhost/dev_masaris/workers',
+  apiWorkers: 'https://10.45.1.171/workers',
 };

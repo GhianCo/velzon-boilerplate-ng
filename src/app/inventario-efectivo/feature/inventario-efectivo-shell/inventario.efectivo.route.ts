@@ -17,6 +17,7 @@ import {
   InventarioEfectivoVisualizar
 } from "@app/inventario-efectivo/feature/inventario-efectivo-visualizar/inventario.efectivo.visualizar";
 import { AperturaTurnoGuard } from "@app/inventario-efectivo/guards/apertura-turno.guard";
+import { InventarioEfectivoCerrarResolver } from "../inventario-efectivo-new/inventario.efectivo.cerrar.resolver";
 
 export default [
   {
@@ -42,7 +43,7 @@ export default [
         path: "cerrar/:id",
         component: InventarioEfectivoNew,
         resolve: {
-          data: InventarioEfectivoNewResolver,
+          data: InventarioEfectivoCerrarResolver,
         },
       },
       {
