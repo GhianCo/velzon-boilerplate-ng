@@ -13,17 +13,19 @@
                 <h5 class="text-muted text-uppercase fs-13">Resumen</h5>
                 <div>
                   @for (valorDetail of vm.valoresWithDetailsData; track $index) {
-                    <div class="d-flex justify-content-between border-bottom border-bottom-dashed py-2">
-                      <p class="fw-medium mb-0">
-                        <i class="ri-number-{{$index + 1}} text-primary align-middle me-2"></i> {{ valorDetail.name }}
-                      </p>
-                      <div>
-                        <span
-                          class="text-muted pe-5">S/. {{ valorDetail.acumuladoConvertido?.toFixed(2) || '0.00' }}</span>
-                        <span class="text-success fw-medium fs-12">{{ valorDetail.porcentaje?.toFixed(0) || '0' }}
-                          %</span>
-                      </div>
-                    </div><!-- end -->
+                    @if (valorDetail.codigo != 'TRF') {
+                      <div class="d-flex justify-content-between border-bottom border-bottom-dashed py-2">
+                        <p class="fw-medium mb-0">
+                          <i class="ri-number-{{$index + 1}} text-primary align-middle me-2"></i> {{ valorDetail.name }}
+                        </p>
+                        <div>
+                          <span
+                            class="text-muted pe-5">S/. {{ valorDetail.acumuladoConvertido?.toFixed(2) || '0.00' }}</span>
+                          <span class="text-success fw-medium fs-12">{{ valorDetail.porcentaje?.toFixed(0) || '0' }}
+                            %</span>
+                        </div>
+                      </div><!-- end -->
+                    }
                   }
                 </div>
               </div>

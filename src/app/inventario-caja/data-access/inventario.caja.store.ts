@@ -916,8 +916,10 @@ export class InventarioCajaStore extends SignalStore<IState> {
             importeConvertido
           };
         } else {
-          acumuladoLocal += denom.importeLocal || 0;
-          acumuladoConvertido += denom.importeConvertido || 0;
+          if (valorDetail.codigo != 'TRF') {
+            acumuladoLocal += denom.importeLocal || 0;
+            acumuladoConvertido += denom.importeConvertido || 0;
+          }
           return denom;
         }
       });
