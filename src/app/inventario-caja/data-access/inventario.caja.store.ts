@@ -6,6 +6,7 @@ import {catchError, finalize, tap} from "rxjs/operators";
 import {Observable, of} from "rxjs";
 import {ORDEN, PARAM} from "@shared/constants/app.const";
 import {PersistenceService} from "@sothy/services/persistence.service";
+import { ConfirmationService } from "@sothy/services/confirmation.service";
 
 export type IState = {
   inventarioCajaLoading: boolean,
@@ -239,6 +240,7 @@ export class InventarioCajaStore extends SignalStore<IState> {
     private _inventarioCajaRemoteReq: InventarioCajaRemoteReq,
     private _router: Router,
     private _persistenceService: PersistenceService,
+    private _confirmationService: ConfirmationService
   ) {
     super();
     this.initialize(initialState);
@@ -559,13 +561,19 @@ export class InventarioCajaStore extends SignalStore<IState> {
     };
 
     this._inventarioCajaRemoteReq.requestSaveInventario(inventario).pipe(
-      tap(async ({data, pagination}) => {
+      tap(async () => {
         this._router.navigate(['/inventario-caja']);
       }),
       finalize(async () => {
         this.patch({saveInventarioCajaLoading: false});
       }),
       catchError((error) => {
+        if (error?.status == 404) {
+          this._confirmationService.error(
+            'Error al aperturar caja',
+            error?.error?.error?.description || 'No se encontró el recurso solicitado para la transferencia.'
+          );
+        }
         return of(this.patch({
           saveInventarioCajaError: error
         }));
