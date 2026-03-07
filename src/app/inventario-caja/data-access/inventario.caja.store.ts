@@ -517,7 +517,8 @@ export class InventarioCajaStore extends SignalStore<IState> {
       tipocambio: state.valoresSummary.tipocambio,
       creditos_promocionales: state.valoresSummary.creditos_promocionales || 0,
       inventario_efectivo_detalle: inventarioDetallePorDenominacion,
-      suma_diaria_detalle: state.catMovWithDetailsData
+      suma_diaria_detalle: state.catMovWithDetailsData,
+      total_transferencias: state.valoresSummary.totalTransferencias,
     };
 
     this._inventarioCajaRemoteReq.requestSaveInventario(inventario).pipe(

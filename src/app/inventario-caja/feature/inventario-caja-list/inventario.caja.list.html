@@ -112,6 +112,9 @@
                             Inventario inicial de efectivo
                           </th>
                           <th scope="col">
+                            Total transferencias
+                          </th>                 
+                          <th scope="col">
                             Inventario final de efectivo
                           </th>
                           <th scope="col">
@@ -154,6 +157,13 @@
                               </div>
                             </td>
                             <td>{{inventarioCaja.moneda }} {{ inventarioCaja.totalinventario }}</td>
+                            <td>
+                               @if (inventarioCaja.abierta == 1) {
+                                -
+                              } @else {
+                                {{inventarioCaja.moneda }} {{ inventarioCaja.total_transferencias }}
+                              }
+                            </td>
                             <td>
                               @if (inventarioCaja.abierta == 1) {
                                 -
