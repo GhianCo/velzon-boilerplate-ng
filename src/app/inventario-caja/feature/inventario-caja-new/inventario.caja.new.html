@@ -79,7 +79,6 @@
                   <h5 class="text-muted text-uppercase fs-13">Suma diaria de efectivo</h5>
                   <div>
                     <div class="mt-2 p-2 bg-light rounded">
-                      <!-- Monto inicial apertura de la caja (solo en modo cierre) -->
                       @if (isCerrarMode && cajaData?.monto_inicial) {
                         <div class="d-flex justify-content-between mb-2 pb-2 border-bottom">
                           <small class="fw-bold text-primary">
@@ -142,18 +141,7 @@
                                 S/. {{ vm.valoresSummary?.totalConvertido?.toFixed(2) || '0.00' }}
                             </small>
                           </div>
-
-                      <!-- Diferencia manual -->
-                      @if (vm.valoresSummary?.diferencia && vm.valoresSummary?.diferencia !== 0) {
-                        <div class="d-flex justify-content-between">
-                          <small><i class="ri-edit-line me-1"></i>Diferencia manual:</small>
-                          <small [ngClass]="vm.valoresSummary?.diferencia > 0 ? 'text-success' : 'text-danger'">
-                            {{ vm.valoresSummary?.diferencia > 0 ? '+' : '' }}
-                            S/. {{ vm.valoresSummary?.diferencia?.toFixed(2) || '0.00' }}
-                          </small>
-                        </div>
-                      }
-
+                          
                       <hr class="my-2">
 
                       <div class="p-3 bg-success-subtle">
@@ -508,12 +496,12 @@
       <div class="alert alert-danger border-danger mb-4">
         <div class="d-flex justify-content-between align-items-center">
           <div>
-            <strong>Total este inventario:</strong><br>
-            <span class="fs-5">S/. {{ vm.valoresSummary?.totalConvertido?.toFixed(2) || '0.00' }}</span>
+            <strong>Monto inicial apertura de la caja:</strong><br>
+            <span class="fs-5">S/. {{ cajaData?.monto_inicial|| '0.00' }}</span>
           </div>
           <div>
-            <strong>Total:</strong><br>
-            <span class="fs-5">S/. {{ vm.valoresSummary?.total_real_caja?.toFixed(2) || '0.00' }}</span>
+            <strong>Total al cierre de caja:</strong><br>
+            <span class="fs-5">S/. {{ vm.valoresSummary?.total_real_caja || '0.00' }}</span>
           </div>
         </div>
         <hr class="my-2">
