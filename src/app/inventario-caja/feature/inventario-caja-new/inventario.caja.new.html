@@ -76,7 +76,7 @@
             @if (isCerrarMode) {
               <div class="col col-lg border-end">
                 <div class="py-4 px-3">
-                  <h5 class="text-muted text-uppercase fs-13">Suma diaria de efectivo</h5>
+                  <h5 class="text-muted text-uppercase fs-13">Balance de caja</h5>
                   <div>
                     <div class="mt-2 p-2 bg-light rounded">
                       @if (isCerrarMode && cajaData?.monto_inicial) {
@@ -93,8 +93,8 @@
                           </div>
                         }
                         <div class="d-flex justify-content-between mb-2 pb-2 border-bottom">
-                            <small><i class="ri-exchange-funds-line me-1 text-info"></i>Total apertura caja:</small>
-                            <small class="fw-medium text-primary">S/. {{ vm.valoresSummary?.totalTransferencias?.toFixed(2) || '0.00' }}</small>
+                            <small><i class="ri-safe-2-line me-1 text-primary"></i>Total apertura caja:</small>
+                            <small class="fw-bold text-primary">S/. {{ vm.valoresSummary?.totalAperturaCaja?.toFixed(2) || '0.00' }}</small>
                           </div>
                       } @else {
                         <!-- Inventario base -->
@@ -501,7 +501,7 @@
         <div class="d-flex justify-content-between align-items-center">
           <div>
             <strong>Total al abrir caja:</strong><br>
-            <span class="fs-5">S/. {{ cajaData?.monto_inicial|| '0.00' }}</span>
+            <span class="fs-5">S/. {{ vm.valoresSummary?.totalAperturaCaja || '0.00' }}</span>
           </div>
           <div>
             <strong>Total al cerrar caja:</strong><br>

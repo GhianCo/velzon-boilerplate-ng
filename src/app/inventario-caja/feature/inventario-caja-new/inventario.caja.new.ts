@@ -481,7 +481,7 @@ export class InventarioCajaNew implements OnInit {
             return 0;
         }
 
-        const montoInicial = Number(this.cajaData?.monto_inicial) || 0;
+        const montoInicial = vm.valoresSummary?.totalAperturaCaja || 0;
         const totalCalculado = vm.valoresSummary?.total_real_caja || 0;
         const diferencia = totalCalculado - montoInicial;
 

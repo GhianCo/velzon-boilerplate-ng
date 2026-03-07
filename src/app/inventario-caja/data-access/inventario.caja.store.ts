@@ -117,7 +117,8 @@ const initialState: IState = {
     suma_diaria_efectivo: 0,
     tipocambio: 0,
     creditos_promocionales: 0,
-    totalTransferencias: 0
+    totalTransferencias: 0,
+    totalAperturaCaja: 0
   },
 
   saveInventarioCajaLoading: false,
@@ -304,6 +305,13 @@ export class InventarioCajaStore extends SignalStore<IState> {
           return { ...valor, porcentaje };
         });
 
+        // Calcular totalTransferencias desde los datos cargados
+        const totalTransferencias = valoresTransformados?.find((v: any) => v.codigo === 'TRF')?.acumuladoConvertido || 0;
+        
+        // Calcular total de apertura (monto inicial + transferencias)
+        const montoInicial = Number(data.monto_inicial) || 0;
+        const totalAperturaCaja = montoInicial + totalTransferencias;
+
         // Summary
         const valoresSummary = {
           diferencia: 0,
@@ -313,7 +321,9 @@ export class InventarioCajaStore extends SignalStore<IState> {
           total_real_caja: totalConvertido,
           suma_diaria_efectivo: totalConvertido,
           tipocambio: data.tipocambio || 0,
-          creditos_promocionales: data.creditos_promocionales || 0
+          creditos_promocionales: data.creditos_promocionales || 0,
+          totalTransferencias,
+          totalAperturaCaja
         };
 
         // Mezclar suma_diaria_detalle
@@ -951,11 +961,16 @@ export class InventarioCajaStore extends SignalStore<IState> {
       totalRealCaja = this.calculateSubtotalMovimientos();
     }
 
+    // Calcular total de apertura de caja (monto inicial + transferencias)
+    const montoInicial = isCerrarMode ? (Number(state.cajaData?.monto_inicial) || 0) : 0;
+    const totalAperturaCaja = montoInicial + totalTransferencias;
+
     // Actualizar summary
     const valoresSummary = {
       ...state.valoresSummary,
       totalConvertido,
       totalTransferencias,
+      totalAperturaCaja,
       total_real_caja: totalRealCaja + totalConvertido,
       suma_diaria_efectivo: totalRealCaja
     };
@@ -1108,10 +1123,17 @@ export class InventarioCajaStore extends SignalStore<IState> {
       return { ...valor, porcentaje };
     });
 
+    // Recalcular totalTransferencias y totalAperturaCaja
+    const totalTransferencias = valoresActualizados?.find((v: any) => v.codigo === 'TRF')?.acumuladoConvertido || 0;
+    const montoInicial = state.selectedOperacion === 'cierre' ? (Number(state.cajaData?.monto_inicial) || 0) : 0;
+    const totalAperturaCaja = montoInicial + totalTransferencias;
+
     // Actualizar summary
     const valoresSummary = {
       ...state.valoresSummary,
-      totalConvertido
+      totalConvertido,
+      totalTransferencias,
+      totalAperturaCaja
     };
 
     // Actualizar chart
