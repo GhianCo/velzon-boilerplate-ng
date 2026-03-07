@@ -503,7 +503,7 @@ export class InventarioCajaStore extends SignalStore<IState> {
       total: state.valoresSummary.totalConvertido,
       diff: diferenciaInfo?.diferencia || state.valoresSummary.diferencia,
       diff_obs: diferenciaInfo?.observaciones_diferencia || null,
-      suma_diaria: state.valoresSummary.suma_diaria_efectivo,
+      suma_diaria: state.valoresSummary.suma_diaria_efectivo + state.valoresSummary.totalConvertido,
       tipocambio: state.valoresSummary.tipocambio,
       creditos_promocionales: state.valoresSummary.creditos_promocionales || 0,
       inventario_efectivo_detalle: inventarioDetallePorDenominacion,
