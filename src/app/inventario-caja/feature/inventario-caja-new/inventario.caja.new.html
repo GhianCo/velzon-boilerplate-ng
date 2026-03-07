@@ -87,11 +87,15 @@
                           <small class="fw-bold text-primary">S/. {{ cajaData?.monto_inicial || '0.00' }}</small>
                         </div>
                         @if (vm.valoresSummary?.totalTransferencias > 0) {
-                          <div class="d-flex justify-content-between mb-2 pb-2 border-bottom">
+                          <div class="d-flex justify-content-between">
                             <small><i class="ri-exchange-funds-line me-1 text-info"></i>Transferencias:</small>
-                            <small class="fw-medium text-info">S/. {{ vm.valoresSummary?.totalTransferencias?.toFixed(2) || '0.00' }}</small>
+                            <small class="fw-medium text-primary">S/. {{ vm.valoresSummary?.totalTransferencias?.toFixed(2) || '0.00' }}</small>
                           </div>
                         }
+                        <div class="d-flex justify-content-between mb-2 pb-2 border-bottom">
+                            <small><i class="ri-exchange-funds-line me-1 text-info"></i>Total apertura caja:</small>
+                            <small class="fw-medium text-primary">S/. {{ vm.valoresSummary?.totalTransferencias?.toFixed(2) || '0.00' }}</small>
+                          </div>
                       } @else {
                         <!-- Inventario base -->
                         <div class="d-flex justify-content-between">
@@ -101,7 +105,7 @@
                         </div>
                       }
                       <div class="d-flex justify-content-between mb-1 pb-1">
-                          <small class="fw-bold text-primary">
+                          <small class="fw-bold text-success">
                             <i class="ri-safe-line me-1"></i>Calculo de monto al cerrar caja:
                           </small>
                         </div>
