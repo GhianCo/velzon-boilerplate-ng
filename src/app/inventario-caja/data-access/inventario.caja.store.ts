@@ -116,7 +116,8 @@ const initialState: IState = {
     total_real_caja: 0,
     suma_diaria_efectivo: 0,
     tipocambio: 0,
-    creditos_promocionales: 0
+    creditos_promocionales: 0,
+    totalTransferencias: 0
   },
 
   saveInventarioCajaLoading: false,
@@ -937,7 +938,7 @@ export class InventarioCajaStore extends SignalStore<IState> {
       (sum: number, v: any) => sum + (v.acumuladoConvertido || 0),
       0
     ) || 0;
-
+    const totalTransferencias = valoresActualizados.filter((acc:any) => acc.codigo == 'TRF').reduce((acc: any, v: any) => acc + (v.denominaciones || []).reduce((a: any, d: any) => a + (d.importeConvertido || 0), 0),0);
     const valoresConPorcentaje = valoresActualizados?.map((valor: any) => {
       const porcentaje = totalConvertido > 0
         ? ((valor.acumuladoConvertido || 0) / totalConvertido) * 100
@@ -945,20 +946,17 @@ export class InventarioCajaStore extends SignalStore<IState> {
       return { ...valor, porcentaje };
     });
 
-    // Calcular total_real_caja basado en el modo
     let totalRealCaja = totalConvertido;
     if (isCerrarMode) {
-      const cajaData = state.cajaData;
-      const montoInicial = Number(cajaData?.monto_inicial) || 0;
-      const subtotalMovimientos = this.calculateSubtotalMovimientos();
-      totalRealCaja = montoInicial + subtotalMovimientos;
+      totalRealCaja = this.calculateSubtotalMovimientos();
     }
 
     // Actualizar summary
     const valoresSummary = {
       ...state.valoresSummary,
       totalConvertido,
-      total_real_caja: totalRealCaja,
+      totalTransferencias,
+      total_real_caja: totalRealCaja + totalConvertido,
       suma_diaria_efectivo: totalRealCaja
     };
 
@@ -996,8 +994,19 @@ export class InventarioCajaStore extends SignalStore<IState> {
         return d;
       });
 
+      // Calcular acumulado considerando tipo_caja (ingreso suma, egreso resta)
       const acumuladoLocal = detailsActualizados?.reduce(
-        (sum: number, d: any) => sum + (parseFloat(d.cantidad) || 0),
+        (sum: number, d: any) => {
+          const cantidad = parseFloat(d.cantidad) || 0;
+          const tipoCaja = d.tipo_caja;
+          
+          if (tipoCaja === 'ingreso') {
+            return sum + cantidad;
+          } else if (tipoCaja === 'egreso') {
+            return sum - cantidad;
+          }
+          return sum;
+        },
         0
       ) || 0;
 
@@ -1009,18 +1018,14 @@ export class InventarioCajaStore extends SignalStore<IState> {
       };
     });
 
-    // Recalcular total_real_caja si está en modo cierre
     let totalRealCaja = state.valoresSummary.totalConvertido;
     if (isCerrarMode) {
-      const cajaData = state.cajaData;
-      const montoInicial = Number(cajaData?.monto_inicial) || 0;
-      const subtotalMovimientos = this.calculateSubtotalMovimientos(catMovActualizado);
-      totalRealCaja = montoInicial + subtotalMovimientos;
+      totalRealCaja =  this.calculateSubtotalMovimientos(catMovActualizado);
     }
 
     const valoresSummary = {
       ...state.valoresSummary,
-      total_real_caja: totalRealCaja,
+      total_real_caja: totalRealCaja + state.valoresSummary.totalConvertido,
       suma_diaria_efectivo: totalRealCaja
     };
 
@@ -1031,27 +1036,27 @@ export class InventarioCajaStore extends SignalStore<IState> {
   }
 
   /**
-   * Calcula el subtotal de movimientos considerando operadores
+   * Calcula el subtotal de movimientos considerando tipo_caja de cada detail
    */
   private calculateSubtotalMovimientos(catMovData?: any[]): number {
     const catMov = catMovData || this.vm().catMovWithDetailsData;
     if (!catMov) return 0;
 
     return catMov.reduce((total: number, catMovItem: any) => {
-      const subtotal = catMovItem.acumuladoLocal || 0;
-      const operador = catMovItem.operador;
-
-      if (operador === '+') {
-        return total + subtotal;
-      } else if (operador === '-') {
-        return total - subtotal;
-      } else if (operador === 'diff') {
-        const diffTotal = catMovItem.details?.reduce((sum: number, d: any) => {
-          return sum + (parseFloat(d.cantidad) || 0);
-        }, 0) || 0;
-        return total + diffTotal;
-      }
-      return total;
+      // Iterar sobre cada detail y sumar/restar según tipo_caja
+      const subtotal = catMovItem.details?.reduce((sum: number, detail: any) => {
+        const cantidad = parseFloat(detail.cantidad) || 0;
+        const tipoCaja = detail.tipo_caja;
+        
+        if (tipoCaja === 'ingreso') {
+          return sum + cantidad;
+        } else if (tipoCaja === 'egreso') {
+          return sum - cantidad;
+        }
+        return sum;
+      }, 0) || 0;
+      
+      return total + subtotal;
     }, 0);
   }
 

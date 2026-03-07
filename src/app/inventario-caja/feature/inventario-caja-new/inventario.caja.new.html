@@ -49,10 +49,9 @@
                       </div>
                     </div>
 
-                    <!-- Total suma diaria (solo en modo cierre) -->
                     @if (isCerrarMode) {
                       <div class="mb-3">
-                        <h5 class="text-muted text-uppercase fs-13">Total suma diaria</h5>
+                        <h5 class="text-muted text-uppercase fs-13">Total</h5>
                         <div class="d-flex align-items-center">
                           <div class="flex-shrink-0 display-6 text-muted">
                             S/.
@@ -62,17 +61,11 @@
                                                                  [options]="option"></span></h2>
                           </div>
                         </div>
-                        <small class="text-muted mt-1">
-                          Monto inicial apertura
+                        <small class="text-success">
+                          Total este inventario
                         </small>
                         <small class="text-success">
-                          <i class="ri-add-line"></i> Ingresos
-                        </small>
-                        <small class="text-danger">
-                          <i class="ri-subtract-line"></i> Egresos
-                        </small>
-                        <small class="text-warning">
-                          <i class="ri-exchange-line"></i> Diferencias
+                          <i class="ri-add-line"></i> Egresos
                         </small>
                       </div>
                     }
@@ -94,6 +87,12 @@
                           </small>
                           <small class="fw-bold text-primary">S/. {{ cajaData?.monto_inicial || '0.00' }}</small>
                         </div>
+                        @if (vm.valoresSummary?.totalTransferencias > 0) {
+                          <div class="d-flex justify-content-between mb-2 pb-2 border-bottom">
+                            <small><i class="ri-exchange-funds-line me-1 text-info"></i>Transferencias:</small>
+                            <small class="fw-medium text-info">S/. {{ vm.valoresSummary?.totalTransferencias?.toFixed(2) || '0.00' }}</small>
+                          </div>
+                        }
                       } @else {
                         <!-- Inventario base -->
                         <div class="d-flex justify-content-between">
@@ -102,7 +101,11 @@
                             class="fw-medium">S/. {{ vm.valoresSummary?.totalConvertido?.toFixed(2) || '0.00' }}</small>
                         </div>
                       }
-
+                      <div class="d-flex justify-content-between mb-1 pb-1">
+                          <small class="fw-bold text-primary">
+                            <i class="ri-safe-line me-1"></i>Calculo de monto al cerrar caja:
+                          </small>
+                        </div>
                       <!-- Movimientos de cada categoría -->
                       @for (catMovimiento of vm.catMovWithDetailsData; track $index) {
                         @if (catMovimiento.acumuladoConvertido) {
@@ -129,6 +132,16 @@
                           </div>
                         }
                       }
+
+                      <div class="d-flex justify-content-between">
+                            <small>
+                                <i class="ri-exchange-line me-1 text-warning"></i>
+                                Total inventario:
+                            </small>
+                            <small [ngClass]="getOperacionClass('+')">
+                                S/. {{ vm.valoresSummary?.totalConvertido?.toFixed(2) || '0.00' }}
+                            </small>
+                          </div>
 
                       <!-- Diferencia manual -->
                       @if (vm.valoresSummary?.diferencia && vm.valoresSummary?.diferencia !== 0) {
@@ -406,7 +419,6 @@
                       <td colspan="2" class="p-0 bg-light"></td>
                     </tr>
                     
-                    <!-- Solo items de suma diaria -->
                       @for (catMovimiento of vm.catMovWithDetailsData; track $index) {
                         <!-- Header de categoría -->
                         <tr class="table-active">
@@ -500,7 +512,7 @@
             <span class="fs-5">S/. {{ vm.valoresSummary?.totalConvertido?.toFixed(2) || '0.00' }}</span>
           </div>
           <div>
-            <strong>Total suma diaria:</strong><br>
+            <strong>Total:</strong><br>
             <span class="fs-5">S/. {{ vm.valoresSummary?.total_real_caja?.toFixed(2) || '0.00' }}</span>
           </div>
         </div>
