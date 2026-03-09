@@ -14,7 +14,7 @@ export const InventarioEfectivoCerrarResolver = (route: ActivatedRouteSnapshot) 
     switchMap(() => {
       // Una vez cargadas las cajas, cargamos turnos y valores en paralelo
       inventarioEfectivoStore.loadTurnos();
-      return inventarioEfectivoStore.loadValoresWithDetailsByCaja(operacionTurnoId);
+      return inventarioEfectivoStore.loadValoresWithDetails();
     })
   );
 }
