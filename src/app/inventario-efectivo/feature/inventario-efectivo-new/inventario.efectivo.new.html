@@ -434,7 +434,7 @@
                     <div class="input-group input-group-sm justify-content-end">
                       <input type="number" class="form-control text-center" min="0" step="0.01"
                         [(ngModel)]="detail.cantidad" (ngModelChange)="onCantidadMovimientoChange(detail, $event)"
-                        (wheel)="$event.preventDefault()" [disabled]="detail.para_caja == 1" style="max-width: 200px;">
+                        (wheel)="$event.preventDefault()" [disabled]="detail.para_caja == 1 || detail.sumdiamovimiento_id == 27" style="max-width: 200px;">
                     </div>
                   </td>
                 </tr>
