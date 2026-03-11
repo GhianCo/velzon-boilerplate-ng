@@ -346,7 +346,6 @@ export class InventarioEfectivoList {
       }
     }
 
-    console.warn(`⚠️ [parseDate] No se pudo parsear: "${dateStr}"`);
     return null;
   }
 
@@ -705,7 +704,6 @@ export class InventarioEfectivoList {
         }
       },
       error: (error) => {
-        console.error('Error al obtener datos para PDF:', error);
       }
     });
   }
@@ -732,7 +730,6 @@ export class InventarioEfectivoList {
           this.openTransferenciaOffcanvas();
         },
         error: (error) => {
-          console.error('Error al cargar cajas:', error);
           this.confirmationService.error(
             '❌ Error al cargar cajas',
             'No se pudieron cargar las cajas disponibles. Por favor, intenta nuevamente.'
