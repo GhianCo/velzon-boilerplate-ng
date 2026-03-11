@@ -8,7 +8,7 @@ import {
   NgbOffcanvas, NgbPagination
 } from "@ng-bootstrap/ng-bootstrap";
 import {GlobalComponent} from "@app/global-component";
-import {FormControl, FormsModule, ReactiveFormsModule, UntypedFormBuilder, UntypedFormGroup} from "@angular/forms";
+import {FormControl, FormGroup, FormsModule, ReactiveFormsModule, UntypedFormBuilder, UntypedFormGroup, Validators} from "@angular/forms";
 import {PaginationService} from "@velzon/services/pagination.service";
 import {Store} from "@ngrx/store";
 import {RootReducerState} from "@velzon/store";
@@ -26,6 +26,7 @@ import {LoadingSpinnerComponent} from "@shared/components/loading-spinner/loadin
 import {AperturaTurnoValidatorService} from "@app/inventario-efectivo/services/apertura-turno-validator.service";
 import {InventarioPdfService} from "@app/inventario-efectivo/services/inventario-pdf.service";
 import {InventarioEfectivoRemoteReq} from "@app/inventario-efectivo/data-access/inventario.efectivo.remote.req";
+import {ConfirmationService} from "@sothy/services/confirmation.service";
 
 @Component({
   standalone: true,
@@ -50,6 +51,9 @@ import {InventarioEfectivoRemoteReq} from "@app/inventario-efectivo/data-access/
 export class InventarioEfectivoList {
   @ViewChild(HotTableComponent, {static: false})
   readonly hotTable!: HotTableComponent;
+  
+  @ViewChild('transferenciaModal', { static: false }) transferenciaModal!: TemplateRef<any>;
+  
   // bread crumb items
   breadCrumbItems!: Array<{}>;
 
@@ -70,6 +74,10 @@ export class InventarioEfectivoList {
   // Variables para guardar el estado original de los filtros al abrir el modal
   private originalFilters: any = null;
   private originalDateRange: Date[] = [];
+
+  // Variables para transferencia de efectivo
+  selectedInventarioTransferencia: any = null;
+  transferenciaForm!: FormGroup;
 
   // Configuración de flatpickr
   flatpickrOptions: any;
@@ -199,9 +207,17 @@ export class InventarioEfectivoList {
               private aperturaTurnoValidator: AperturaTurnoValidatorService,
               private inventarioPdfService: InventarioPdfService,
               private inventarioRemoteReq: InventarioEfectivoRemoteReq,
+              private confirmationService: ConfirmationService,
   ) {
     // Inicializar FormControl con el rango de fechas del store
     this.dateRangeControl = new FormControl(this.inventarioEfectivoStore.getDateRangeForComponent());
+
+    // Inicializar formulario de transferencia
+    this.transferenciaForm = new FormGroup({
+      cajaId: new FormControl(null, [Validators.required]),
+      monto: new FormControl(null, [Validators.required, Validators.min(0.01)]),
+      observacion: new FormControl('', [Validators.required, Validators.minLength(3)])
+    });
 
     // Configurar flatpickr (los filtros ya están inicializados por el resolver)
     this.configureFlatpickr();
@@ -692,6 +708,101 @@ export class InventarioEfectivoList {
         console.error('Error al obtener datos para PDF:', error);
       }
     });
+  }
+
+  /**
+   * Abre el modal de transferencia de efectivo
+   * Carga las cajas disponibles si no están ya cargadas
+   */
+  abrirTransferenciaModal(inventarioEfectivo: any): void {
+    this.selectedInventarioTransferencia = inventarioEfectivo;
+    
+    // Resetear el formulario
+    this.transferenciaForm.reset({
+      cajaId: null,
+      monto: null,
+      observacion: ''
+    });
+
+    // Cargar cajas si no están disponibles
+    const vm = this.inventarioEfectivoStore.vm();
+    if (!vm.cajasData || vm.cajasData.length === 0) {
+      this.inventarioEfectivoStore.loadCajas().subscribe({
+        next: () => {
+          this.openTransferenciaOffcanvas();
+        },
+        error: (error) => {
+          console.error('Error al cargar cajas:', error);
+          this.confirmationService.error(
+            '❌ Error al cargar cajas',
+            'No se pudieron cargar las cajas disponibles. Por favor, intenta nuevamente.'
+          );
+        }
+      });
+    } else {
+      this.openTransferenciaOffcanvas();
+    }
+  }
+
+  /**
+   * Abre el offcanvas de transferencia
+   */
+  private openTransferenciaOffcanvas(): void {
+    this.offcanvasService.open(this.transferenciaModal, {
+      position: 'end',
+      backdrop: 'static',
+      keyboard: false
+    });
+  }
+
+  /**
+   * Guarda la transferencia de efectivo
+   */
+  onGuardarTransferencia(offcanvas: any): void {
+    // Marcar todos los campos como touched para mostrar errores
+    Object.keys(this.transferenciaForm.controls).forEach(key => {
+      this.transferenciaForm.get(key)?.markAsTouched();
+    });
+
+    // Validar formulario
+    if (!this.transferenciaForm.valid) {
+      this.confirmationService.warning(
+        '⚠️ Formulario incompleto',
+        'Por favor, completa todos los campos requeridos.'
+      );
+      return;
+    }
+
+    const formValue = this.transferenciaForm.value;
+    
+    // Encontrar el nombre de la caja seleccionada
+    const vm = this.inventarioEfectivoStore.vm();
+    const cajaSeleccionada = vm.cajasData?.find((c: any) => c.caja_id === Number(formValue.cajaId));
+
+    if (!cajaSeleccionada) {
+      this.confirmationService.error(
+        '❌ Error',
+        'No se encontró la caja seleccionada.'
+      );
+      return;
+    }
+
+    const payload = {
+      operacionturno_id: Number(this.selectedInventarioTransferencia.operacionturno_id),
+      caja_id: Number(formValue.cajaId),
+      caja_nombre: cajaSeleccionada.caja_nombre,
+      monto: Number(formValue.monto),
+      observacion: formValue.observacion.trim()
+    };
+
+    // Registrar transferencia usando el store
+    this.inventarioEfectivoStore.registrarTransferenciaCaja(payload);
+
+    // Cerrar el modal
+    offcanvas.close('saved');
+
+    // Recargar la lista de inventarios
+    this.inventarioEfectivoStore.loadAllInvetarioEfectivoStore();
   }
 
   openFilters(content: TemplateRef<any>) {
