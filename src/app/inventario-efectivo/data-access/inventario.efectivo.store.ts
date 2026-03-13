@@ -527,10 +527,14 @@ export class InventarioEfectivoStore extends SignalStore<IState> {
   public async loadCatMovWithDetails(operacionturno_id?: any) {
     this.patch({catMovWithDetailsLoading: true, catMovWithDetailsError: null});
     this._inventarioEfectivoRemoteReq.requestGetCatMovWithDetails(operacionturno_id).pipe(
-      tap(async ({data, pagination}) => {
-        this.patch({
-          catMovWithDetailsData: data,
-        })
+      tap(async ({data}) => {
+        this.patch({catMovWithDetailsData: data});
+        if (this.vm().selectedOperacion == 'cierre') {
+          const primerDetail = data?.flatMap((cat: any) => cat.details || []).find(Boolean);
+          if (primerDetail) {
+            this.updateCantidadMovimiento(primerDetail, primerDetail.cantidad ?? 0);
+          }
+        }
       }),
       finalize(async () => {
         this.patch({catMovWithDetailsLoading: false});
