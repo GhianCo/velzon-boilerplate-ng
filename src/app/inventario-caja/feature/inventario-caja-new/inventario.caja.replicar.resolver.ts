@@ -7,14 +7,19 @@ export const InventarioCajaReplicarResolver = (route: ActivatedRouteSnapshot) =>
 
   const id = route.params['id'];
 
-  // Cargar valores y última operación
+  // Cargar última operación
   // Las cajas ahora se cargan globalmente desde el CajaGlobalService (topbar)
-  inventarioCajaStore.loadValoresWithDetails();
   inventarioCajaStore.loadLastOperacionCaja();
 
   if (id) {
-    // Cargar la operación de caja para replicar
+    // Con id (modo replicar): resetear estado y cargar todo desde loadOperacionCajaWithDetails
+    // que ya provee valoresWithDetailsData completo con los montos.
+    // No llamar loadValoresWithDetails para evitar race condition (sobreescritura con ceros).
+    inventarioCajaStore.resetStore();
     inventarioCajaStore.loadOperacionCajaWithDetails(id);
+  } else {
+    // Sin id: cargar denominaciones base
+    inventarioCajaStore.loadValoresWithDetails();
   }
 
   return {};
