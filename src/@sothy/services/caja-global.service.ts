@@ -140,12 +140,6 @@ export class CajaGlobalService {
               this.clearSelectedCaja();
             }
           }
-          
-          // Si solo hay una caja disponible, seleccionarla automáticamente
-          if (cajas.length === 1 && !currentSelectedId) {
-            this.setSelectedCaja(cajas[0].caja_id);
-          }
-          
           this._loading.set(false);
         }),
         catchError((error) => {

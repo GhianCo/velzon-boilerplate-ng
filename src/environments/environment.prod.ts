@@ -12,7 +12,7 @@ export const environment = {
     measurementId: ''
   },
   // -------------------------------\\
-  api: 'http://masaris.pe/cash-control-api',
+  api: 'http://10.45.1.171:84/cash-control-api',
   apiRest: 'api/',
   publicRest: 'public/',
   jwtSecret: 'D3v3lop3rQullqi2022@!*!',
@@ -21,6 +21,6 @@ export const environment = {
       signIn: 'auth/sign-in',
     }
   },
-  apiControlActivos: 'http://masaris.pe/control-activos-masaris',
-  apiWorkers: 'http://masaris.pe/workers',
+  apiControlActivos: 'https://10.45.1.171/control-activos-masaris',
+  apiWorkers: 'https://10.45.1.171/workers',
 };
