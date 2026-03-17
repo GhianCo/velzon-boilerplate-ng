@@ -477,7 +477,7 @@ export class InventarioCajaPdfService {
   ): void {
     // Fila de título "Suma Diaria de Efectivo"
     const titleRow = [{
-      content: 'Suma Diaria de Efectivo',
+      content: 'Detalle de movimientos',
       colSpan: 2,
       styles: {
         halign: 'center',
