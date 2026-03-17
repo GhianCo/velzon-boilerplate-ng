@@ -8,6 +8,7 @@ import {CountUpModule} from "ngx-countup";
 import {ConfirmationService} from "@sothy/services/confirmation.service";
 import {EmptyStateComponent} from "@shared/components/empty-state/empty-state.component";
 import {NgbOffcanvas} from "@ng-bootstrap/ng-bootstrap";
+import { IntegerOnlyDirective } from "@shared/directives/integer-only.directive";
 
 @Component({
     selector: 'app-inventario-efectivo-new',
@@ -18,7 +19,8 @@ import {NgbOffcanvas} from "@ng-bootstrap/ng-bootstrap";
     NgClass,
     CountUpModule,
     EmptyStateComponent,
-  ],
+    IntegerOnlyDirective
+],
     standalone: true,
     styles: [`
         .selected-row {
