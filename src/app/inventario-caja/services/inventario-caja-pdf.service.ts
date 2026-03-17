@@ -341,7 +341,7 @@ export class InventarioCajaPdfService {
       rows.push([{
         content: `${valorData.nombre}`,
         colSpan: totalCols,
-        styles: { fontStyle: 'bold', fillColor: [248, 249, 250], halign: 'left' }
+        styles: { fontStyle: 'bold', fillColor: [220, 220, 220], halign: 'left' }
       }]);
 
       // Agregar fila de Tipo de Cambio si es USD
@@ -407,7 +407,7 @@ export class InventarioCajaPdfService {
         }
         row.push({
           content: `${simbolo} ${denomData.apertura.total_importe || '0.00'}`,
-          styles: { fontStyle: 'bold', fillColor: [220, 220, 220], halign: 'right' }
+          styles: { fontStyle: 'bold', halign: 'right' }
         });
 
         // Cajas de Cierre
@@ -421,7 +421,7 @@ export class InventarioCajaPdfService {
         }
         row.push({
           content: `${simbolo} ${denomData.cierre.total_importe || '0.00'}`,
-          styles: { fontStyle: 'bold', fillColor: [220, 220, 220], halign: 'right' }
+          styles: { fontStyle: 'bold', halign: 'right' }
         });
 
         rows.push(row);
