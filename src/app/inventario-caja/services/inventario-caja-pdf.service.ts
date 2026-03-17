@@ -405,7 +405,7 @@ export class InventarioCajaPdfService {
           cajasApertura.forEach(() => row.push('-'));
         }
         row.push({
-          content: `${simbolo} ${denomData.total_importe || '0.00'}`,
+          content: `${simbolo} ${denomData.apertura.total_importe || '0.00'}`,
           styles: { fontStyle: 'bold', fillColor: [220, 220, 220], halign: 'right' }
         });
 
@@ -419,7 +419,7 @@ export class InventarioCajaPdfService {
           cajasCierre.forEach(() => row.push('-'));
         }
         row.push({
-          content: `${simbolo} ${denomData.total_importe || '0.00'}`,
+          content: `${simbolo} ${denomData.cierre.total_importe || '0.00'}`,
           styles: { fontStyle: 'bold', fillColor: [220, 220, 220], halign: 'right' }
         });
 
