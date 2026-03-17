@@ -22,7 +22,7 @@ export class InventarioCajaPdfService {
     // Logo y encabezado
     doc.setFontSize(11);
     doc.setFont('helvetica', 'bold');
-    doc.text('RESUMEN DE OPERACIÓN DE CAJA', pageWidth / 2, yPosition, { align: 'center' });
+    doc.text('RESUMEN DE OPERACIÓN ' + resumenData.caja_nombre + ' | TURNO: ' + resumenData.turno_nombre, pageWidth / 2, yPosition, { align: 'center' });
     yPosition += 6;
 
     // Información de la caja en formato horizontal (una sola fila)
@@ -30,7 +30,6 @@ export class InventarioCajaPdfService {
     doc.setFont('helvetica', 'normal');
 
     const headers = [
-      'Caja',
       'Sala',
       'Apertura',
       'Cierre',
@@ -40,7 +39,6 @@ export class InventarioCajaPdfService {
 
     const infoCaja = [
       [
-        resumenData.caja_nombre || '-',
         resumenData.sala || '-',
         resumenData.apertura || '-',
         resumenData.cierre || '-',
@@ -96,7 +94,8 @@ export class InventarioCajaPdfService {
         resumenData.suma_diaria?.categorias || [],
         resumenData.suma_diaria?.total,
         yPosition,
-        resumenData.simbolo_moneda
+        resumenData.simbolo_moneda,
+        resumenData.suma_diaria?.subtotales
       );
       yPosition = (doc as any).lastAutoTable.finalY + 10;
     }
@@ -182,7 +181,7 @@ export class InventarioCajaPdfService {
     }
 
     // Guardar el PDF
-    const fileName = `Resumen_Caja_${resumenData.caja_nombre}_${resumenData.apertura?.replace(/[: ]/g, '_')}.pdf`;
+    const fileName = `Resumen_${resumenData.caja_nombre}_${resumenData.apertura?.replace(/[: ]/g, '_')}.pdf`;
     doc.save(fileName);
   }
 
@@ -196,7 +195,8 @@ export class InventarioCajaPdfService {
     categoriasSumaDiaria: any[],
     total: string,
     startY: number,
-    simbolo: string
+    simbolo: string,
+    subtotalesSumaDiaria: any
   ): void {
     const pageWidth = doc.internal.pageSize.getWidth();
 
@@ -229,7 +229,8 @@ export class InventarioCajaPdfService {
       startY,
       simbolo,
       xSumaDiaria,
-      anchoSumaDiaria
+      anchoSumaDiaria,
+      subtotalesSumaDiaria
     );
 
     const finTablaSumaDiaria = (doc as any).lastAutoTable.finalY;
@@ -473,7 +474,8 @@ export class InventarioCajaPdfService {
     startY: number,
     simbolo: string,
     xStart: number,
-    tableWidth: number
+    tableWidth: number,
+    subtotalesSumaDiaria: any
   ): void {
     // Fila de título "Suma Diaria de Efectivo"
     const titleRow = [{
@@ -500,14 +502,27 @@ export class InventarioCajaPdfService {
       const colorFondo = categoria.tipo_operacion === 'ingreso' ? [200, 200, 200] :
                          categoria.tipo_operacion === 'egreso' ? [180, 180, 180] :
                          [220, 220, 220];
-
+      let subtotalCat = simbolo + ' ';
+      if(categoria.tipo_operacion == 'ingreso'){
+        subtotalCat += subtotalesSumaDiaria.ingresos;
+      }else if(categoria.tipo_operacion == 'egreso') {
+        subtotalCat += subtotalesSumaDiaria.egresos;
+      } else {
+        subtotalCat = '';
+      }
       rows.push([{
         content: `${categoria.nombre}`,
-        colSpan: 2,
         styles: {
           fontStyle: 'bold',
           fillColor: colorFondo,
           halign: 'left'
+        }
+      }, {
+        content: `${subtotalCat}`,
+        styles: {
+          fontStyle: 'bold',
+          fillColor: colorFondo,
+          halign: 'right'
         }
       }]);
 
