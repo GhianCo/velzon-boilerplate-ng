@@ -24,7 +24,7 @@ import {SimplebarAngularModule} from "simplebar-angular";
 import {EmptyStateComponent} from "@shared/components/empty-state/empty-state.component";
 import {LoadingSpinnerComponent} from "@shared/components/loading-spinner/loading-spinner.component";
 import {AperturaTurnoValidatorService} from "@app/inventario-efectivo/services/apertura-turno-validator.service";
-import {ReporteTurnoPdfService} from "@app/inventario-efectivo/services/reporte-turno-pdf.service";
+import {ReporteTurnoPdfService} from "@app/inventario-efectivo/services/reporte.turno.pdf.service";
 import {InventarioEfectivoRemoteReq} from "@app/inventario-efectivo/data-access/inventario.efectivo.remote.req";
 import {ConfirmationService} from "@sothy/services/confirmation.service";
 
