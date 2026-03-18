@@ -24,7 +24,7 @@ import {SimplebarAngularModule} from "simplebar-angular";
 import {EmptyStateComponent} from "@shared/components/empty-state/empty-state.component";
 import {LoadingSpinnerComponent} from "@shared/components/loading-spinner/loading-spinner.component";
 import {AperturaTurnoValidatorService} from "@app/inventario-efectivo/services/apertura-turno-validator.service";
-import {InventarioPdfService} from "@app/inventario-efectivo/services/inventario-pdf.service";
+import {InventarioPdfService} from "@app/inventario-efectivo/services/inventario.efectivo.pdf.service";
 import {InventarioEfectivoRemoteReq} from "@app/inventario-efectivo/data-access/inventario.efectivo.remote.req";
 import {ConfirmationService} from "@sothy/services/confirmation.service";
 
@@ -695,12 +695,12 @@ export class InventarioEfectivoList {
   /**
    * Descarga el PDF del resumen de operación de turno
    */
-  descargarPdfInventario(id: any) {
+  descargarPdfInventarioEfectivo(id: any) {
     // Obtener los datos del resumen
     this.inventarioRemoteReq.requestResumenOperacionTurno(id).subscribe({
       next: (response: any) => {
         if (response?.data) {
-          this.inventarioPdfService.generarPdfResumen(response.data);
+          this.inventarioPdfService.generarPdfInventarioEfectivo(response.data);
         }
       },
       error: (error) => {

@@ -13,7 +13,7 @@ export class InventarioPdfService {
    * Genera un PDF con el resumen de operación de turno
    * @param resumenData - Datos del resumen de la operación de turno
    */
-  generarPdfResumen(resumenData: any): void {
+  generarPdfInventarioEfectivo(resumenData: any): void {
     const doc = new jsPDF('p', 'mm', 'a4'); // Landscape para mejor visualización de tablas
     const pageWidth = doc.internal.pageSize.getWidth();
     const pageHeight = doc.internal.pageSize.getHeight();
@@ -22,7 +22,7 @@ export class InventarioPdfService {
     // Logo y encabezado (opcional - puedes agregar un logo si lo tienes)
     doc.setFontSize(11);
     doc.setFont('helvetica', 'bold');
-    doc.text('RESUMEN DE OPERACIONES TURNO ' + resumenData.turno_nombre?.toUpperCase(), pageWidth / 2, yPosition, { align: 'center' });
+    doc.text('INVENTARIO DE EFECTIVO - TURNO ' + resumenData.turno_nombre?.toUpperCase(), pageWidth / 2, yPosition, { align: 'center' });
     yPosition += 6;
 
     // Información del turno en formato horizontal (una sola fila)
@@ -181,7 +181,7 @@ export class InventarioPdfService {
     }
 
     // Guardar el PDF
-    const fileName = `Resumen_Turno_${resumenData.turno_nombre}_${resumenData.apertura?.replace(/[: ]/g, '_')}.pdf`;
+    const fileName = `Inventario_efectivo_Turno_${resumenData.turno_nombre}_${resumenData.apertura?.replace(/[: ]/g, '_')}.pdf`;
     doc.save(fileName);
   }
 

@@ -24,7 +24,7 @@ import {SimplebarAngularModule} from "simplebar-angular";
 import {EmptyStateComponent} from "@shared/components/empty-state/empty-state.component";
 import {LoadingSpinnerComponent} from "@shared/components/loading-spinner/loading-spinner.component";
 import {AperturaCajaValidatorService} from "@app/inventario-caja/services/apertura-caja-validator.service";
-import {InventarioCajaPdfService} from "@app/inventario-caja/services/inventario-caja-pdf.service";
+import {InventarioCajaPdfService} from "@app/inventario-caja/services/inventario.caja.pdf.service";
 import {InventarioCajaRemoteReq} from "@app/inventario-caja/data-access/inventario.caja.remote.req";
 import {CajaGlobalService} from "@sothy/services/caja-global.service";
 import {computed} from '@angular/core';
