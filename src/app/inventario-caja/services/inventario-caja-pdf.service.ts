@@ -260,7 +260,7 @@ export class InventarioCajaPdfService {
     const subHeaders: any[] = [''];
 
     // Fila de título "Inventario de Efectivo"
-    const totalColumnas = 1 + cajasApertura.length + 1 + cajasCierre.length + 1;
+    const totalColumnas = 1 + cajasApertura.length + 2 + cajasCierre.length + 2;
     titleRow.push({
       content: 'Inventario de Efectivo',
       colSpan: totalColumnas,
@@ -283,26 +283,28 @@ export class InventarioCajaPdfService {
     // Encabezado de Apertura
     headers.push({
       content: 'Apertura',
-      colSpan: cajasApertura.length + 1,
+      colSpan: cajasApertura.length + 2,
       styles: { halign: 'center', fillColor: [211, 211, 211] }
     });
 
     cajasApertura.forEach((caja: any) => {
       subHeaders.push(caja.caja_nombre);
     });
-    subHeaders.push({ content: 'Total', styles: { halign: 'right' } });
+    subHeaders.push({ content: 'Cantidad', styles: { halign: 'right' } });
+    subHeaders.push({ content: 'Importe', styles: { halign: 'right' } });
 
     // Encabezado de Cierre
     headers.push({
       content: 'Cierre',
-      colSpan: cajasCierre.length + 1,
+      colSpan: cajasCierre.length + 2,
       styles: { halign: 'center', fillColor: [211, 211, 211] }
     });
 
     cajasCierre.forEach((caja: any) => {
       subHeaders.push(caja.caja_nombre);
     });
-    subHeaders.push({ content: 'Total', styles: { halign: 'right' } });
+    subHeaders.push({ content: 'Cantidad', styles: { halign: 'right' } });
+    subHeaders.push({ content: 'Importe', styles: { halign: 'right' } });
 
     // Preparar filas
     const rows: any[] = [];
@@ -337,10 +339,10 @@ export class InventarioCajaPdfService {
     // Generar filas por cada valor
     todosLosValores.forEach((valorData) => {
       // Fila de categoría
-      const totalCols = 1 + cajasApertura.length + 1 + cajasCierre.length + 1;
+      const totalCols = 5;
       rows.push([{
         content: `${valorData.nombre}`,
-        colSpan: totalCols,
+        colSpan: 5,
         styles: { fontStyle: 'bold', fillColor: [220, 220, 220], halign: 'left' }
       }]);
 
@@ -402,13 +404,13 @@ export class InventarioCajaPdfService {
             const cajaData = denomData.apertura.cajas?.find((c: any) => c.caja_id === caja.caja_id);
             row.push(`${cajaData?.cantidad || 0}`);
           });
+          row.push({ content: `${denomData.apertura.total_cantidad || 0}`, styles: { fontStyle: 'bold', halign: 'right' } });
+          row.push({ content: `${simbolo} ${denomData.apertura.total_importe || '0.00'}`, styles: { fontStyle: 'bold', halign: 'right' } });
         } else {
           cajasApertura.forEach(() => row.push('-'));
+          row.push('-');
+          row.push('-');
         }
-        row.push({
-          content: `${simbolo} ${denomData.apertura.total_importe || '0.00'}`,
-          styles: { fontStyle: 'bold', halign: 'right' }
-        });
 
         // Cajas de Cierre
         if (denomData.cierre) {
@@ -416,13 +418,13 @@ export class InventarioCajaPdfService {
             const cajaData = denomData.cierre.cajas?.find((c: any) => c.caja_id === caja.caja_id);
             row.push(`${cajaData?.cantidad || 0}`);
           });
+          row.push({ content: `${denomData.cierre.total_cantidad || 0}`, styles: { fontStyle: 'bold', halign: 'right' } });
+          row.push({ content: `${simbolo} ${denomData.cierre.total_importe || '0.00'}`, styles: { fontStyle: 'bold', halign: 'right' } });
         } else {
           cajasCierre.forEach(() => row.push('-'));
+          row.push('-');
+          row.push('-');
         }
-        row.push({
-          content: `${simbolo} ${denomData.cierre.total_importe || '0.00'}`,
-          styles: { fontStyle: 'bold', halign: 'right' }
-        });
 
         rows.push(row);
       });
@@ -436,6 +438,7 @@ export class InventarioCajaPdfService {
     for (let i = 0; i < cajasApertura.length; i++) {
       rowTotal.push('');
     }
+    rowTotal.push('');
     rowTotal.push({
       content: `${simbolo} ${totalApertura}`,
       styles: { fontStyle: 'bold', fillColor: [200, 200, 200], halign: 'right' }
@@ -443,6 +446,7 @@ export class InventarioCajaPdfService {
     for (let i = 0; i < cajasCierre.length; i++) {
       rowTotal.push('');
     }
+    rowTotal.push('');
     rowTotal.push({
       content: `${simbolo} ${totalCierre}`,
       styles: { fontStyle: 'bold', fillColor: [200, 200, 200], halign: 'right' }
