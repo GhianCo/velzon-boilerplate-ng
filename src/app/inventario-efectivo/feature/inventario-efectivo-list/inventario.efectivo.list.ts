@@ -24,7 +24,7 @@ import {SimplebarAngularModule} from "simplebar-angular";
 import {EmptyStateComponent} from "@shared/components/empty-state/empty-state.component";
 import {LoadingSpinnerComponent} from "@shared/components/loading-spinner/loading-spinner.component";
 import {AperturaTurnoValidatorService} from "@app/inventario-efectivo/services/apertura-turno-validator.service";
-import {InventarioPdfService} from "@app/inventario-efectivo/services/inventario.efectivo.pdf.service";
+import {ReporteTurnoPdfService} from "@app/inventario-efectivo/services/reporte-turno-pdf.service";
 import {InventarioEfectivoRemoteReq} from "@app/inventario-efectivo/data-access/inventario.efectivo.remote.req";
 import {ConfirmationService} from "@sothy/services/confirmation.service";
 
@@ -205,7 +205,7 @@ export class InventarioEfectivoList {
               public inventarioEfectivoStore: InventarioEfectivoStore,
               private offcanvasService: NgbOffcanvas,
               private aperturaTurnoValidator: AperturaTurnoValidatorService,
-              private inventarioPdfService: InventarioPdfService,
+              private reporteTurnoPdfService: ReporteTurnoPdfService,
               private inventarioRemoteReq: InventarioEfectivoRemoteReq,
               private confirmationService: ConfirmationService,
   ) {
@@ -692,19 +692,14 @@ export class InventarioEfectivoList {
     this.router.navigate(['/inventario-efectivo/visualizar/' + id])
   }
 
-  /**
-   * Descarga el PDF del resumen de operación de turno
-   */
-  descargarPdfInventarioEfectivo(id: any) {
-    // Obtener los datos del resumen
+  descargarReporteTurno(id: any) {
     this.inventarioRemoteReq.requestResumenOperacionTurno(id).subscribe({
       next: (response: any) => {
         if (response?.data) {
-          this.inventarioPdfService.generarPdfInventarioEfectivo(response.data);
+          this.reporteTurnoPdfService.generarPdfReporteTurno(response.data);
         }
       },
-      error: (error) => {
-      }
+      error: () => {}
     });
   }
 

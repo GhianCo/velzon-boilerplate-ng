@@ -23,7 +23,6 @@ import {SimplebarAngularModule} from "simplebar-angular";
 import {EmptyStateComponent} from "@shared/components/empty-state/empty-state.component";
 import {LoadingSpinnerComponent} from "@shared/components/loading-spinner/loading-spinner.component";
 import {AperturaTurnoValidatorService} from "@app/inventario-efectivo/services/apertura-turno-validator.service";
-import {InventarioPdfService} from "@app/inventario-efectivo/services/inventario.efectivo.pdf.service";
 import {InventarioEfectivoRemoteReq} from "@app/inventario-efectivo/data-access/inventario.efectivo.remote.req";
 import {CuadreSumaDiariaStore} from "@app/control-interno/cuadre-suma-diaria/data-access/cuadre.suma.diaria.store";
 
@@ -196,8 +195,6 @@ export class CuadreSumaDiariaList {
               private store: Store<{ data: RootReducerState }>,
               public cuadreSumaDiariaStore: CuadreSumaDiariaStore,
               private offcanvasService: NgbOffcanvas,
-              private aperturaTurnoValidator: AperturaTurnoValidatorService,
-              private inventarioPdfService: InventarioPdfService,
               private inventarioRemoteReq: InventarioEfectivoRemoteReq,
   ) {
     // Inicializar FormControl con el rango de fechas del store
@@ -675,23 +672,6 @@ export class CuadreSumaDiariaList {
 
   visualizarInventario(id: any) {
     this.router.navigate(['/cuadre-suma-diaria/visualizar/' + id])
-  }
-
-  /**
-   * Descarga el PDF del resumen de operación de turno
-   */
-  descargarPdfInventario(id: any) {
-    // Obtener los datos del resumen
-    this.inventarioRemoteReq.requestResumenOperacionTurno(id).subscribe({
-      next: (response: any) => {
-        if (response?.data) {
-          this.inventarioPdfService.generarPdfInventarioEfectivo(response.data);
-        }
-      },
-      error: (error) => {
-        console.error('Error al obtener datos para PDF:', error);
-      }
-    });
   }
 
   openFilters(content: TemplateRef<any>) {
