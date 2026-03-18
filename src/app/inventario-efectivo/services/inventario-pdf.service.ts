@@ -203,9 +203,9 @@ export class InventarioPdfService {
 
     // Calcular anchos: 60% para inventario, 40% para suma diaria
     const margen = 10;
-    const espacioEntreTablas = 5;
-    const anchoInventario = (pageWidth - (margen * 2) - espacioEntreTablas) * 0.6;
-    const anchoSumaDiaria = (pageWidth - (margen * 2) - espacioEntreTablas) * 0.4;
+    //const espacioEntreTablas = 5;
+    const anchoInventario = (pageWidth - (margen * 2));
+    //const anchoSumaDiaria = (pageWidth - (margen * 2) - espacioEntreTablas) * 0.4;
 
     // TABLA 1: INVENTARIO DE EFECTIVO (sin título fuera)
     this.generarTablaInventario(
@@ -221,9 +221,9 @@ export class InventarioPdfService {
     const finTablaInventario = (doc as any).lastAutoTable.finalY;
 
     // TABLA 2: SUMA DIARIA DE EFECTIVO (al lado derecho, sin título fuera)
-    const xSumaDiaria = margen + anchoInventario + espacioEntreTablas;
+    //const xSumaDiaria = margen + anchoInventario + espacioEntreTablas;
 
-    this.generarTablaSumaDiaria(
+    /*this.generarTablaSumaDiaria(
       doc,
       categoriasSumaDiaria,
       total,
@@ -231,7 +231,7 @@ export class InventarioPdfService {
       simbolo,
       xSumaDiaria,
       anchoSumaDiaria
-    );
+    );*/
 
     const finTablaSumaDiaria = (doc as any).lastAutoTable.finalY;
 
