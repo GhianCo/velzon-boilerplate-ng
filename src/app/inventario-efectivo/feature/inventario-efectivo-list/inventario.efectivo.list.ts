@@ -17,7 +17,6 @@ import {selectDataLoading, selectProductData} from "@velzon/store/Ecommerce/ecom
 import {cloneDeep} from "lodash";
 import {FlatpickrModule} from "angularx-flatpickr";
 import {HotTableComponent, HotTableModule} from "@handsontable/angular-wrapper";
-import Handsontable from "handsontable";
 import {InventarioEfectivoStore} from "@app/inventario-efectivo/data-access/inventario.efectivo.store";
 import {CommonModule} from "@angular/common";
 import {SimplebarAngularModule} from "simplebar-angular";
@@ -128,27 +127,6 @@ export class InventarioEfectivoList {
     {data: 'sala'},
     {data: 'turno'},
   ];
-
-  hotSettings: Handsontable.GridSettings = {
-    rowHeaders: true,
-    colHeaders: this.colHeaders,
-    columns: this.columns,
-    stretchH: 'all',
-    width: '100%',
-    height: 'auto',
-    rowHeights: 28,
-    manualColumnResize: true,
-    manualRowResize: true,
-    licenseKey: 'non-commercial-and-evaluation',
-    readOnly: true,
-    className: 'htMiddle htLeft',
-    dropdownMenu: false,
-    filters: true,
-    contextMenu: false,
-    afterOnCellMouseDown: (event: any, coords: any, TD: any) => {
-      if (coords.row >= 0) this.showRowMenu(coords.row, event.event);
-    }
-  };
 
   showRowMenu(row: number, event: MouseEvent) {
     event.preventDefault();
@@ -274,11 +252,6 @@ export class InventarioEfectivoList {
 
     effect(() => {
       const data: any = this.inventarioEfectivoStore.vm().inventarioEfectivoData;
-      const colHeaders = data?.header?.filter((h: any) => h.visible).map((h: any) => h.alias);
-      this.hotSettings = {
-        ...this.hotSettings,
-        colHeaders,
-      };
       this.data = data?.body;
     });
 

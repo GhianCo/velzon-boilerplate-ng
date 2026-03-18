@@ -9,7 +9,6 @@ import {ConfirmationService} from "@sothy/services/confirmation.service";
 import {EmptyStateComponent} from "@shared/components/empty-state/empty-state.component";
 import {NgbOffcanvas} from "@ng-bootstrap/ng-bootstrap";
 import {CajaGlobalService} from "@sothy/services/caja-global.service";
-import { IntegerOnlyDirective } from "@shared/directives/integer-only.directive";
 
 @Component({
     selector: 'app-inventario-caja-new',
@@ -19,8 +18,7 @@ import { IntegerOnlyDirective } from "@shared/directives/integer-only.directive"
     FormsModule,
     NgClass,
     CountUpModule,
-    EmptyStateComponent,
-    IntegerOnlyDirective
+    EmptyStateComponent
 ],
     standalone: true,
     styles: [`
