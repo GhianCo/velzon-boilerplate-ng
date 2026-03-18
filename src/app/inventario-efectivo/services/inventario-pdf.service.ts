@@ -22,7 +22,7 @@ export class InventarioPdfService {
     // Logo y encabezado (opcional - puedes agregar un logo si lo tienes)
     doc.setFontSize(11);
     doc.setFont('helvetica', 'bold');
-    doc.text('RESUMEN DE OPERACIÓN TURNO ' + resumenData.turno_nombre?.toUpperCase(), pageWidth / 2, yPosition, { align: 'center' });
+    doc.text('RESUMEN DE OPERACIONES TURNO ' + resumenData.turno_nombre?.toUpperCase(), pageWidth / 2, yPosition, { align: 'center' });
     yPosition += 6;
 
     // Información del turno en formato horizontal (una sola fila)
