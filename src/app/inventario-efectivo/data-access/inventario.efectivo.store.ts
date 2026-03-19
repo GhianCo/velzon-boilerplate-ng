@@ -517,10 +517,59 @@ export class InventarioEfectivoStore extends SignalStore<IState> {
     }
     return this._inventarioEfectivoRemoteReq.requestGetValoresWithDetailsByCaja(cajasSnapshot, operacionTurnoId).pipe(
       tap(({data}) => {
+        const cajasFromBackend: any[] = data.cajas || [];
+
+        // Normalizar denominacion.cajas de array (backend) a map de tipo { caja_nombre: cantidad }
+        // para que sea consistente con el modo apertura y funcionen los bindings y los cálculos.
+        const valoresNormalizados = (data.valores || []).map((valorDetail: any) => {
+          const tipoCambio = valorDetail.current_tc || 1;
+
+          const denominacionesNorm = (valorDetail.denominaciones || []).map((denom: any) => {
+            const cajasRaw: any[] = Array.isArray(denom.cajas) ? denom.cajas : [];
+
+            // Bóveda siempre presente a 0; se rellenará desde los inputs del usuario
+            const cajasMap: any = { [InventarioEfectivoStore.BOVEDA_KEY]: 0 };
+            cajasRaw.forEach((caja: any) => {
+              cajasMap[caja.caja_nombre] = caja.cantidad ?? 0;
+            });
+
+            const cantidadTotal = Object.values(cajasMap).reduce(
+              (sum: number, v: any) => sum + (parseFloat(v) || 0), 0
+            );
+            const importeConvertido = cantidadTotal * tipoCambio;
+
+            return {
+              ...denom,
+              cajas: cajasMap,
+              cantidad: cantidadTotal,
+              cantidadTotal,
+              importeLocal: cantidadTotal,
+              importeConvertido
+            };
+          });
+
+          const acumuladoLocal = denominacionesNorm.reduce(
+            (s: number, d: any) => s + (d.importeLocal || 0), 0
+          );
+          const acumuladoConvertido = denominacionesNorm.reduce(
+            (s: number, d: any) => s + (d.importeConvertido || 0), 0
+          );
+
+          return { ...valorDetail, denominaciones: denominacionesNorm, acumuladoLocal, acumuladoConvertido };
+        });
+
+        const totalConvertido = valoresNormalizados.reduce(
+          (s: number, v: any) => s + (v.acumuladoConvertido || 0), 0
+        );
+        const valoresConPorcentaje = valoresNormalizados.map((v: any) => ({
+          ...v,
+          porcentaje: totalConvertido > 0 ? ((v.acumuladoConvertido || 0) / totalConvertido) * 100 : 0
+        }));
+
         this.patch({
-          valoresWithDetailsData: data.valores,
-          cajasData: data.cajas
-        })
+          valoresWithDetailsData: valoresConPorcentaje,
+          cajasData: cajasFromBackend
+        });
       }),
       finalize(() => {
         this.patch({valoresWithDetailsLoading: false});

@@ -324,15 +324,14 @@
                         style="max-width: 200px;">
                     </div>
                   </td>
-                  <!-- Cajas dinámicas con cantidades del backend: solo en modo cierre -->
+                  <!-- Cajas dinámicas con cantidades del backend: solo en modo cierre (read-only) -->
                   @if (isCerrarMode) {
-                    @for (caja of denominacion.cajas; track caja.caja_id) {                    <td class="text-center">
+                    @for (caja of vm.cajasData; track caja.caja_id) {
+                    <td class="text-center">
                       <div class="input-group input-group-sm">
-                        <input type="number" class="form-control text-center" min="0" step="1"
-                          [ngModel]="caja.cantidad"                          
-                          (ngModelChange)="onCantidadCajaChange(denominacion, caja.caja_nombre, $event)"
+                        <input type="number" class="form-control text-center bg-light" min="0" step="1"
+                          [ngModel]="getCajas(denominacion)[caja.caja_nombre]"
                           (click)="$event.stopPropagation()" (wheel)="$event.preventDefault()"
-                          [class.is-invalid]="isInputInvalido(denominacion, caja.caja_nombre)"
                           [disabled]="true"
                           [title]="getTooltipMultiplos(denominacion)"
                           style="max-width: 200px;">
