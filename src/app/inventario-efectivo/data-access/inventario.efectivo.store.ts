@@ -1007,11 +1007,9 @@ export class InventarioEfectivoStore extends SignalStore<IState> {
             0
           );
 
-          const valorUnitario = parseFloat(denom.valor) || 0;
-          const importeLocal = valorUnitario * cantidadTotal;
-          const importeConvertido = importeLocal * tipoCambio;
+          const importeConvertido = cantidadTotal * tipoCambio;
 
-          acumuladoLocal += importeLocal;
+          acumuladoLocal += cantidadTotal;
           acumuladoConvertido += importeConvertido;
 
           return {
@@ -1019,7 +1017,7 @@ export class InventarioEfectivoStore extends SignalStore<IState> {
             cajas: cajasActualizadas,
             cantidad: cantidadTotal,
             cantidadTotal,
-            importeLocal,
+            importeLocal: cantidadTotal,
             importeConvertido
           };
         } else {
