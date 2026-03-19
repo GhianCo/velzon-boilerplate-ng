@@ -453,6 +453,40 @@ export class InventarioEfectivoNew implements OnInit {
 
     // ===== FIN MÉTODOS PARA CATEGORÍAS DE MOVIMIENTO =====
 
+    // ===== VALIDACIÓN DE MÚLTIPLOS POR DENOMINACIÓN =====
+
+    /** Devuelve true si el importe ingresado NO es múltiplo del valor de la denominación. */
+    isInputInvalido(denominacion: any, cajaNombre: string): boolean {
+        const valor = denominacion?.valor;
+        if (!valor || valor <= 0) return false;
+        const cantidad = this.getCajas(denominacion)[cajaNombre];
+        if (cantidad === null || cantidad === undefined || cantidad === '' || Number(cantidad) === 0) return false;
+        // Multiplicar por 100 y redondear para evitar problemas de punto flotante
+        return Math.round(Number(cantidad) * 100) % Math.round(valor * 100) !== 0;
+    }
+
+    /** Genera el texto del tooltip mostrando ejemplos de múltiplos válidos para la denominación. */
+    getTooltipMultiplos(denominacion: any): string {
+        const valor = denominacion?.valor;
+        if (!valor || valor <= 0) return '';
+        const ejemplos = Array.from({ length: 5 }, (_, i) => valor * (i + 1));
+        return `Sólo múltiplos de ${valor}. Ej: ${ejemplos.join(', ')}…`;
+    }
+
+    /** Devuelve true si algún input de denominación tiene un valor inválido (no múltiplo). */
+    hasInputsInvalidos(): boolean {
+        const vm = this.inventarioEfectivoStore.vm();
+        if (!vm.valoresWithDetailsData || !vm.cajasData) return false;
+        for (const valorDetail of vm.valoresWithDetailsData) {
+            for (const denominacion of valorDetail.denominaciones || []) {
+                for (const caja of vm.cajasData) {
+                    if (this.isInputInvalido(denominacion, caja.caja_nombre)) return true;
+                }
+            }
+        }
+        return false;
+    }
+
     // ===== MÉTODOS PARA SELECCIÓN DE FILAS (UNA SOLA FILA) =====
 
     // Generar ID único para cada fila

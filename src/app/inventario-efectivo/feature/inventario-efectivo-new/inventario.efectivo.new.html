@@ -219,7 +219,7 @@
               }
               }
               <button type="button" class="btn btn-success w-100" (click)="onClickGuardarInventario()"
-                [disabled]="vm.saveInventarioEfectivoLoading || vm.valoresSummary?.totalConvertido < 1 || !vm.selectedTurnoId || (!isCerrarMode && !vm.selectedSupervisorId)">
+                [disabled]="vm.saveInventarioEfectivoLoading || vm.valoresSummary?.totalConvertido < 1 || !vm.selectedTurnoId || (!isCerrarMode && !vm.selectedSupervisorId) || hasInputsInvalidos()">
                 <i class="ri-save-fill align-middle"></i> Guardar inventario
               </button>
               <div>
@@ -330,6 +330,8 @@
                           [(ngModel)]="getCajas(denominacion)[caja.caja_nombre]"
                           (ngModelChange)="onCantidadCajaChange(denominacion, caja.caja_nombre, $event)"
                           (click)="$event.stopPropagation()" (wheel)="$event.preventDefault()"
+                          [class.is-invalid]="isInputInvalido(denominacion, caja.caja_nombre)"
+                          [title]="getTooltipMultiplos(denominacion)"
                           style="max-width: 200px;">
                       </div>
                     </td>
