@@ -140,13 +140,13 @@ export class InventarioCajaPdfService {
     doc.line(firma1X, yPosFirmas, firma1X + firmaWidth, yPosFirmas);
     doc.setFont('helvetica', 'normal');
     doc.setFontSize(8);
-    doc.text('GERENTE DE SALA', firma1X + (firmaWidth / 2), yPosFirmas + 4, { align: 'center' });
+    doc.text('SUPERVISOR DE TURNO', firma1X + (firmaWidth / 2), yPosFirmas + 4, { align: 'center' });
     doc.text('D.N.I.:', firma1X + (firmaWidth / 2), yPosFirmas + 8, { align: 'right' });
 
     // Firma 2 - Supervisor
     const firma2X = firma1X + firmaWidth + firmaSpacing;
     doc.line(firma2X, yPosFirmas, firma2X + firmaWidth, yPosFirmas);
-    doc.text('SUPERVISOR DE CAJA', firma2X + (firmaWidth / 2), yPosFirmas + 4, { align: 'center' });
+    doc.text('CAJERO', firma2X + (firmaWidth / 2), yPosFirmas + 4, { align: 'center' });
     doc.text('D.N.I.:', firma2X + (firmaWidth / 2), yPosFirmas + 8, { align: 'right' });
 
     // Cuadro de advertencia - siempre al final de la hoja

@@ -80,7 +80,7 @@ export class ReporteTurnoPdfService {
 
     let yPosition = this.agregarEncabezadoTurno(
       doc,
-      'SUMA DIARIA DE EFECTIVO - TURNO ' + resumenData.turno_nombre?.toUpperCase(),
+      'DETALLE DE MOVIMIENTOS - TURNO ' + resumenData.turno_nombre?.toUpperCase(),
       resumenData
     );
 
@@ -186,7 +186,7 @@ export class ReporteTurnoPdfService {
     const totalColumnas = 1 + cajasApertura.length + 1 + cajasCierre.length + 1;
 
     const titleRow: any[] = [{
-      content: 'Inventario de Efectivo',
+      content: 'Inventario de efectivo',
       colSpan: totalColumnas,
       styles: { halign: 'center', fillColor: [169, 169, 169], textColor: 255, fontStyle: 'bold', fontSize: 8 }
     }];
@@ -292,7 +292,7 @@ export class ReporteTurnoPdfService {
     tableWidth: number
   ): void {
     const titleRow = [{
-      content: 'Suma Diaria de Efectivo',
+      content: 'Detalle de movimientos',
       colSpan: 2,
       styles: { halign: 'center', fillColor: [169, 169, 169], textColor: 255, fontStyle: 'bold', fontSize: 8 }
     }];
