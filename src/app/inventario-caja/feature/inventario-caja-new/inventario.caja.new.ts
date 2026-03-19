@@ -543,6 +543,37 @@ export class InventarioCajaNew implements OnInit {
 
     // ===== FIN MÉTODOS PARA CATEGORÍAS DE MOVIMIENTO =====
 
+    // ===== VALIDACIÓN DE MÚLTIPLOS POR DENOMINACIÓN =====
+
+    /** Devuelve true si el importe ingresado NO es múltiplo del valor de la denominación. */
+    isInputInvalido(denominacion: any): boolean {
+        const valor = denominacion?.valor;
+        if (!valor || valor <= 0) return false;
+        const cantidad = this.getDenominacionCantidad(denominacion);
+        if (!cantidad || cantidad === 0) return false;
+        return Math.round(Number(cantidad) * 100) % Math.round(valor * 100) !== 0;
+    }
+
+    /** Genera el texto del tooltip con ejemplos de múltiplos válidos. */
+    getTooltipMultiplos(denominacion: any): string {
+        const valor = denominacion?.valor;
+        if (!valor || valor <= 0) return '';
+        const ejemplos = Array.from({ length: 5 }, (_, i) => valor * (i + 1));
+        return `Sólo múltiplos de ${valor}. Ej: ${ejemplos.join(', ')}…`;
+    }
+
+    /** Devuelve true si algún input de denominación tiene un valor inválido. */
+    hasInputsInvalidos(): boolean {
+        const vm = this.inventarioCajaStore.vm();
+        if (!vm.valoresWithDetailsData) return false;
+        for (const valorDetail of vm.valoresWithDetailsData) {
+            for (const denominacion of valorDetail.denominaciones || []) {
+                if (this.isInputInvalido(denominacion)) return true;
+            }
+        }
+        return false;
+    }
+
     // ===== MÉTODOS PARA SELECCIÓN DE FILAS (UNA SOLA FILA) =====
 
     // Generar ID único para cada fila

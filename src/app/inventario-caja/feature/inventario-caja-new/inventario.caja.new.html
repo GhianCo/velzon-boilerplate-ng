@@ -258,7 +258,7 @@
                   </div>
                 }
                 <button type="button" class="btn btn-success w-100" (click)="onClickGuardarInventario()"
-                        [disabled]="vm.saveInventarioCajaLoading || vm.valoresSummary?.totalConvertido < 1 || !vm.selectedCajaId">
+                        [disabled]="vm.saveInventarioCajaLoading || vm.valoresSummary?.totalConvertido < 1 || !vm.selectedCajaId || hasInputsInvalidos()">
                   <i class="ri-save-fill align-middle"></i> Guardar inventario
                 </button>
                 <div>
@@ -351,6 +351,8 @@
                                         (input)="onCantidadChange(denominacion, $event)"
                                         (click)="$event.stopPropagation()"
                                         (wheel)="$event.preventDefault()"
+                                        [class.is-invalid]="isInputInvalido(denominacion)"
+                                        [title]="getTooltipMultiplos(denominacion)"
                                         style="max-width: 200px;">
                             }
                             </div>
