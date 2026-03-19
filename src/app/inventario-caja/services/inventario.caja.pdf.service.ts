@@ -541,7 +541,7 @@ export class InventarioCajaPdfService {
 
     // Fila de total
     rows.push([
-      { content: 'TOTAL', styles: { fontStyle: 'bold' } },
+      { content: 'TOTAL GENERAL DE CAJA', styles: { fontStyle: 'bold' } },
       { content: `${simbolo} ${total}`, styles: { fontStyle: 'bold' } }
     ]);
 
