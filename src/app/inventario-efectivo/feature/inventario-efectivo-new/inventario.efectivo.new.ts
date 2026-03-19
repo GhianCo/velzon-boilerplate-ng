@@ -476,15 +476,26 @@ export class InventarioEfectivoNew implements OnInit {
     /** Devuelve true si algún input de denominación tiene un valor inválido (no múltiplo). */
     hasInputsInvalidos(): boolean {
         const vm = this.inventarioEfectivoStore.vm();
-        if (!vm.valoresWithDetailsData || !vm.cajasData) return false;
+        if (!vm.valoresWithDetailsData) return false;
+        const bovedaKey = InventarioEfectivoStore.BOVEDA_KEY;
         for (const valorDetail of vm.valoresWithDetailsData) {
             for (const denominacion of valorDetail.denominaciones || []) {
-                for (const caja of vm.cajasData) {
-                    if (this.isInputInvalido(denominacion, caja.caja_nombre)) return true;
+                // Siempre validar Bóveda
+                if (this.isInputInvalido(denominacion, bovedaKey)) return true;
+                // En cierre también validar cajas
+                if (this.isCerrarMode && vm.cajasData) {
+                    for (const caja of vm.cajasData) {
+                        if (this.isInputInvalido(denominacion, caja.caja_nombre)) return true;
+                    }
                 }
             }
         }
         return false;
+    }
+
+    /** Número de columnas del thead/td colspan según modo (apertura vs cierre). */
+    getTableColspan(vm: any): number {
+        return this.isCerrarMode ? (vm.cajasData?.length || 0) + 3 : 3;
     }
 
     // ===== MÉTODOS PARA SELECCIÓN DE FILAS (UNA SOLA FILA) =====
@@ -587,50 +598,5 @@ export class InventarioEfectivoNew implements OnInit {
     // ===== FIN MÉTODOS PARA ACTUALIZAR TURNO Y OPERACIÓN ====
 
     // ===== FIN MÉTODOS TURNO Y OPERACIÓN =====
-
-    // ===== MÉTODOS PARA TRANSFERENCIA DE EFECTIVO POR CAJA =====
-
-    openTransferenciaModal(caja: any): void {
-        this.selectedCajaTransferencia = caja;
-        this.montoTransferencia = null;
-        this.observacionTransferencia = '';
-        this.offcanvasService.open(this.transferenciaModal, {
-            position: 'end',
-            backdrop: 'static',
-            keyboard: false
-        });
-    }
-
-    onGuardarTransferencia(offcanvas: any): void {
-        if (!this.montoTransferencia || this.montoTransferencia <= 0) {
-            this.confirmationService.warning(
-                '⚠️ Monto requerido',
-                'Debes ingresar un monto mayor a cero para la transferencia.'
-            );
-            return;
-        }
-
-        if (!this.observacionTransferencia || this.observacionTransferencia.trim().length === 0) {
-            this.confirmationService.warning(
-                '⚠️ Observación requerida',
-                'Debes ingresar una observación para la transferencia.'
-            );
-            return;
-        }
-
-        const payload = {
-            operacionturno_id: Number(this.operacionTurnoId),
-            caja_id: this.selectedCajaTransferencia?.caja_id,
-            caja_nombre: this.selectedCajaTransferencia?.caja_nombre,
-            monto: this.montoTransferencia,
-            observacion: this.observacionTransferencia.trim()
-        };
-
-        this.inventarioEfectivoStore.registrarTransferenciaCaja(payload);
-
-        offcanvas.close('saved');
-    }
-
-    // ===== FIN MÉTODOS PARA TRANSFERENCIA DE EFECTIVO POR CAJA =====
 
 }

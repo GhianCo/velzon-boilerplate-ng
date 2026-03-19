@@ -1,7 +1,6 @@
 import {inject} from '@angular/core';
 import { ActivatedRouteSnapshot } from '@angular/router';
 import {InventarioEfectivoStore} from "@app/inventario-efectivo/data-access/inventario.efectivo.store";
-import {forkJoin} from 'rxjs';
 import {switchMap} from 'rxjs/operators';
 import {PARAM} from '@shared/constants/app.const';
 
@@ -14,7 +13,7 @@ export const InventarioEfectivoCerrarResolver = (route: ActivatedRouteSnapshot) 
     switchMap(() => {
       // Una vez cargadas las cajas, cargamos turnos y valores en paralelo
       inventarioEfectivoStore.loadTurnos();
-      return inventarioEfectivoStore.loadValoresWithDetails();
+      return inventarioEfectivoStore.loadValoresWithDetailsByCaja(operacionTurnoId);
     })
   );
 }

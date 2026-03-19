@@ -137,6 +137,9 @@ const initialState: IState = {
 @Injectable({providedIn: 'root'})
 export class InventarioEfectivoStore extends SignalStore<IState> {
 
+  /** Clave reservada para la columna fija de Bóveda (no es una caja real). */
+  static readonly BOVEDA_KEY = 'Boveda';
+
   public readonly vm = this.selectMany([
     'inventarioEfectivoLoading',
     'inventarioEfectivoData',
@@ -464,7 +467,7 @@ export class InventarioEfectivoStore extends SignalStore<IState> {
   public loadCajas(de_apertura = PARAM.UNDEFINED): Observable<any> {
     this.patch({cajasLoading: true, cajasError: null});
     return this._inventarioEfectivoRemoteReq.requestAllCajasBySala(this._persistenceService.getSalaId(), de_apertura).pipe(
-      tap(({data, pagination}) => {
+      tap(({data}) => {
         this.patch({
           cajasData: data,
         })
@@ -504,12 +507,19 @@ export class InventarioEfectivoStore extends SignalStore<IState> {
 
   public loadValoresWithDetailsByCaja(operacionTurnoId?: any): Observable<any> {
     const state = this.vm();
+    // Preservar cajasData antes del reset para no perder lo que cargó el resolver
+    const cajasSnapshot = state.cajasData;
     this.patch({valoresWithDetailsLoading: true, valoresWithDetailsError: null});
     this.initialize(initialState);
-    return this._inventarioEfectivoRemoteReq.requestGetValoresWithDetailsByCaja(state.cajasData, operacionTurnoId).pipe(
-      tap(({data, pagination}) => {
+    // Restaurar inmediatamente para que setSelectedTurnoId no vuelva a pedir cajas
+    if (cajasSnapshot) {
+      this.patch({cajasData: cajasSnapshot});
+    }
+    return this._inventarioEfectivoRemoteReq.requestGetValoresWithDetailsByCaja(cajasSnapshot, operacionTurnoId).pipe(
+      tap(({data}) => {
         this.patch({
-          valoresWithDetailsData: data,
+          valoresWithDetailsData: data.valores,
+          cajasData: data.cajas
         })
       }),
       finalize(() => {
@@ -558,18 +568,25 @@ export class InventarioEfectivoStore extends SignalStore<IState> {
       valorDetail.denominaciones?.forEach((denominacion: any) => {
         // Construir array de cajas para esta denominación
         const cajas: any[] = [];
+        const cajasMap = denominacion.cajas || {};
 
-        if (denominacion.cajas) {
-          // Obtener todas las cajas del sistema
+        if (state.selectedOperacion === 'apertura') {
+          // En apertura: solo se registra Bóveda, sin caja_id asociado
+          cajas.push({
+            caja_nombre: InventarioEfectivoStore.BOVEDA_KEY,
+            cantidad: cajasMap[InventarioEfectivoStore.BOVEDA_KEY] ?? 0
+          });
+        } else {
+          // En cierre: se registra Bóveda + todas las cajas reales
+          cajas.push({
+            caja_nombre: InventarioEfectivoStore.BOVEDA_KEY,
+            cantidad: cajasMap[InventarioEfectivoStore.BOVEDA_KEY] ?? 0
+          });
           state.cajasData?.forEach((cajaInfo: any) => {
-            const cajaNombre = cajaInfo.caja_nombre;
-            const cantidadCaja = denominacion.cajas[cajaNombre] || 0;
-
-            // Agregar TODAS las cajas, incluso con cantidad 0
             cajas.push({
               caja_id: cajaInfo.caja_id,
-              caja_nombre: cajaNombre,
-              cantidad: cantidadCaja
+              caja_nombre: cajaInfo.caja_nombre,
+              cantidad: cajasMap[cajaInfo.caja_nombre] ?? 0
             });
           });
         }
@@ -919,16 +936,9 @@ export class InventarioEfectivoStore extends SignalStore<IState> {
       this.patch({selectedSupervisorId: turno.supervisor});
     }
     
-    if (state.selectedOperacion == 'apertura') {
-      if (turno.turno_orden == ORDEN.PRIMERO){
-        this.loadCajas(PARAM.SI).subscribe();
-      }else {
-        this.loadCajas(PARAM.UNDEFINED).subscribe();
-      }
-    } else {
-      const state = this.vm();
-      this.loadCatMovWithDetails(state.operacionTurnoId);
-      this.loadCajas(PARAM.UNDEFINED).subscribe();
+    if (state.selectedOperacion != 'apertura') {
+      const freshState = this.vm();
+      this.loadCatMovWithDetails(freshState.operacionTurnoId);
     }
   }
 
@@ -949,26 +959,31 @@ export class InventarioEfectivoStore extends SignalStore<IState> {
     const state = this.vm();
     const cajasData = state.cajasData;
 
-    if (!cajasData || cajasData.length === 0) {
-      return;
-    }
-
     const valoresActualizados = state.valoresWithDetailsData?.map((valorDetail: any) => {
       const denominacionesActualizadas = valorDetail.denominaciones?.map((denominacion: any) => {
-        if (!denominacion.cajas || Object.keys(denominacion.cajas).length === 0) {
-          const cajasObj: any = {};
+        const cajasExistentes = denominacion.cajas || {};
+
+        // Siempre asegurar que Bóveda esté inicializada
+        const cajasObj: any = {
+          [InventarioEfectivoStore.BOVEDA_KEY]: cajasExistentes[InventarioEfectivoStore.BOVEDA_KEY] ?? 0
+        };
+
+        // En cierre: agregar también las cajas reales del sistema
+        if (cajasData && cajasData.length > 0) {
           cajasData.forEach((caja: any) => {
-            cajasObj[caja.caja_nombre] = 0;
+            cajasObj[caja.caja_nombre] = cajasExistentes[caja.caja_nombre] ?? 0;
           });
-          return { ...denominacion, cajas: cajasObj };
         }
-        return denominacion;
+
+        return { ...denominacion, cajas: cajasObj };
       });
 
       return { ...valorDetail, denominaciones: denominacionesActualizadas };
     });
 
-    this.patch({ valoresWithDetailsData: valoresActualizados });
+    if (valoresActualizados) {
+      this.patch({ valoresWithDetailsData: valoresActualizados });
+    }
   }
 
   /**

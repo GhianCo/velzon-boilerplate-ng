@@ -235,7 +235,6 @@
   <div class="col-xl-12">
     <!-- Tabla Unificada con colspan -->
     <div class="card">
-      @if(vm.cajasData?.length){
       <div class="card-body p-0">
         <!-- Contenedor con dos tablas side-by-side -->
         <!-- Contenedor responsivo con Grid CSS -->
@@ -254,19 +253,22 @@
                 }
                 <tr class="table-light">
                   <th style="min-width: 180px;">Descripción</th>
-                  @for (caja of vm.cajasData; track $index) {
+                  <!-- Bóveda: columna fija, siempre visible (no es una caja operativa) -->
                   <th style="min-width: 150px;">
-                    <div class="d-flex justify-content-between align-items-center">
-                      <span>{{ caja.caja_nombre }}</span>
-                      @if(caja.caja_operativa == 1){
-                      <button type="button" class="btn btn-sm btn-outline-primary py-0 px-1 ms-2"
-                        title="Transferencia de efectivo"
-                        (click)="$event.stopPropagation(); openTransferenciaModal(caja)">
-                        <i class="ri-exchange-funds-line"></i>
-                      </button>
-                      }
+                    <div class="d-flex align-items-center">
+                      <i class="ri-safe-line me-1 text-primary"></i>
+                      <span>Bóveda</span>
                     </div>
                   </th>
+                  <!-- Cajas dinámicas: solo visibles en modo cierre -->
+                  @if (isCerrarMode) {
+                    @for (caja of vm.cajasData; track $index) {
+                    <th style="min-width: 150px;">
+                      <div class="d-flex justify-content-between align-items-center">
+                        <span>{{ caja.caja_nombre }}</span>
+                      </div>
+                    </th>
+                    }
                   }
                   <th class="text-end" style="min-width: 120px;">Total</th>
                 </tr>
@@ -276,7 +278,7 @@
                 @for (valorDetail of vm.valoresWithDetailsData; track $index) {
                 <!-- Header de categoría -->
                 <tr class="table-active">
-                  <td [attr.colspan]="(vm.cajasData?.length || 0) + 2" class="fw-bold">
+                  <td [attr.colspan]="getTableColspan(vm)" class="fw-bold">
                     <div class="d-flex justify-content-between align-items-center">
                       <span><i class="ri-checkbox-circle-line me-2"></i>{{ valorDetail.name }}</span>
                       <span class="text-success">S/. {{ valorDetail.acumuladoConvertido?.toFixed(2) || '0.00' }}</span>
@@ -287,7 +289,7 @@
                 <!-- Tipo de cambio USD -->
                 @if (valorDetail.codigo == 'USD') {
                 <tr>
-                  <td [attr.colspan]="(vm.cajasData?.length || 0) + 2" class="p-2">
+                  <td [attr.colspan]="getTableColspan(vm)" class="p-2">
                     <label class="form-label fw-medium mb-1 me-2">Tipo de cambio:</label>
                     <input type="number" class="form-control form-control-sm d-inline-block" style="width: 100px;"
                       min="1" [(ngModel)]="valorDetail.current_tc"
@@ -310,34 +312,34 @@
                       }
                     </div>
                   </td>
-                  <!--@if (isCerrarMode) {
-                    @for (caja of denominacion.cajas; track caja.caja_id) {
-                    <td class="text-center">
-                      <div class="input-group input-group-sm">
-                        <input type="number" class="form-control text-center" min="0" step="0.01"
-                          [ngModel]="caja.cantidad"
-                          (ngModelChange)="onCantidadCajaChange(denominacion, caja.caja_nombre, $event)"
-                          (click)="$event.stopPropagation()" (wheel)="$event.preventDefault()"
-                          [disabled]="caja.operativa == 1" style="max-width: 200px;">
-                      </div>
-                    </td>
-                    }
-                  } @else {-->
-                    @for (caja of vm.cajasData; track caja.caja_id) {
-                    <td class="text-center">
+                  <!-- Bóveda: input fijo siempre visible -->
+                  <td class="text-center">
+                    <div class="input-group input-group-sm">
+                      <input type="number" class="form-control text-center" min="0" step="1"
+                        [(ngModel)]="getCajas(denominacion)['Boveda']"
+                        (ngModelChange)="onCantidadCajaChange(denominacion, 'Boveda', $event)"
+                        (click)="$event.stopPropagation()" (wheel)="$event.preventDefault()"
+                        [class.is-invalid]="isInputInvalido(denominacion, 'Boveda')"
+                        [title]="getTooltipMultiplos(denominacion)"
+                        style="max-width: 200px;">
+                    </div>
+                  </td>
+                  <!-- Cajas dinámicas con cantidades del backend: solo en modo cierre -->
+                  @if (isCerrarMode) {
+                    @for (caja of denominacion.cajas; track caja.caja_id) {                    <td class="text-center">
                       <div class="input-group input-group-sm">
                         <input type="number" class="form-control text-center" min="0" step="1"
-                          [(ngModel)]="getCajas(denominacion)[caja.caja_nombre]"
+                          [ngModel]="caja.cantidad"                          
                           (ngModelChange)="onCantidadCajaChange(denominacion, caja.caja_nombre, $event)"
                           (click)="$event.stopPropagation()" (wheel)="$event.preventDefault()"
                           [class.is-invalid]="isInputInvalido(denominacion, caja.caja_nombre)"
+                          [disabled]="true"
                           [title]="getTooltipMultiplos(denominacion)"
                           style="max-width: 200px;">
                       </div>
                     </td>
                     }
-                  <!-- }
-                   Cajas -->
+                  }
 
 
                   <!-- Total -->
@@ -351,7 +353,7 @@
 
                 <!-- Espacio -->
                 <tr style="height: 10px;">
-                  <td [attr.colspan]="(vm.cajasData?.length || 0) + 2" class="p-0 bg-light"></td>
+                  <td [attr.colspan]="getTableColspan(vm)" class="p-0 bg-light"></td>
                 </tr>
                 }
               </tbody>
@@ -453,73 +455,12 @@
           }
         </div>
       </div>
-      }
-      @else {
-      <app-empty-state title="Selecciona el turno de operacion"
-        message="Debes seleccionar el turno de operacion para cargar las cajas asociadas.">
-      </app-empty-state>
-      }
     </div>
     <!--end card-->
   </div>
 </div>
 <!--end row-->
 }
-
-<!-- Modal para transferencia de efectivo por caja -->
-<ng-template #transferenciaModal let-offcanvas>
-  <div class="offcanvas-header bg-primary">
-    <h5 class="offcanvas-title text-white" id="offcanvasTransferenciaLabel">
-      <i class="ri-exchange-funds-line me-2"></i>Transferencia de efectivo
-      @if (selectedCajaTransferencia) {
-      — {{ selectedCajaTransferencia.caja_nombre }}
-      }
-    </h5>
-    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="offcanvas" aria-label="Close"
-      (click)="offcanvas.dismiss('Cross click')"></button>
-  </div>
-  <!--end offcanvas-header-->
-  <form class="d-flex flex-column justify-content-between h-100">
-    <div class="offcanvas-body">
-
-      <div class="alert alert-info border-0 mb-3">
-        <i class="ri-information-line me-2"></i>
-        Registra una transferencia de dinero entre el turno actual y la caja
-        <strong>{{ selectedCajaTransferencia?.caja_nombre }}</strong>.
-      </div>
-
-      <!-- Monto -->
-      <div class="mb-3">
-        <label class="form-label fw-medium">Monto <span class="text-danger">*</span></label>
-        <div class="input-group">
-          <span class="input-group-text">S/.</span>
-          <input type="number" class="form-control" min="0.01" step="0.01" placeholder="0.00"
-            [(ngModel)]="montoTransferencia" name="montoTransferencia" (wheel)="$event.preventDefault()">
-        </div>
-      </div>
-
-      <!-- Observación -->
-      <div class="mb-3">
-        <label class="form-label fw-medium">Observación <span class="text-danger">*</span></label>
-        <textarea class="form-control" rows="4" placeholder="Describe el motivo de la transferencia..."
-          [(ngModel)]="observacionTransferencia" name="observacionTransferencia"></textarea>
-      </div>
-
-    </div>
-    <!--end offcanvas-body-->
-    <div class="offcanvas-footer border-top p-3 d-flex gap-2">
-      <button type="button" class="btn btn-light w-50" (click)="offcanvas.dismiss('Cross click')">
-        <i class="ri-close-line align-middle me-1"></i>Cancelar
-      </button>
-      <button type="button" class="btn btn-primary w-50"
-        [disabled]="!montoTransferencia || montoTransferencia <= 0 || !observacionTransferencia.trim()"
-        (click)="onGuardarTransferencia(offcanvas)">
-        <i class="ri-save-line align-middle me-1"></i>Guardar
-      </button>
-    </div>
-    <!--end offcanvas-footer-->
-  </form>
-</ng-template>
 
 <!-- Modal para observaciones de diferencia -->
 <ng-template #diferenciaModal let-offcanvas>
