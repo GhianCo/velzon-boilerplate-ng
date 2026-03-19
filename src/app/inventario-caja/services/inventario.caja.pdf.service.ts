@@ -502,20 +502,32 @@ export class InventarioCajaPdfService {
     const rows: any[] = [];
 
     categorias.forEach(categoria => {
+      // Insertar fila de total antes de la categoría DIFERENCIAS
+      if (categoria.nombre == 'DIFERENCIAS') {
+        rows.push([
+          { content: 'TOTAL GENERAL DE CAJA', styles: { fontStyle: 'bold' } },
+          { content: `${simbolo} ${total}`, styles: { fontStyle: 'bold' } }
+        ]);
+      }
+
       // Fila de categoría con colores grises según tipo
       const colorFondo = categoria.tipo_operacion === 'ingreso' ? [200, 200, 200] :
                          categoria.tipo_operacion === 'egreso' ? [180, 180, 180] :
                          [220, 220, 220];
       let subtotalCat = simbolo + ' ';
-      if(categoria.tipo_operacion == 'ingreso'){
+      let nombreCat = categoria.nombre;
+      if (categoria.tipo_operacion == 'ingreso') {
         subtotalCat += subtotalesSumaDiaria.ingresos;
-      }else if(categoria.tipo_operacion == 'egreso') {
+      } else if (categoria.tipo_operacion == 'egreso') {
         subtotalCat += subtotalesSumaDiaria.egresos;
+      } else if (categoria.nombre === 'DIFERENCIAS') {
+        nombreCat = 'DIFERENCIA DE CAJA';
+        subtotalCat += categoria.items?.[0]?.importe ?? '0.00';
       } else {
         subtotalCat = '';
       }
       rows.push([{
-        content: `${categoria.nombre}`,
+        content: `${nombreCat}`,
         styles: {
           fontStyle: 'bold',
           fillColor: colorFondo,
@@ -530,20 +542,16 @@ export class InventarioCajaPdfService {
         }
       }]);
 
-      // Items de la categoría
-      categoria.items?.forEach((item: any) => {
-        rows.push([
-          item.nombre,
-          `${simbolo} ${item.importe}`
-        ]);
-      });
+      // Items de la categoría (excepto para DIFERENCIAS)
+      if (categoria.nombre !== 'DIFERENCIAS') {
+        categoria.items?.forEach((item: any) => {
+          rows.push([
+            item.nombre,
+            `${simbolo} ${item.importe}`
+          ]);
+        });
+      }
     });
-
-    // Fila de total
-    rows.push([
-      { content: 'TOTAL GENERAL DE CAJA', styles: { fontStyle: 'bold' } },
-      { content: `${simbolo} ${total}`, styles: { fontStyle: 'bold' } }
-    ]);
 
     autoTable(doc, {
       startY: startY,
