@@ -222,6 +222,10 @@
                     <div class="text-md-right float-md-end pagination-rounded gridjs-pagination mb-3">
                       <ngb-pagination [collectionSize]="vm.inventarioEfectivoPagination?.totalRows"
                                       [pageSize]="vm.inventarioEfectivoPagination?.perPage"
+                                      [page]="vm.inventarioEfectivoPagination?.currentPage"
+                                      [maxSize]="5"
+                                      [boundaryLinks]="true"
+                                      [rotate]="true"
                                       (pageChange)="changePage($event)">
                       </ngb-pagination>
                     </div>
