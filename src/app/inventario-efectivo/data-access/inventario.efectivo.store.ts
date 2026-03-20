@@ -193,7 +193,10 @@ export class InventarioEfectivoStore extends SignalStore<IState> {
 
     // Transferencia de efectivo
     'transferenciaLoading',
-    'transferenciaError'
+    'transferenciaError',
+
+    // Cajas que siguen abiertas al cerrar el turno
+    'cajasAbiertasCierre'
   ]);
 
   /**

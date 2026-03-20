@@ -311,11 +311,22 @@ export class InventarioEfectivoNew implements OnInit {
         const vm = this.inventarioEfectivoStore.vm();
         const turnoInfo = this.isCerrarMode ? vm.turnoData : this.getSelectedTurno();
 
+        const cajasAbiertasHtml = (vm.cajasAbiertasCierre?.length)
+            ? `<div class="alert alert-warning border-warning d-flex align-items-start gap-2 py-2 px-3 mt-3 mb-0 text-start">
+                <div>
+                    <strong class="d-block mb-1">⚠️ Las siguientes cajas quedarán abiertas para el siguiente turno:</strong>
+                    <div class="mb-2">${vm.cajasAbiertasCierre.map((c: any) => `<span class="badge bg-warning-subtle text-warning border border-warning me-1">${c.caja_nombre}</span>`).join('')}</div>
+                    <small class="text-muted">Si esto no es correcto, cierra primero esas cajas y vuelve a realizar el inventario del turno antes de guardar.</small>
+                </div>
+               </div>`
+            : '';
+
         this.confirmationService.openAndHandle({
             title: '✅ ¿Todos los datos son correctos?',
             html: `
                 <div class="text-start">
                     <p>He revisado que los datos sean los correctos!</p>
+                    ${cajasAbiertasHtml}
                     <div class="mt-3 p-3 bg-light rounded">
                         <strong>Turno:</strong> ${turnoInfo?.turno_nombre || 'No especificado'}<br>
                         <strong>Operación:</strong> <span class="badge ${vm.selectedOperacion === 'apertura' ? 'bg-success' : 'bg-danger'}">${vm.selectedOperacion}</span><br>
