@@ -10,6 +10,7 @@ export class InventarioCajaMapper extends MainMapper<any, any> {
       cierre: DateTimeService.formatearFecha(inventario_caja.cierre),
       sumadiaria: NumberFormatterService.formatNumber(inventario_caja.sumadiaria),
       totalinventario: NumberFormatterService.formatNumber(inventario_caja.totalinventario),
+      total_transferencias: NumberFormatterService.formatNumber(inventario_caja.total_transferencias),
     }
   }
 
