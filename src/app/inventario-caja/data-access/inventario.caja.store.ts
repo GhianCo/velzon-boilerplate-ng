@@ -1132,10 +1132,9 @@ export class InventarioCajaStore extends SignalStore<IState> {
       ...state.valoresSummary,
       totalConvertido,
       totalTransferencias,
-      totalAperturaCaja
+      totalAperturaCaja,
+      tipocambio: nuevoTipoCambio
     };
-
-    // Actualizar chart
 
     this.patch({
       valoresWithDetailsData: valoresConPorcentaje,

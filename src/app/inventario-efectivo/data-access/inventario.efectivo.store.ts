@@ -1274,7 +1274,8 @@ export class InventarioEfectivoStore extends SignalStore<IState> {
     // Actualizar summary
     const valoresSummary = {
       ...state.valoresSummary,
-      totalConvertido
+      totalConvertido,
+      tipocambio: nuevoTipoCambio
     };
 
     this.patch({
