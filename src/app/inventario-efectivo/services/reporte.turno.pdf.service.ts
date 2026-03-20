@@ -252,13 +252,13 @@ export class ReporteTurnoPdfService {
         } else {
           cajasApertura.forEach(() => row.push('-'));
         }
-        row.push({ content: `${simbolo} ${dd.total_importe}`, styles: { fontStyle: 'bold', fillColor: [220, 220, 220], halign: 'right' } });
+        row.push({ content: `${simbolo} ${dd.apertura.total_importe}`, styles: { fontStyle: 'bold', fillColor: [220, 220, 220], halign: 'right' } });
         if (dd.cierre) {
           cajasCierre.forEach((c: any) => row.push(`${dd.cierre.cajas?.find((x: any) => x.caja_id === c.caja_id)?.cantidad ?? '-'}`));
         } else {
           cajasCierre.forEach(() => row.push('-'));
         }
-        row.push({ content: `${simbolo} ${dd.total_importe}`, styles: { fontStyle: 'bold', fillColor: [220, 220, 220], halign: 'right' } });
+        row.push({ content: `${simbolo} ${dd.cierre.total_importe}`, styles: { fontStyle: 'bold', fillColor: [220, 220, 220], halign: 'right' } });
         rows.push(row);
       });
     });
