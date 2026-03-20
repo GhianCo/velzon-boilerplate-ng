@@ -33,6 +33,8 @@ export type IState = {
   cajasData: any,
   cajasError: any,
 
+  cajasAbiertasCierre: any,
+
   turnosLoading: boolean,
   turnosData: any,
   turnosError: any,
@@ -89,6 +91,8 @@ const initialState: IState = {
   cajasLoading: false,
   cajasData: null,
   cajasError: null,
+
+  cajasAbiertasCierre: [],
 
   turnosLoading: false,
   turnosData: [],
@@ -568,7 +572,8 @@ export class InventarioEfectivoStore extends SignalStore<IState> {
 
         this.patch({
           valoresWithDetailsData: valoresConPorcentaje,
-          cajasData: cajasFromBackend
+          cajasData: cajasFromBackend,
+          cajasAbiertasCierre: data.cajas_abiertas
         });
       }),
       finalize(() => {
