@@ -505,7 +505,7 @@ export class InventarioCajaPdfService {
       // Insertar fila de total antes de la categoría DIFERENCIAS
       if (categoria.nombre == 'DIFERENCIAS') {
         rows.push([
-          { content: 'TOTAL GENERAL DE CAJA', styles: { fontStyle: 'bold' } },
+          { content: 'RETORNO DE EFECTIVO A BOVEDA', styles: { fontStyle: 'bold' } },
           { content: `${simbolo} ${total}`, styles: { fontStyle: 'bold' } }
         ]);
       }

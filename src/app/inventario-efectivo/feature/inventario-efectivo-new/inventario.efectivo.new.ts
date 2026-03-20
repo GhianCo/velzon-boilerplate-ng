@@ -6,7 +6,6 @@ import {NgClass} from "@angular/common";
 import {ActivatedRoute} from "@angular/router";
 import {CountUpModule} from "ngx-countup";
 import {ConfirmationService} from "@sothy/services/confirmation.service";
-import {EmptyStateComponent} from "@shared/components/empty-state/empty-state.component";
 import {NgbOffcanvas} from "@ng-bootstrap/ng-bootstrap";
 
 @Component({
@@ -16,8 +15,7 @@ import {NgbOffcanvas} from "@ng-bootstrap/ng-bootstrap";
     BreadcrumbsComponent,
     FormsModule,
     NgClass,
-    CountUpModule,
-    EmptyStateComponent,
+    CountUpModule
 ],
     standalone: true,
     styles: [`
