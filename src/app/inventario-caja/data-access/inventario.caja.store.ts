@@ -507,6 +507,9 @@ export class InventarioCajaStore extends SignalStore<IState> {
       });
     });
 
+    const usdValorDetail = state.valoresWithDetailsData?.find((v: any) => v.codigo === 'USD');
+    const tipocambio = state.valoresSummary.tipocambio || usdValorDetail?.current_tc || 1;
+
     const inventario = {
       operacioncaja_id: operacionCajaId || null,
       tipo_operacion: state.selectedOperacion,
@@ -514,7 +517,7 @@ export class InventarioCajaStore extends SignalStore<IState> {
       diff: diferenciaInfo?.diferencia || state.valoresSummary.diferencia,
       diff_obs: diferenciaInfo?.observaciones_diferencia || null,
       suma_diaria: state.valoresSummary.suma_diaria_efectivo + state.valoresSummary.totalConvertido,
-      tipocambio: state.valoresSummary.tipocambio,
+      tipocambio,
       creditos_promocionales: state.valoresSummary.creditos_promocionales || 0,
       inventario_efectivo_detalle: inventarioDetallePorDenominacion,
       suma_diaria_detalle: state.catMovWithDetailsData,

@@ -673,7 +673,7 @@ export class InventarioEfectivoStore extends SignalStore<IState> {
       total: state.valoresSummary.totalConvertido,
       diferencia: state.valoresSummary.diferencia,
       suma_diaria: state.valoresSummary.suma_diaria_efectivo,
-      tipocambio: state.valoresSummary.tipocambio,
+      tipocambio: state.valoresSummary.tipocambio || state.valoresWithDetailsData?.find((v: any) => v.codigo === 'USD')?.current_tc || 1,
       creditos_promocionales: state.valoresSummary.creditos_promocionales || 0,
       inventario_efectivo_detalle: inventarioDetallePorDenominacion,
       suma_diaria_detalle: state.catMovWithDetailsData,
