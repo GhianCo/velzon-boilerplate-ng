@@ -15,15 +15,18 @@ export class ReporteTurnoPdfService {
   generarPdfReporteTurno(resumenData: any): void {
     const doc = new jsPDF('p', 'mm', 'a4');
     const pageHeight = doc.internal.pageSize.getHeight();
+    const turnoAbierto = resumenData.abierta;
 
     // Página 1: Inventario de Efectivo
-    this.agregarPaginaInventario(doc, resumenData);
+    this.agregarPaginaInventario(doc, resumenData, turnoAbierto);
     this.agregarFooter(doc);
 
-    // Página 2: Suma Diaria
-    doc.addPage();
-    this.agregarPaginaSumaDiaria(doc, resumenData);
-    this.agregarFooter(doc);
+    // Página 2: Suma Diaria — solo si el turno está cerrado
+    if (!turnoAbierto) {
+      doc.addPage();
+      this.agregarPaginaSumaDiaria(doc, resumenData);
+      this.agregarFooter(doc);
+    }
 
     // Numeración de páginas unificada
     const totalPages = (doc as any).internal.getNumberOfPages();
@@ -46,7 +49,7 @@ export class ReporteTurnoPdfService {
 
   // ─── Páginas ───────────────────────────────────────────────────────────────
 
-  private agregarPaginaInventario(doc: jsPDF, resumenData: any): void {
+  private agregarPaginaInventario(doc: jsPDF, resumenData: any, turnoAbierto: boolean): void {
     const pageWidth = doc.internal.pageSize.getWidth();
     const pageHeight = doc.internal.pageSize.getHeight();
 
@@ -56,16 +59,15 @@ export class ReporteTurnoPdfService {
       resumenData
     );
 
-    const tieneInventario =
-      resumenData.inventario_apertura?.valores?.length > 0 ||
-      resumenData.inventario_cierre?.valores?.length > 0;
+    const tieneInventario = resumenData.inventario_apertura?.valores?.length > 0 ||
+      (!turnoAbierto && resumenData.inventario_cierre?.valores?.length > 0);
 
     if (tieneInventario) {
       if (yPosition > pageHeight - 60) { doc.addPage(); yPosition = 15; }
       this.generarTablaInventario(
         doc,
         resumenData.inventario_apertura,
-        resumenData.inventario_cierre,
+        turnoAbierto ? null : resumenData.inventario_cierre,
         yPosition,
         resumenData.simbolo_moneda,
         10,
@@ -183,7 +185,8 @@ export class ReporteTurnoPdfService {
   ): void {
     const cajasApertura = inventarioApertura?.cajas || [];
     const cajasCierre = inventarioCierre?.cajas || [];
-    const totalColumnas = 1 + cajasApertura.length + 1 + cajasCierre.length + 1;
+    const tieneCierre = cajasCierre.length > 0 || (inventarioCierre?.valores?.length > 0);
+    const totalColumnas = 1 + cajasApertura.length + 1 + (tieneCierre ? cajasCierre.length + 1 : 0);
 
     const titleRow: any[] = [{
       content: 'Inventario de efectivo',
@@ -194,14 +197,16 @@ export class ReporteTurnoPdfService {
     const headers: any[] = [
       { content: 'Descripción', colSpan: 1, styles: { fillColor: [211, 211, 211] } },
       { content: 'Apertura', colSpan: cajasApertura.length + 1, styles: { halign: 'center', fillColor: [211, 211, 211] } },
-      { content: 'Cierre',   colSpan: cajasCierre.length + 1,   styles: { halign: 'center', fillColor: [211, 211, 211] } }
+      ...(tieneCierre ? [{ content: 'Cierre', colSpan: cajasCierre.length + 1, styles: { halign: 'center', fillColor: [211, 211, 211] } }] : [])
     ];
 
     const subHeaders: any[] = [''];
     cajasApertura.forEach((c: any) => subHeaders.push(c.caja_nombre));
     subHeaders.push({ content: 'Total', styles: { halign: 'right' } });
-    cajasCierre.forEach((c: any) => subHeaders.push(c.caja_nombre));
-    subHeaders.push({ content: 'Total', styles: { halign: 'right' } });
+    if (tieneCierre) {
+      cajasCierre.forEach((c: any) => subHeaders.push(c.caja_nombre));
+      subHeaders.push({ content: 'Total', styles: { halign: 'right' } });
+    }
 
     const rows: any[] = [];
     const todosLosValores = new Map<number, any>();
@@ -252,13 +257,15 @@ export class ReporteTurnoPdfService {
         } else {
           cajasApertura.forEach(() => row.push('-'));
         }
-        row.push({ content: `${simbolo} ${dd.apertura.total_importe}`, styles: { fontStyle: 'bold', fillColor: [220, 220, 220], halign: 'right' } });
-        if (dd.cierre) {
-          cajasCierre.forEach((c: any) => row.push(`${dd.cierre.cajas?.find((x: any) => x.caja_id === c.caja_id)?.cantidad ?? '-'}`));
-        } else {
-          cajasCierre.forEach(() => row.push('-'));
+        row.push({ content: `${simbolo} ${dd.apertura?.total_importe ?? '0.00'}`, styles: { fontStyle: 'bold', fillColor: [220, 220, 220], halign: 'right' } });
+        if (tieneCierre) {
+          if (dd.cierre) {
+            cajasCierre.forEach((c: any) => row.push(`${dd.cierre.cajas?.find((x: any) => x.caja_id === c.caja_id)?.cantidad ?? '-'}`));
+          } else {
+            cajasCierre.forEach(() => row.push('-'));
+          }
+          row.push({ content: `${simbolo} ${dd.cierre?.total_importe ?? '0.00'}`, styles: { fontStyle: 'bold', fillColor: [220, 220, 220], halign: 'right' } });
         }
-        row.push({ content: `${simbolo} ${dd.cierre.total_importe}`, styles: { fontStyle: 'bold', fillColor: [220, 220, 220], halign: 'right' } });
         rows.push(row);
       });
     });
@@ -266,8 +273,10 @@ export class ReporteTurnoPdfService {
     const rowTotal: any[] = [{ content: 'TOTAL', styles: { fontStyle: 'bold' } }];
     cajasApertura.forEach(() => rowTotal.push(''));
     rowTotal.push({ content: `${simbolo} ${inventarioApertura?.total || '0.00'}`, styles: { fontStyle: 'bold', fillColor: [200, 200, 200], halign: 'right' } });
-    cajasCierre.forEach(() => rowTotal.push(''));
-    rowTotal.push({ content: `${simbolo} ${inventarioCierre?.total || '0.00'}`, styles: { fontStyle: 'bold', fillColor: [200, 200, 200], halign: 'right' } });
+    if (tieneCierre) {
+      cajasCierre.forEach(() => rowTotal.push(''));
+      rowTotal.push({ content: `${simbolo} ${inventarioCierre?.total || '0.00'}`, styles: { fontStyle: 'bold', fillColor: [200, 200, 200], halign: 'right' } });
+    }
     rows.push(rowTotal);
 
     autoTable(doc, {
