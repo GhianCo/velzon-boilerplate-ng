@@ -684,7 +684,11 @@ export class InventarioEfectivoStore extends SignalStore<IState> {
 
     this._inventarioEfectivoRemoteReq.requestSaveInventario(inventario).pipe(
       tap(async _ => {
-        this._router.navigate(['./'], {relativeTo: this._activatedRoute});
+        if (state.selectedOperacion === 'apertura') {
+          this._router.navigate(['/inventario-caja/nuevo'], { queryParams: { fromBoveda: '1', turnoId: state.selectedTurnoId } });
+        } else {
+          this._router.navigate(['./'], {relativeTo: this._activatedRoute});
+        }
       }),
       finalize(async () => {
         this.patch({saveInventarioEfectivoLoading: false});

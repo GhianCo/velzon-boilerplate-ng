@@ -28,6 +28,9 @@ export class CajaSelectionModalComponent implements OnInit {
   selectedTurnoId: string | number | null = null;
   selectedSupervisor: string | null = null;
 
+  // Preselección de turno (para flujo fromBoveda)
+  preselectedTurnoId: string | number | null = null;
+
   // Datos
   cajas: any[] = [];
   turnos: any[] = [];
@@ -72,6 +75,19 @@ export class CajaSelectionModalComponent implements OnInit {
           // Auto-seleccionar supervisor del turno
           if (this.turnos[0]['supervisor']) {
             this.selectedSupervisor = this.turnos[0]['supervisor'];
+          }
+        }
+
+        // Si viene del flujo fromBoveda con turno preseleccionado, auto-confirmar
+        // para que el usuario solo tenga que seleccionar la caja
+        if (this.preselectedTurnoId) {
+          const turno = this.turnos.find(t => t.turno_id == this.preselectedTurnoId);
+          if (turno) {
+            this.selectedTurnoId = turno.turno_id;
+            if (turno['supervisor']) {
+              this.selectedSupervisor = turno['supervisor'];
+            }
+            this.onConfirm();
           }
         }
       },

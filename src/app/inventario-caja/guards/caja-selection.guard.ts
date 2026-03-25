@@ -45,6 +45,12 @@ export const CajaSelectionGuard: CanActivateFn = async (route, state) => {
     // Pasar información al modal sobre si puede cancelar
     modalRef.componentInstance.canCancel = isListRoute;
 
+    // Si viene del flujo fromBoveda, preseleccionar el turno para que solo tenga que elegir la caja
+    const turnoId = route.queryParamMap.get('turnoId');
+    if (turnoId) {
+        modalRef.componentInstance.preselectedTurnoId = turnoId;
+    }
+
     // Esperar a que el usuario seleccione una caja
     const result = await modalRef.result;
 
