@@ -271,10 +271,16 @@ export class ReporteTurnoPdfService {
     });
 
     const rowTotal: any[] = [{ content: 'TOTAL', styles: { fontStyle: 'bold' } }];
-    cajasApertura.forEach(() => rowTotal.push(''));
+    cajasApertura.forEach((_: any, i: number) => {
+      const colTotal = inventarioApertura?.totales_columnas?.[i] ?? '0.00';
+      rowTotal.push({ content: `${simbolo} ${colTotal}`, styles: { fontStyle: 'bold', fillColor: [200, 200, 200], halign: 'left' } });
+    });
     rowTotal.push({ content: `${simbolo} ${inventarioApertura?.total || '0.00'}`, styles: { fontStyle: 'bold', fillColor: [200, 200, 200], halign: 'right' } });
     if (tieneCierre) {
-      cajasCierre.forEach(() => rowTotal.push(''));
+      cajasCierre.forEach((_: any, i: number) => {
+        const colTotal = inventarioCierre?.totales_columnas?.[i] ?? '0.00';
+        rowTotal.push({ content: `${simbolo} ${colTotal}`, styles: { fontStyle: 'bold', fillColor: [200, 200, 200], halign: 'left' } });
+      });
       rowTotal.push({ content: `${simbolo} ${inventarioCierre?.total || '0.00'}`, styles: { fontStyle: 'bold', fillColor: [200, 200, 200], halign: 'right' } });
     }
     rows.push(rowTotal);
