@@ -48,6 +48,7 @@ import {workersAPiCreator, WorkersApiService} from "@sothy/services/workers.api.
 import {AlertService, alertServiceFactory} from "@sothy/services/alert.service";
 import {provideAuth} from "@sothy/providers/auth.provider";
 import {ExternalAuthInitializerService} from "@app/account/services/external-auth-initializer.service";
+import {KeycloakInitializerService} from "@app/account/services/keycloak-initializer.service";
 
 registerLanguageDictionary(deDE);
 
@@ -71,6 +72,15 @@ export function initializeExternalAuth(
   return () => externalAuthService.initialize();
 }
 
+/**
+ * Factory para inicializar el adaptador Keycloak (check-sso + intercambio de token)
+ */
+export function initializeKeycloak(
+  keycloakInitializerService: KeycloakInitializerService
+): () => Promise<void> {
+  return () => keycloakInitializerService.initialize();
+}
+
 if (environment.defaultauth === 'firebase') {
   initFirebaseBackend(environment.firebaseConfig);
 } else {
@@ -91,6 +101,13 @@ export const appConfig: ApplicationConfig = {
       provide: APP_INITIALIZER,
       useFactory: initializeExternalAuth,
       deps: [ExternalAuthInitializerService],
+      multi: true
+    },
+    // APP_INITIALIZER para SSO con Keycloak
+    {
+      provide: APP_INITIALIZER,
+      useFactory: initializeKeycloak,
+      deps: [KeycloakInitializerService],
       multi: true
     },
     // Configuración de HttpClient con interceptores funcionales

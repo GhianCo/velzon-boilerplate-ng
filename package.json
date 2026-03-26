@@ -69,6 +69,7 @@
     "karma": "^6.4.3",
     "karma-chrome-launcher": "^3.2.0",
     "karma-coverage": "^2.2.1",
+    "keycloak-js": "^26.2.3",
     "leaflet": "^1.9.4",
     "lottie-web": "^5.12.2",
     "masonry-layout": "^4.2.2",

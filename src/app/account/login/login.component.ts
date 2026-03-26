@@ -6,6 +6,7 @@ import {RouterLink} from '@angular/router';
 import {NgClass} from "@angular/common";
 import {NgbCarousel, NgbSlide} from "@ng-bootstrap/ng-bootstrap";
 import {AuthLoginStore} from "@app/account/data-access/auth.login.store";
+import {KeycloakService} from "@app/account/services/keycloak.service";
 
 @Component({
   selector: 'app-login',
@@ -38,6 +39,7 @@ export class LoginComponent implements OnInit {
   // Carousel navigation arrow show
   showNavigationArrows: any;
   public authLoginStore = inject(AuthLoginStore);
+  private _keycloakService = inject(KeycloakService);
 
   constructor(private formBuilder: UntypedFormBuilder) { }
 
@@ -66,6 +68,18 @@ export class LoginComponent implements OnInit {
       return;
     }
     this.authLoginStore.loadLogin(this.loginForm.value);
+  }
+
+  /**
+   * Inicia sesión a través de Keycloak.
+   * Guarda el sala_id seleccionado para recuperarlo al volver del redirect.
+   */
+  loginWithKeycloak(): void {
+    const salaId = this.loginForm.get('sala_id')?.value;
+    if (salaId) {
+      //sessionStorage.setItem(KeycloakService.SALA_STORAGE_KEY, String(salaId));
+    }
+    this._keycloakService.login();
   }
 
   /**

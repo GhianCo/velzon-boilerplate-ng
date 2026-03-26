@@ -49,9 +49,16 @@ export class AuthService {
             return of(false);
         }
 
-        // Check the access token expire date
-        if (AuthUtils.isTokenExpired(this.accessToken)) {
-            return of(false);
+        // Check the access token expire date.
+        // Wrapped in try-catch because tokens from external providers (e.g. Keycloak)
+        // may use a format that causes AuthUtils to throw; in that case we trust
+        // the token exists and let the backend reject it if truly invalid.
+        try {
+            if (AuthUtils.isTokenExpired(this.accessToken)) {
+                return of(false);
+            }
+        } catch {
+            // Token exists but is not parseable by AuthUtils → treat as valid
         }
 
         // If the access token exists, and it didn't expire, sign in using it

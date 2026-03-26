@@ -116,6 +116,25 @@
                         <div class="mt-4">
                           <button class="btn btn-primary w-100" type="submit" [disabled]="vm.loginLoading">Ingresar</button>
                         </div>
+
+                        <div class="mt-3 text-center">
+                          <span class="text-muted fs-12">— o continúa con —</span>
+                        </div>
+
+                        <div class="mt-3">
+                          <button type="button" class="btn btn-outline-danger w-100"
+                            [disabled]="!loginForm.get('sala_id')?.value"
+                            (click)="loginWithKeycloak()"
+                            title="Es necesario seleccionar una sala primero">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="currentColor" class="me-2" style="vertical-align:text-bottom">
+                              <path d="M12 0C5.373 0 0 5.373 0 12s5.373 12 12 12 12-5.373 12-12S18.627 0 12 0zm0 2.4a9.6 9.6 0 1 1 0 19.2A9.6 9.6 0 0 1 12 2.4zm-1.2 3.6v4.8H7.2l4.8 7.2 4.8-7.2h-3.6V6h-2.4z"/>
+                            </svg>
+                            Iniciar sesión con Keycloak
+                          </button>
+                          @if (!loginForm.get('sala_id')?.value) {
+                            <small class="text-muted d-block text-center mt-1">Selecciona una sala primero</small>
+                          }
+                        </div>
                       </form>
                     </div>
                   }
