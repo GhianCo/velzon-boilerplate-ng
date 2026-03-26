@@ -463,9 +463,10 @@
 
 <!-- Modal para observaciones de diferencia -->
 <ng-template #diferenciaModal let-offcanvas>
-  <div class="offcanvas-header bg-danger">
+  <div class="offcanvas-header" [ngClass]="diferenciaEsCajasAbiertas ? 'bg-warning' : 'bg-danger'">
     <h5 class="offcanvas-title text-white" id="offcanvasDiferenciaLabel">
-      <i class="ri-alert-line me-2"></i>Diferencia detectada
+      <i class="me-2" [ngClass]="diferenciaEsCajasAbiertas ? 'ri-information-line' : 'ri-alert-line'"></i>
+      {{ diferenciaEsCajasAbiertas ? 'Diferencia por cajas abiertas' : 'Diferencia detectada' }}
     </h5>
     <button type="button" class="btn-close btn-close-white" data-bs-dismiss="offcanvas" aria-label="Close"
       (click)="offcanvas.dismiss('Cross click')"></button>
@@ -473,7 +474,9 @@
   <!--end offcanvas-header-->
   <form class="d-flex flex-column justify-content-end h-100">
     <div class="offcanvas-body">
-      <div class="alert alert-danger border-danger mb-4">
+
+      <!-- Resumen de diferencia -->
+      <div class="alert border mb-4" [ngClass]="diferenciaEsCajasAbiertas ? 'alert-warning border-warning' : 'alert-danger border-danger'">
         <div class="d-flex justify-content-between align-items-center">
           <div>
             <strong>Total este inventario:</strong><br>
@@ -486,20 +489,66 @@
         </div>
         <hr class="my-2">
         <div class="d-flex justify-content-between align-items-center">
-          <strong class="text-danger">
+          <strong [ngClass]="diferenciaEsCajasAbiertas ? 'text-warning' : 'text-danger'">
             <i class="ri-alert-line me-1"></i>Diferencia:
           </strong>
-          <strong class="text-danger fs-5">
+          <strong class="fs-5" [ngClass]="diferenciaEsCajasAbiertas ? 'text-warning' : 'text-danger'">
             S/. {{ getDiferenciaInventarioSuma().toFixed(2) }}
           </strong>
         </div>
       </div>
+
+      <!-- CASO ESPECIAL: diferencia == monto apertura de cajas abiertas -->
+      @if (diferenciaEsCajasAbiertas) {
+        @if (inventarioEfectivoStore.vm(); as vm) {
+        <div class="alert alert-warning border-warning mb-3">
+          <h6 class="alert-heading fw-bold mb-2">
+            <i class="ri-store-2-line me-1"></i>La diferencia está justificada por cajas abiertas
+          </h6>
+          <p class="mb-2 small">
+            Las siguientes cajas <strong>no se cerraron</strong> durante este turno.
+            Su monto de apertura (<strong>S/. {{ getMontoCajasAbiertasCierre().toFixed(2) }}</strong>)
+            coincide exactamente con la diferencia y continuará en el siguiente turno:
+          </p>
+          <div class="mb-2">
+            @for (caja of vm.cajasAbiertasCierre; track caja.caja_id) {
+            <span class="badge bg-warning-subtle text-warning border border-warning me-1 mb-1 px-2 py-1">
+              {{ caja.caja_nombre }}
+              <small class="ms-1 opacity-75">S/. {{ (+caja.monto_apertura || 0).toFixed(2) }}</small>
+            </span>
+            }
+          </div>
+          <p class="mb-0 small text-muted">
+            <i class="ri-checkbox-circle-line me-1 text-success"></i>
+            Puedes cerrar el turno. Si esto no es correcto, cierra primero esas cajas y vuelve a generar el inventario.
+          </p>
+        </div>
+        }
+      } @else {
+        <!-- CASO NORMAL: diferencia no justificada → no se puede cerrar -->
+        <div class="alert alert-danger border-danger mb-3">
+          <h6 class="alert-heading fw-bold mb-2">
+            <i class="ri-close-circle-line me-1"></i>No se puede cerrar el turno
+          </h6>
+          <p class="mb-0 small">
+            La diferencia encontrada <strong>no coincide</strong> con el monto de ninguna caja abierta.
+            Revisa los valores ingresados, corrige el inventario y vuelve a intentarlo.
+          </p>
+        </div>
+      }
+
     </div>
     <!--end offcanvas-body-->
     <div class="offcanvas-footer border-top p-3 text-center">
-      <button type="button" (click)="offcanvas.dismiss('Cross click')" class="btn btn-danger w-100">
-        <i class="ri-alert-line align-middle me-1"></i>Validar nuevamente
-      </button>
+      @if (diferenciaEsCajasAbiertas) {
+        <button type="button" (click)="confirmGuardarInventario()" class="btn btn-warning w-100">
+          <i class="ri-save-fill align-middle me-1"></i>Entendido, cerrar turno de todas formas
+        </button>
+      } @else {
+        <button type="button" (click)="offcanvas.dismiss('Cross click')" class="btn btn-danger w-100">
+          <i class="ri-edit-line align-middle me-1"></i>Volver a revisar el inventario
+        </button>
+      }
     </div>
     <!--end offcanvas-footer-->
   </form>

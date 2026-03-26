@@ -154,6 +154,13 @@ export class InventarioEfectivoNew implements OnInit {
     // Propiedad para observaciones cuando hay diferencia
     observacionesDiferencia: string = '';
 
+    /**
+     * Indica si la diferencia detectada corresponde exactamente al monto de apertura
+     * de las cajas que quedaron abiertas (cajasAbiertasCierre).
+     * Solo en este caso se permite cerrar el turno con diferencia.
+     */
+    diferenciaEsCajasAbiertas: boolean = false;
+
     // Propiedades para transferencia de efectivo por caja
     selectedCajaTransferencia: any = null;
     montoTransferencia: number | null = null;
@@ -275,7 +282,13 @@ export class InventarioEfectivoNew implements OnInit {
         const TOLERANCIA = 0.01; // Tolerancia de 1 centavo
 
         if (this.isCerrarMode && diferencia > TOLERANCIA) {
-            // Si hay diferencia significativa, abrir el modal
+            // Calcular si la diferencia coincide exactamente con el monto total
+            // de apertura de las cajas que quedan abiertas para el siguiente turno
+            const montoCajasAbiertas = this.getMontoCajasAbiertasCierre();
+            this.diferenciaEsCajasAbiertas = montoCajasAbiertas > 0 &&
+                Math.abs(diferencia - montoCajasAbiertas) < TOLERANCIA;
+
+            // Abrir el modal de diferencia en todos los casos
             this.offcanvasService.open(this.diferenciaModal, {
                 position: 'end',
                 backdrop: 'static',
@@ -290,19 +303,15 @@ export class InventarioEfectivoNew implements OnInit {
 
     // Método que se ejecuta al confirmar desde el modal de diferencia
     confirmGuardarInventario() {
-        // Validar que se haya ingresado observación
-        if (!this.observacionesDiferencia || this.observacionesDiferencia.trim().length === 0) {
-            this.confirmationService.warning(
-                '⚠️ Observación requerida',
-                'Debes ingresar una observación sobre la diferencia encontrada.'
-            );
+        // Solo se puede confirmar si la diferencia corresponde a cajas abiertas
+        // (diferenciaEsCajasAbiertas == true). En ese caso no se exige observación.
+        // Para cualquier otra diferencia el botón está deshabilitado en el template.
+        if (!this.diferenciaEsCajasAbiertas) {
             return;
         }
 
-        // Cerrar el offcanvas
+        // Cerrar el offcanvas y proceder con el guardado
         this.offcanvasService.dismiss();
-
-        // Proceder con el guardado
         this.proceedToSave();
     }
 
@@ -354,7 +363,11 @@ export class InventarioEfectivoNew implements OnInit {
             // onConfirm callback
             const turnoId = vm.turnoData?.turno_id || vm.selectedTurnoId;
             const operacionTurnoId = this.operacionTurnoId || null;
-            this.inventarioEfectivoStore.saveInventarioEfectivoWithDetils(turnoId, operacionTurnoId);
+            // Si la diferencia es exactamente el monto de cajas abiertas, se envía al backend
+            const diferenciaCajasAbiertas = this.diferenciaEsCajasAbiertas
+                ? this.getMontoCajasAbiertasCierre()
+                : null;
+            this.inventarioEfectivoStore.saveInventarioEfectivoWithDetils(turnoId, operacionTurnoId, diferenciaCajasAbiertas);
         });
     }
 
@@ -405,6 +418,20 @@ export class InventarioEfectivoNew implements OnInit {
         const diferencia = totalInventario - totalSumaDiaria;
 
         return diferencia;
+    }
+
+    /**
+     * Suma los monto_apertura de todas las cajasAbiertasCierre.
+     * Este valor se usa para determinar si la diferencia es explicable por
+     * las cajas que quedaron abiertas y por tanto se puede cerrar el turno.
+     */
+    getMontoCajasAbiertasCierre(): number {
+        const cajasAbiertasCierre = this.inventarioEfectivoStore.vm().cajasAbiertasCierre;
+        if (!cajasAbiertasCierre?.length) return 0;
+        return cajasAbiertasCierre.reduce(
+            (acc: number, caja: any) => acc + (Number(caja.monto_apertura) || 0),
+            0
+        );
     }
 
     // Método público para acceder al vm desde el template

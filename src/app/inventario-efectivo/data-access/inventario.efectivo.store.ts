@@ -614,7 +614,7 @@ export class InventarioEfectivoStore extends SignalStore<IState> {
     ).subscribe();
   };
 
-  public async saveInventarioEfectivoWithDetils(turnoId?: string, operacionTurnoId?: string | null) {
+  public async saveInventarioEfectivoWithDetils(turnoId?: string, operacionTurnoId?: string | null, diferenciaCajasAbiertas?: number | null) {
     this.patch({saveInventarioEfectivoLoading: true, saveInventarioEfectivoError: null});
     const state = this.vm();
 
@@ -679,7 +679,9 @@ export class InventarioEfectivoStore extends SignalStore<IState> {
       suma_diaria_detalle: state.catMovWithDetailsData,
       cajas: state.cajasData,
       supervisor: state.selectedSupervisorId || turno.supervisor || '',
-      ultimo_turno: turno.turno_ultimo || 0
+      ultimo_turno: turno.turno_ultimo || 0,
+      diff_inv_sumdia: diferenciaCajasAbiertas ?? null,
+      obs_diff_inv_sumdia: diferenciaCajasAbiertas ? 'DIFERENCIA CAJAS EN TRANSITO' : null
     };
 
     this._inventarioEfectivoRemoteReq.requestSaveInventario(inventario).pipe(
