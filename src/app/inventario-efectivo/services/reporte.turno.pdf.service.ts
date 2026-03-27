@@ -137,8 +137,8 @@ export class ReporteTurnoPdfService {
     const pageHeight = doc.internal.pageSize.getHeight();
 
     const posicionYDeclaracion = pageHeight - 30;
-    const posicionYFirmas = posicionYDeclaracion - 12 - 5 - 12;
-    const posicionYCertificacion = posicionYFirmas - 30 - 8;
+    const posicionYFirmas = posicionYDeclaracion - 20;
+    const posicionYCertificacion = posicionYFirmas - 25;
 
     doc.setDrawColor(0, 0, 0);
     doc.setLineWidth(0.5);
@@ -321,7 +321,9 @@ export class ReporteTurnoPdfService {
     categorias.forEach((cat: any) => {
       const colorFondo = cat.tipo_operacion === 'ingreso' ? [200, 200, 200] :
                          cat.tipo_operacion === 'egreso'  ? [180, 180, 180] : [220, 220, 220];
-      rows.push([{ content: cat.nombre, colSpan: 2, styles: { fontStyle: 'bold', fillColor: colorFondo, halign: 'left' } }]);
+      rows.push([{ content: cat.nombre, styles: { fontStyle: 'bold', fillColor: colorFondo, halign: 'left' } },
+                { content: `${simbolo} ${cat.total}`, styles: { fontStyle: 'bold', fillColor: colorFondo} }
+      ]);
       cat.items?.forEach((item: any) => rows.push([item.nombre, `${simbolo} ${item.importe}`]));
     });
     rows.push([

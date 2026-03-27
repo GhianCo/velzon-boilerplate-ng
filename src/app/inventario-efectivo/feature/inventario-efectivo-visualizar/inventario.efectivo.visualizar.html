@@ -297,7 +297,7 @@
                                             'table-danger': categoria.tipo_operacion === 'egreso',
                                             'table-warning': categoria.tipo_operacion === 'diferencia'
                                         }">
-                                    <td class="fw-bold" colspan="2">
+                                    <td class="fw-bold">
                                         @if (categoria.tipo_operacion === 'ingreso') {
                                         <i class="ri-arrow-up-circle-fill me-2"></i>
                                         } @else if (categoria.tipo_operacion === 'egreso') {
@@ -306,6 +306,9 @@
                                         <i class="ri-alert-line me-2"></i>
                                         }
                                         {{ categoria.nombre }}
+                                    </td>
+                                    <td class="text-end fw-bold">
+                                        {{ resumenData.simbolo_moneda }} {{ categoria.total }}
                                     </td>
                                 </tr>
 
