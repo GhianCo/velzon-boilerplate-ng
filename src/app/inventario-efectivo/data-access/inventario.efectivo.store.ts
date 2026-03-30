@@ -336,12 +336,11 @@ export class InventarioEfectivoStore extends SignalStore<IState> {
             const importeConvertido = denom.cajas?.reduce((sum: number, c: any) => sum + (c.importeConvertido || 0), 0) || 0;
             const cantidadTotal = denom.cajas?.reduce((sum: number, c: any) => sum + (c.cantidad || 0), 0) || 0;
 
-            // Calcular el valor unitario real desde los datos del backend
-            // Si hay cantidad, dividir importeLocal / cantidadTotal para obtener el valor unitario real
-            let valorUnitario = denom.valor || 1;
-            if (cantidadTotal > 0 && importeLocal > 0) {
-              valorUnitario = importeLocal / cantidadTotal;
-            }
+            // Usar el valor de denominación directamente del backend (guardado como denominacion_valor)
+            // No recalcular desde importeLocal/cantidadTotal: en este sistema la cantidad ingresada
+            // ES el importe monetario, por lo que importeLocal === cantidadTotal → la división daría 1
+            // en lugar del valor real de la denominación (ej: 0.1, 0.01, etc.)
+            const valorUnitario = denom.valor || 1;
 
             acumuladoLocal += importeLocal;
             acumuladoConvertido += importeConvertido;
