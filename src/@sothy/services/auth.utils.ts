@@ -11,6 +11,27 @@ export class AuthUtils {
     // -----------------------------------------------------------------------------------------------------
 
     /**
+     * Decode a JWT token and return the payload as a plain object.
+     * Returns null if the token is missing or malformed.
+     */
+    static decodeToken(token: string): any {
+        try {
+            return this._decodeToken(token);
+        } catch {
+            return null;
+        }
+    }
+
+    /**
+     * Returns the list of client roles from resource_access[clientId].roles
+     * in a Keycloak JWT.  Returns an empty array when not found.
+     */
+    static getKcRoles(token: string, clientId: string): string[] {
+        const decoded = this.decodeToken(token);
+        return decoded?.resource_access?.[clientId]?.roles ?? [];
+    }
+
+    /**
      * Is token expired?
      *
      * @param token

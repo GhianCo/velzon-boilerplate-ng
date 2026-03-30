@@ -4,6 +4,7 @@ import {PersistenceService} from "@sothy/services/persistence.service";
 import {PKEY} from "@shared/constants/persistence.const";
 import {AuthUtils} from "@sothy/services/auth.utils";
 import {CajaGlobalService} from "@sothy/services/caja-global.service";
+import {environment} from "@environments/environment";
 
 @Injectable({providedIn: 'root'})
 export class AuthService {
@@ -72,5 +73,14 @@ export class AuthService {
     checkPermiso(modulo: string): boolean {
         const hasPermissions = this.permisosUser?.find((permiso: any) => permiso.permiso_modulo === modulo);
         return !!hasPermissions;
+    }
+
+    /**
+     * Returns true when the current KC token contains the given client-level role
+     * (checked against resource_access[clientId].roles).
+     */
+    hasKcRole(role: string): boolean {
+        const roles = AuthUtils.getKcRoles(this.accessToken, environment.keycloak.clientId);
+        return roles.includes(role);
     }
 }

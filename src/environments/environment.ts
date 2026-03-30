@@ -25,7 +25,7 @@ export const environment = {
   apiWorkers: 'https://10.45.1.171/workers',
   keycloak: {
     url: 'http://10.45.1.80:8080',
-    realm: 'masaris',
+    realm: 'master',
     clientId: 'sumadiaria',
   },
 };
