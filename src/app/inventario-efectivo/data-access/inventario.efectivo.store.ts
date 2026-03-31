@@ -704,7 +704,8 @@ export class InventarioEfectivoStore extends SignalStore<IState> {
 
   public get filtersToApply() {
     const state = this.vm();
-    return state.filtersToApply
+    const salaId = this._persistenceService.get('data')?.sala?.id ?? PARAM.UNDEFINED;
+    return { ...state.filtersToApply, sala_id: salaId };
   };
 
   public loadAllInvetarioEfectivoStore(): Observable<any> {
@@ -895,12 +896,13 @@ export class InventarioEfectivoStore extends SignalStore<IState> {
     const firstDayOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
     const today = new Date();
 
+    const salaId = this._persistenceService.get('data')?.sala?.id ?? PARAM.UNDEFINED;
     const filtersToApply = {
       ...this.vm().filtersToApply,
       startDate: this.formatDateForAPI(firstDayOfMonth, true),
       endDate: this.formatDateForAPI(today, false),
       turno_id: PARAM.UNDEFINED,
-      sala_id: PARAM.UNDEFINED,
+      sala_id: salaId,
     };
 
     this.patch({filtersToApply});
