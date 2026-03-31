@@ -27,7 +27,7 @@ import {AperturaCajaValidatorService} from "@app/inventario-caja/services/apertu
 import {InventarioCajaPdfService} from "@app/inventario-caja/services/inventario.caja.pdf.service";
 import {InventarioCajaRemoteReq} from "@app/inventario-caja/data-access/inventario.caja.remote.req";
 import {CajaGlobalService} from "@sothy/services/caja-global.service";
-import {computed} from '@angular/core';
+import {PersistenceService} from "@sothy/services/persistence.service";
 
 @Component({
   standalone: true,
@@ -202,6 +202,7 @@ export class InventarioCajaList {
               private inventarioCajaPdfService: InventarioCajaPdfService,
               private inventarioRemoteReq: InventarioCajaRemoteReq,
               public cajaGlobalService: CajaGlobalService,
+              private persistenceService: PersistenceService,
   ) {
     // Inicializar FormControl con el rango de fechas del store
     this.dateRangeControl = new FormControl(this.inventarioCajaStore.getDateRangeForComponent());
@@ -341,13 +342,14 @@ export class InventarioCajaList {
    * Título dinámico que incluye el nombre de la caja y turno seleccionados
    */
   get breadcrumbTitle(): string {
-    const selectedCaja = this.cajaGlobalService.selectedCaja();
-    const selectedTurno = this.cajaGlobalService.selectedTurno();
-    
-    if (selectedCaja && selectedTurno) {
-      return `Apertura y cierre de ${selectedCaja.caja_nombre} - ${selectedTurno.turno_nombre}`;
-    } else if (selectedCaja) {
-      return `Apertura y cierre de ${selectedCaja.caja_nombre}`;
+    const session = this.persistenceService.get('session');
+    const cajaSession = session?.cajaSession;
+    const turnoSession = session?.turnoSession;
+
+    if (cajaSession && turnoSession) {
+      return `Apertura y cierre de ${cajaSession.name} - ${turnoSession.name}`;
+    } else if (cajaSession) {
+      return `Apertura y cierre de ${cajaSession.name}`;
     }
     return 'Apertura y cierre de caja';
   }

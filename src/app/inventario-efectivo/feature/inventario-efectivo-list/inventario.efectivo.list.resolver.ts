@@ -10,7 +10,7 @@ export const InventarioEfectivoListResolver = () => {
   inventarioEfectivoStore.initDefaultFilters();
 
   // Cargar turnos desde localStorage (key: cash_control_st_data)
-  const sessionData = persistenceService.get('data');
+  const sessionData = persistenceService.get('core');
   const turnos = sessionData?.turnos ?? [];
   inventarioEfectivoStore.actualizarTurnos(turnos);
 

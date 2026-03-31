@@ -8,7 +8,7 @@ export const InventarioEfectivoReplicarResolver = (route: ActivatedRouteSnapshot
   const persistenceService = inject(PersistenceService);
   const id = route.params['id'];
 
-  const turnos = persistenceService.get('data')?.turnos ?? [];
+  const turnos = persistenceService.get('core')?.turnos ?? [];
   inventarioEfectivoStore.actualizarTurnos(turnos);
 
   inventarioEfectivoStore.loadCajas();

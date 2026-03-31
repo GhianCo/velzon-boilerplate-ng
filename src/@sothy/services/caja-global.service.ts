@@ -2,21 +2,21 @@ import { Injectable, signal, computed, inject } from '@angular/core';
 import { PersistenceService } from '@sothy/services/persistence.service';
 import { HttpService } from '@sothy/services/http.service';
 import { environment } from '@environments/environment';
-import { Observable, BehaviorSubject } from 'rxjs';
+import { Observable, of } from 'rxjs';
 import { tap, catchError } from 'rxjs/operators';
 import { ControlActivosApiService } from '@sothy/services/control.activos.api.service';
 
 export interface Caja {
-  caja_id: string | number;
-  caja_nombre: string;
+  id: string | number;
+  name: string;
   sala_id?: number;
   estado?: string;
   [key: string]: any;
 }
 
 export interface Turno {
-  turno_id: string | number;
-  turno_nombre: string;
+  id: string | number;
+  name: string;
   [key: string]: any;
 }
 
@@ -89,14 +89,14 @@ export class CajaGlobalService {
   public readonly selectedCaja = computed(() => {
     const cajaId = this._selectedCajaId();
     if (!cajaId) return null;
-    return this._cajas().find(c => c.caja_id == cajaId) || null;
+    return this._cajas().find(c => c.id == cajaId) || null;
   });
   
   // Turno seleccionado completo
   public readonly selectedTurno = computed(() => {
     const turnoId = this._selectedTurnoId();
     if (!turnoId) return null;
-    return this._turnos().find(t => t.turno_id == turnoId) || null;
+    return this._turnos().find(t => t.id == turnoId) || null;
   });
 
   // Verificadores
@@ -115,81 +115,36 @@ export class CajaGlobalService {
   }
 
   /**
-   * Carga las cajas disponibles de la sala actual
-   * @param deApertura - Filtro para cajas de apertura (-1 = todas)
+   * Carga las cajas desde localStorage (key: cash_control_st_data)
    */
-  loadCajas(deApertura: number | string = -1): Observable<any> {
+  loadCajas(_deApertura: number | string = -1): Observable<any> {
     this._loading.set(true);
     this._error.set(null);
-    
-    const salaId = this.persistenceService.getSalaId();
-    
-    return this.controlActivosApiService
-      .get(`${this.REMOTE_API_URI}caja?sala=${salaId}&de_apertura=${deApertura}&operativa=1`)
-      .pipe(
-        tap((response: any) => {
-          const cajas = response?.data || [];
-          this._cajas.set(cajas);
-          
-          // Si había una caja seleccionada previamente, verificar que siga disponible
-          const currentSelectedId = this._selectedCajaId();
-          if (currentSelectedId) {
-            const cajaExists = cajas.find((c: Caja) => c.caja_id == currentSelectedId);
-            if (!cajaExists) {
-              // La caja ya no está disponible, limpiar selección
-              this.clearSelectedCaja();
-            }
-          }
-          this._loading.set(false);
-        }),
-        catchError((error) => {
-          this._error.set(error);
-          this._loading.set(false);
-          this._cajas.set([]);
-          throw error;
-        })
-      );
+
+    const cajas: Caja[] = this.persistenceService.get('core')?.cajas ?? [];
+    this._cajas.set(cajas);
+
+    const currentSelectedId = this._selectedCajaId();
+    if (currentSelectedId) {
+      const cajaExists = cajas.find((c: Caja) => c.id == currentSelectedId);
+      if (!cajaExists) {
+        this.clearSelectedCaja();
+      }
+    }
+
+    this._loading.set(false);
+    return of(cajas);
   }
 
   /**
    * Carga los turnos disponibles
    */
   loadTurnos(): Observable<any> {
-    this._loading.set(true);
+    const turnos = this.persistenceService.get('core')?.turnos ?? [];
+    this._turnos.set(turnos);
+    this._loading.set(false);
     this._error.set(null);
-    
-    const salaId = this.persistenceService.getSalaId();
-    
-    return this.controlActivosApiService
-      .get(`${this.REMOTE_API_URI}turno?sala=${salaId}`)
-      .pipe(
-        tap((response: any) => {
-          const turnos = response?.data || [];
-          this._turnos.set(turnos);
-          
-          // Si había un turno seleccionado previamente, verificar que siga disponible
-          const currentSelectedId = this._selectedTurnoId();
-          if (currentSelectedId) {
-            const turnoExists = turnos.find((t: Turno) => t.turno_id == currentSelectedId);
-            if (!turnoExists) {
-              this.clearSelectedTurno();
-            }
-          }
-          
-          // Si solo hay un turno disponible, seleccionarlo automáticamente
-          if (turnos.length === 1 && !currentSelectedId) {
-            this.setSelectedTurno(turnos[0].turno_id);
-          }
-          
-          this._loading.set(false);
-        }),
-        catchError((error) => {
-          this._error.set(error);
-          this._loading.set(false);
-          this._turnos.set([]);
-          throw error;
-        })
-      );
+    return of(turnos);
   }
 
   /**
@@ -203,7 +158,7 @@ export class CajaGlobalService {
     }
     
     // Verificar que la caja existe en la lista
-    const caja = this._cajas().find(c => c.caja_id == cajaId);
+    const caja = this._cajas().find(c => c.id == cajaId);
     if (!caja) {
       console.warn(`Caja con ID ${cajaId} no encontrada en la lista de cajas disponibles`);
       return;
@@ -231,7 +186,7 @@ export class CajaGlobalService {
     }
     
     // Verificar que el turno existe en la lista
-    const turno = this._turnos().find(t => t.turno_id == turnoId);
+    const turno = this._turnos().find(t => t.id == turnoId);
     if (!turno) {
       console.warn(`Turno con ID ${turnoId} no encontrado en la lista de turnos disponibles`);
       return;
@@ -284,8 +239,8 @@ export class CajaGlobalService {
         // Si tenemos el nombre pero no está en la lista de cajas, agregarlo temporalmente
         if (savedCajaNombre && this._cajas().length === 0) {
           this._cajas.set([{
-            caja_id: savedCajaId,
-            caja_nombre: savedCajaNombre
+            id: savedCajaId,
+            name: savedCajaNombre
           }]);
         }
       }
@@ -320,8 +275,8 @@ export class CajaGlobalService {
         
         if (savedTurnoNombre && this._turnos().length === 0) {
           this._turnos.set([{
-            turno_id: savedTurnoId,
-            turno_nombre: savedTurnoNombre
+            id: savedTurnoId,
+            name: savedTurnoNombre
           }]);
         }
       }

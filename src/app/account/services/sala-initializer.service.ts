@@ -45,7 +45,7 @@ export class SalaInitializerService {
         })
       );
       const sessionData = response.data;
-      this._persistenceService.set('data', sessionData);
+      this._persistenceService.set('core', sessionData);
       this._salaService.sala = sessionData;
     } catch (error) {
       if (isDevMode()) {

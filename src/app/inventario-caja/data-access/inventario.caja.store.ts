@@ -405,31 +405,16 @@ export class InventarioCajaStore extends SignalStore<IState> {
     ).subscribe();
   }
 
-  public async loadCajas(de_apertura = PARAM.UNDEFINED) {
-    this.patch({cajasLoading: true, cajasError: null});
-    this._inventarioCajaRemoteReq.requestAllCajasBySala(this._persistenceService.getSalaId(), de_apertura).pipe(
-      tap(async ({data, pagination}) => {
-        this.patch({
-          cajasData: data,
-        })
-      }),
-      finalize(async () => {
-        this.patch({cajasLoading: false});
-      }),
-      catchError((error) => {
-        return of(this.patch({
-          cajasLoading: false,
-          cajasError: error
-        }));
-      }),
-    ).subscribe();
+  public async loadCajas(_de_apertura = PARAM.UNDEFINED) {
+    const cajas = this._persistenceService.get('core')?.cajas ?? [];
+    this.patch({cajasData: cajas, cajasLoading: false, cajasError: null});
   };
 
   public async loadValoresWithDetails(cajaId?: string | number | null) {
     this.patch({valoresWithDetailsLoading: true, valoresWithDetailsError: null});
     this.initialize(initialState);
     this._inventarioCajaRemoteReq.requestGetValoresWithDetails(cajaId).pipe(
-      tap(async ({data, pagination}) => {
+      tap(async ({data}) => {
         this.patch({
           valoresWithDetailsData: data,
         })
@@ -509,6 +494,7 @@ export class InventarioCajaStore extends SignalStore<IState> {
 
     const usdValorDetail = state.valoresWithDetailsData?.find((v: any) => v.codigo === 'USD');
     const tipocambio = state.valoresSummary.tipocambio || usdValorDetail?.current_tc || 1;
+    const sessionData = this._persistenceService.get('core');
 
     const inventario = {
       operacioncaja_id: operacionCajaId || null,
@@ -522,6 +508,7 @@ export class InventarioCajaStore extends SignalStore<IState> {
       inventario_efectivo_detalle: inventarioDetallePorDenominacion,
       suma_diaria_detalle: state.catMovWithDetailsData,
       total_transferencias: state.valoresSummary.totalTransferencias,
+      sala_id: sessionData?.sala?.id ?? null,
     };
 
     this._inventarioCajaRemoteReq.requestSaveInventario(inventario).pipe(
@@ -739,12 +726,14 @@ export class InventarioCajaStore extends SignalStore<IState> {
     const firstDayOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
     const today = new Date();
 
+    const salaId = this._persistenceService.get('core')?.sala?.id ?? PARAM.UNDEFINED;
+    const cajaId = this._persistenceService.get('session')?.cajaSession?.id ?? PARAM.UNDEFINED;
     const filtersToApply = {
       ...this.vm().filtersToApply,
       startDate: this.formatDateForAPI(firstDayOfMonth, true),
       endDate: this.formatDateForAPI(today, false),
-      caja_id: PARAM.UNDEFINED,
-      sala_id: PARAM.UNDEFINED,
+      caja_id: cajaId,
+      sala_id: salaId,
     };
 
     this.patch({filtersToApply});

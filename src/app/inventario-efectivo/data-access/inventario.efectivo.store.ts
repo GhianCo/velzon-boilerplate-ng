@@ -471,25 +471,10 @@ export class InventarioEfectivoStore extends SignalStore<IState> {
     ).subscribe();
   }
 
-  public loadCajas(de_apertura = PARAM.UNDEFINED): Observable<any> {
-    this.patch({cajasLoading: true, cajasError: null});
-    return this._inventarioEfectivoRemoteReq.requestAllCajasBySala(this._persistenceService.getSalaId(), de_apertura).pipe(
-      tap(({data}) => {
-        this.patch({
-          cajasData: data,
-        })
-      }),
-      finalize(() => {
-        this.patch({cajasLoading: false});
-      }),
-      catchError((error) => {
-        this.patch({
-          cajasLoading: false,
-          cajasError: error
-        });
-        return of(null);
-      }),
-    );
+  public loadCajas(_de_apertura = PARAM.UNDEFINED): Observable<any> {
+    const cajas = this._persistenceService.get('core')?.cajas ?? [];
+    this.patch({cajasData: cajas, cajasLoading: false, cajasError: null});
+    return of(cajas);
   };
 
   public async loadValoresWithDetails() {
@@ -672,7 +657,7 @@ export class InventarioEfectivoStore extends SignalStore<IState> {
       (turno: any) => turno.id == state.selectedTurnoId
     );
 
-    const sessionData = this._persistenceService.get('data');
+    const sessionData = this._persistenceService.get('core');
 
     // Construir el payload con turno y tipo de operación
     const inventario = {
@@ -716,7 +701,7 @@ export class InventarioEfectivoStore extends SignalStore<IState> {
 
   public get filtersToApply() {
     const state = this.vm();
-    const salaId = this._persistenceService.get('data')?.sala?.id ?? PARAM.UNDEFINED;
+    const salaId = this._persistenceService.get('core')?.sala?.id ?? PARAM.UNDEFINED;
     return { ...state.filtersToApply, sala_id: salaId };
   };
 
@@ -908,7 +893,7 @@ export class InventarioEfectivoStore extends SignalStore<IState> {
     const firstDayOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
     const today = new Date();
 
-    const salaId = this._persistenceService.get('data')?.sala?.id ?? PARAM.UNDEFINED;
+    const salaId = this._persistenceService.get('core')?.sala?.id ?? PARAM.UNDEFINED;
     const filtersToApply = {
       ...this.vm().filtersToApply,
       startDate: this.formatDateForAPI(firstDayOfMonth, true),

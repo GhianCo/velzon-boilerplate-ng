@@ -209,7 +209,7 @@
                           </small>
                           @if (cajaGlobalService.hasSelectedCaja()) {
                             <span class="badge bg-primary-subtle text-primary fs-11 px-2 py-1">
-                              {{ cajaGlobalService.selectedCaja()?.caja_nombre }}
+                              {{ cajaGlobalService.selectedCaja()?.name }}
                             </span>
                           } @else {
                             <span class="badge bg-warning-subtle text-warning fs-10 px-2 py-1">
@@ -227,7 +227,7 @@
                           </small>
                           @if (cajaGlobalService.hasSelectedTurno()) {
                             <span class="badge bg-success-subtle text-success fs-11 px-2 py-1">
-                              {{ cajaGlobalService.selectedTurno()?.turno_nombre }}
+                              {{ cajaGlobalService.selectedTurno()?.name }}
                             </span>
                           } @else {
                             <span class="badge bg-warning-subtle text-warning fs-10 px-2 py-1">

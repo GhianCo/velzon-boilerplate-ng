@@ -58,8 +58,9 @@ export class TopbarComponent implements OnInit {
     private router: Router, private _persistenceService: PersistenceService) { }
 
   ngOnInit(): void {
-    this.salaData.gerente = this._persistenceService.getTokenProperty('sala_gerente') || '';
-    this.salaData.sala = this._persistenceService.getTokenProperty('sala_nombre') || '';
+    const coreData = this._persistenceService.get('core');
+    this.salaData.gerente = coreData?.gerente || '';
+    this.salaData.sala = coreData?.sala?.name || '';
     this.element = document.documentElement;
     // Cookies wise Language set
     this.cookieValue = this._cookiesService.get('lang');

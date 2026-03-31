@@ -29,36 +29,36 @@
           </p>
           
           <div class="list-group">
-            @for (caja of cajas; track caja.caja_id) {
+            @for (caja of cajas; track caja.id) {
               <button 
                 type="button" 
                 class="list-group-item list-group-item-action d-flex align-items-center justify-content-between"
-                [class.active]="caja.caja_id == selectedCajaId"
-                (click)="onCajaSelect(caja.caja_id)">
+                [class.active]="caja.id == selectedCajaId"
+                (click)="onCajaSelect(caja.id)">
                 <div class="d-flex align-items-center gap-3">
                   <div class="avatar-sm">
                     <div class="avatar-title rounded-circle" 
-                         [class.bg-primary]="caja.caja_id == selectedCajaId"
-                         [class.bg-light]="caja.caja_id != selectedCajaId">
+                         [class.bg-primary]="caja.id == selectedCajaId"
+                         [class.bg-light]="caja.id != selectedCajaId">
                       <i class="ri-wallet-line fs-18"
-                         [class.text-white]="caja.caja_id == selectedCajaId"
-                         [class.text-muted]="caja.caja_id != selectedCajaId"></i>
+                         [class.text-white]="caja.id == selectedCajaId"
+                         [class.text-muted]="caja.id != selectedCajaId"></i>
                     </div>
                   </div>
                   <div>
                     <h6 class="mb-0" 
-                        [class.text-white]="caja.caja_id == selectedCajaId">
-                      {{ caja.caja_nombre }}
+                        [class.text-white]="caja.id == selectedCajaId">
+                      {{ caja.name }}
                     </h6>
                     @if (caja['descripcion']) {
                       <small class="text-muted"
-                             [class.text-white-50]="caja.caja_id == selectedCajaId">
+                             [class.text-white-50]="caja.id == selectedCajaId">
                         {{ caja['descripcion'] }}
                       </small>
                     }
                   </div>
                 </div>
-                @if (caja.caja_id == selectedCajaId) {
+                @if (caja.id == selectedCajaId) {
                   <i class="ri-checkbox-circle-fill text-white fs-20"></i>
                 } @else {
                   <i class="ri-checkbox-blank-circle-line text-muted fs-20"></i>
@@ -121,30 +121,30 @@
           </p>
           
           <div class="list-group">
-            @for (turno of turnos; track turno.turno_id) {
+            @for (turno of turnos; track turno.id) {
               <button 
                 type="button" 
                 class="list-group-item list-group-item-action d-flex align-items-center justify-content-between"
-                [class.active]="turno.turno_id == selectedTurnoId"
-                (click)="onTurnoSelect(turno.turno_id)">
+                [class.active]="turno.id == selectedTurnoId"
+                (click)="onTurnoSelect(turno.id)">
                 <div class="d-flex align-items-center gap-3">
                   <div class="avatar-sm">
                     <div class="avatar-title rounded-circle" 
-                         [class.bg-success]="turno.turno_id == selectedTurnoId"
-                         [class.bg-light]="turno.turno_id != selectedTurnoId">
+                         [class.bg-success]="turno.id == selectedTurnoId"
+                         [class.bg-light]="turno.id != selectedTurnoId">
                       <i class="ri-time-line fs-18"
-                         [class.text-white]="turno.turno_id == selectedTurnoId"
-                         [class.text-muted]="turno.turno_id != selectedTurnoId"></i>
+                         [class.text-white]="turno.id == selectedTurnoId"
+                         [class.text-muted]="turno.id != selectedTurnoId"></i>
                     </div>
                   </div>
                   <div>
                     <h6 class="mb-0" 
-                        [class.text-white]="turno.turno_id == selectedTurnoId">
-                      {{ turno.turno_nombre }}
+                        [class.text-white]="turno.id == selectedTurnoId">
+                      {{ turno.name }}
                     </h6>
                   </div>
                 </div>
-                @if (turno.turno_id == selectedTurnoId) {
+                @if (turno.id == selectedTurnoId) {
                   <i class="ri-checkbox-circle-fill text-white fs-20"></i>
                 } @else {
                   <i class="ri-checkbox-blank-circle-line text-muted fs-20"></i>

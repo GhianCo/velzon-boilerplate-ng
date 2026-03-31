@@ -437,7 +437,7 @@ export class InventarioCajaNew implements OnInit {
         if (!cajaActual) return 0;
         
         const cajas = denominacion.cajas || {};
-        return cajas[cajaActual.caja_nombre] || 0;
+        return cajas[cajaActual.name] || 0;
     }
 
     /**
@@ -450,7 +450,7 @@ export class InventarioCajaNew implements OnInit {
         // Extraer el valor del input
         const valor = event.target?.value ?? event;
         
-        this.inventarioCajaStore.onCantidadCajaChange(denominacion, cajaActual.caja_nombre, valor);
+        this.inventarioCajaStore.onCantidadCajaChange(denominacion, cajaActual.name, valor);
     }
 
     // ===== MÉTODOS DELEGADOS AL STORE - MOVIMIENTOS =====

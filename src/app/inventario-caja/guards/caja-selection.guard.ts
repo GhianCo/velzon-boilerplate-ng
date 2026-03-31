@@ -1,6 +1,7 @@
 import { inject } from '@angular/core';
 import { CanActivateFn, Router } from '@angular/router';
 import { CajaGlobalService } from '@sothy/services/caja-global.service';
+import { PersistenceService } from '@sothy/services/persistence.service';
 import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
 import { firstValueFrom } from 'rxjs';
 import type { CajaSelectionModalComponent } from '../components/caja-selection-modal/caja-selection-modal.component';
@@ -14,6 +15,7 @@ import type { CajaSelectionModalComponent } from '../components/caja-selection-m
  */
 export const CajaSelectionGuard: CanActivateFn = async (route, state) => {
     const cajaGlobalService = inject(CajaGlobalService);
+    const persistenceService = inject(PersistenceService);
     const modalService = inject(NgbModal);
     const router = inject(Router);
 
@@ -26,8 +28,9 @@ export const CajaSelectionGuard: CanActivateFn = async (route, state) => {
         await firstValueFrom(cajaGlobalService.loadCajas(-1));
     }
 
-    // Verificar si hay una caja seleccionada
-    if (cajaGlobalService.hasSelectedCaja()) {
+    // Verificar si hay una caja seleccionada en LS
+    const cajaSession = persistenceService.get('session')?.cajaSession;
+    if (cajaSession?.id) {
         return true;
     }
 

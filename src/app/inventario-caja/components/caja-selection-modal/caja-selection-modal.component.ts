@@ -1,11 +1,9 @@
 import { Component, inject, OnInit } from '@angular/core';
 import { NgbActiveModal } from '@ng-bootstrap/ng-bootstrap';
 import { CajaGlobalService } from '@sothy/services/caja-global.service';
-import { AuthService } from '@sothy/services/auth.service';
-import { AuthLoginRemoteReq } from 'app/account/data-access/auth.login.remote.req';
+import { PersistenceService } from '@sothy/services/persistence.service';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { firstValueFrom } from 'rxjs';
 
 @Component({
   selector: 'app-caja-selection-modal',
@@ -17,8 +15,7 @@ import { firstValueFrom } from 'rxjs';
 export class CajaSelectionModalComponent implements OnInit {
   activeModal = inject(NgbActiveModal);
   cajaGlobalService = inject(CajaGlobalService);
-  authService = inject(AuthService);
-  authLoginRemoteReq = inject(AuthLoginRemoteReq);
+  persistenceService = inject(PersistenceService);
 
   // Control de pasos
   currentStep: 'caja' | 'turno' = 'caja';
@@ -52,7 +49,7 @@ export class CajaSelectionModalComponent implements OnInit {
 
         // Auto-seleccionar si solo hay una caja
         if (this.cajas.length === 1) {
-          this.selectedCajaId = this.cajas[0].caja_id;
+          this.selectedCajaId = this.cajas[0].id;
         }
       },
       error: (error) => {
@@ -71,7 +68,7 @@ export class CajaSelectionModalComponent implements OnInit {
 
         // Auto-seleccionar si solo hay un turno
         if (this.turnos.length === 1) {
-          this.selectedTurnoId = this.turnos[0].turno_id;
+          this.selectedTurnoId = this.turnos[0].id;
           // Auto-seleccionar supervisor del turno
           if (this.turnos[0]['supervisor']) {
             this.selectedSupervisor = this.turnos[0]['supervisor'];
@@ -81,9 +78,9 @@ export class CajaSelectionModalComponent implements OnInit {
         // Si viene del flujo fromBoveda con turno preseleccionado, auto-confirmar
         // para que el usuario solo tenga que seleccionar la caja
         if (this.preselectedTurnoId) {
-          const turno = this.turnos.find(t => t.turno_id == this.preselectedTurnoId);
+          const turno = this.turnos.find(t => t.id == this.preselectedTurnoId);
           if (turno) {
-            this.selectedTurnoId = turno.turno_id;
+            this.selectedTurnoId = turno.id;
             if (turno['supervisor']) {
               this.selectedSupervisor = turno['supervisor'];
             }
@@ -106,7 +103,7 @@ export class CajaSelectionModalComponent implements OnInit {
     this.selectedTurnoId = turnoId;
 
     // Auto-seleccionar el supervisor del turno seleccionado
-    const turno = this.turnos.find(t => t.turno_id == turnoId);
+    const turno = this.turnos.find(t => t.id == turnoId);
     if (turno && turno['supervisor']) {
       this.selectedSupervisor = turno['supervisor'];
     }
@@ -128,54 +125,38 @@ export class CajaSelectionModalComponent implements OnInit {
     this.currentStep = 'caja';
   }
 
-  async onConfirm(): Promise<void> {
+  onConfirm(): void {
     if (!this.selectedCajaId || !this.selectedTurnoId || !this.selectedSupervisor) {
       return;
     }
 
-    try {
-      // Obtener los nombres de caja y turno
-      const caja = this.cajas.find(c => c.caja_id == this.selectedCajaId);
-      const turno = this.turnos.find(t => t.turno_id == this.selectedTurnoId);
+    const caja = this.cajas.find(c => c.id == this.selectedCajaId);
+    const turno = this.turnos.find(t => t.id == this.selectedTurnoId);
 
-      if (!caja || !turno) {
-        console.error('Caja o turno no encontrado');
-        return;
-      }
-
-      const cajaNombre = caja.caja_nombre || '';
-      const turnoNombre = turno.turno_nombre || '';
-
-      // Llamar al backend para actualizar el token con las nuevas propiedades
-      const response = await firstValueFrom(
-        this.authLoginRemoteReq.requestRefreshToken(
-          this.selectedCajaId,
-          cajaNombre,
-          this.selectedTurnoId,
-          turnoNombre,
-          this.selectedSupervisor
-        )
-      );
-
-      // Actualizar el token en localStorage con el nuevo token del backend
-      this.authService.accessToken = response.data;
-
-      // Actualizar las señales del servicio global para reflejar los cambios
-      this.cajaGlobalService.updateSelectionsFromBackend(
-        this.selectedCajaId,
-        this.selectedTurnoId,
-        this.selectedSupervisor
-      );
-
-      // Cerrar el modal con los datos seleccionados
-      this.activeModal.close({
-        cajaId: this.selectedCajaId,
-        turnoId: this.selectedTurnoId,
-        supervisor: this.selectedSupervisor
-      });
-    } catch (error) {
-      console.error('Error al actualizar token:', error);
+    if (!caja || !turno) {
+      console.error('Caja o turno no encontrado');
+      return;
     }
+
+    // Guardar selección en LS dentro de cash_control_st_data
+    const sessionData = this.persistenceService.get('session') ?? {};
+    sessionData['cajaSession'] = { id: caja.id, name: caja.name };
+    sessionData['turnoSession'] = { id: turno.id, name: turno.name, supervisor: this.selectedSupervisor };
+    this.persistenceService.set('session', sessionData);
+
+    // Actualizar las señales del servicio global
+    this.cajaGlobalService.updateSelectionsFromBackend(
+      this.selectedCajaId,
+      this.selectedTurnoId,
+      this.selectedSupervisor
+    );
+
+    // Cerrar el modal con los datos seleccionados
+    this.activeModal.close({
+      cajaId: this.selectedCajaId,
+      turnoId: this.selectedTurnoId,
+      supervisor: this.selectedSupervisor
+    });
   }
 
   onCancel(): void {

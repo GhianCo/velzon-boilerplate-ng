@@ -10,7 +10,7 @@ export const InventarioEfectivoCerrarResolver = (route: ActivatedRouteSnapshot) 
   const persistenceService = inject(PersistenceService);
   const operacionTurnoId = route.params['id'];
 
-  const turnos = persistenceService.get('data')?.turnos ?? [];
+  const turnos = persistenceService.get('core')?.turnos ?? [];
   inventarioEfectivoStore.actualizarTurnos(turnos);
 
   // Primero cargamos cajas, luego cuando estén listas cargamos valores

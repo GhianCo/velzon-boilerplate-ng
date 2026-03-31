@@ -6,7 +6,7 @@ export const InventarioEfectivoNewResolver = () => {
   const inventarioEfectivoStore = inject(InventarioEfectivoStore);
   const persistenceService = inject(PersistenceService);
 
-  const turnos = persistenceService.get('data')?.turnos ?? [];
+  const turnos = persistenceService.get('core')?.turnos ?? [];
   inventarioEfectivoStore.actualizarTurnos(turnos);
 
   inventarioEfectivoStore.loadLastOperacionTurno();
