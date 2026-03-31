@@ -8,9 +8,6 @@ export const cuadreSumaDiariaResolver: ResolveFn<boolean> = (route, state) => {
   // Inicializar filtros con fechas por defecto (primer día del mes hasta hoy)
   store.initializeDefaultFilters();
 
-  // Cargar turnos
-  store.loadTurnos();
-
   // Aplicar filtros (carga la lista)
   store.applyFilters();
 

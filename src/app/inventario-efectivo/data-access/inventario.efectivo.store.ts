@@ -830,27 +830,6 @@ export class InventarioEfectivoStore extends SignalStore<IState> {
     this.patch({turnosData: turnos});
   }
 
-  public async loadTurnos() {
-    this.patch({turnosLoading: true});
-
-    this._inventarioEfectivoRemoteReq.requestGetTurnos(this._persistenceService.getSalaId()).pipe(
-      tap(async ({data}) => {
-        this.patch({
-          turnosData: data,
-        });
-      }),
-      finalize(() => {
-        this.patch({turnosLoading: false});
-      }),
-      catchError((error) => {
-        return of(this.patch({
-          turnosLoading: false,
-          turnosError: error
-        }));
-      })
-    ).subscribe();
-  }
-
   /**
    * Cargar el último turno registrado (aperturado o cerrado)
    * Se usa para determinar qué turnos están disponibles para aperturar

@@ -663,27 +663,6 @@ export class InventarioCajaStore extends SignalStore<IState> {
     this.patch({turnosData: turnos});
   }
 
-  public async loadTurnos() {
-    this.patch({turnosLoading: true});
-
-    this._inventarioCajaRemoteReq.requestGetTurnos(this._persistenceService.getSalaId()).pipe(
-      tap(async ({data}) => {
-        this.patch({
-          turnosData: data,
-        });
-      }),
-      finalize(() => {
-        this.patch({turnosLoading: false});
-      }),
-      catchError((error) => {
-        return of(this.patch({
-          turnosLoading: false,
-          turnosError: error
-        }));
-      })
-    ).subscribe();
-  }
-
   /**
    * Cargar la última operación de caja registrada (aperturada o cerrada)
    * Se usa para determinar qué cajas están disponibles para aperturar

@@ -7,9 +7,6 @@ export const InventarioCajaListResolver = () => {
   // Inicializar filtros por defecto (primer día del mes hasta hoy, caja y sala en -1)
   inventarioCajaStore.initDefaultFilters();
 
-  // Cargar turnos
-  inventarioCajaStore.loadTurnos();
-
   // Cargar inventarios con los filtros ya inicializados
   return inventarioCajaStore.loadAllInventarioCajaStore();
 }
