@@ -223,23 +223,23 @@ export class InventarioEfectivoStore extends SignalStore<IState> {
     // (No se puede aperturar otro mientras uno esté abierto)
     if (lastOperacionTurno.abierta === 1 || lastOperacionTurno.abierta === '1') {
       const turnoAbierto = turnosData.find(
-        (t: any) => t.turno_id === lastOperacionTurno.turno_id
+        (t: any) => t.id === lastOperacionTurno.turno_id
       );
       return turnoAbierto ? [turnoAbierto] : [];
     }
 
     // Si el último turno está cerrado, buscar el siguiente turno Y todos los posteriores
-    // Obtener el turno_orden del último turno cerrado
+    // Obtener el order del último turno cerrado
     const turnoActual = turnosData.find(
-      (t: any) => t.turno_id === lastOperacionTurno.turno_id
+      (t: any) => t.id === lastOperacionTurno.turno_id
     );
 
     if (!turnoActual) {
       return turnosData; // Si no se encuentra, mostrar todos
     }
 
-    const ordenUltimoTurno = turnoActual.turno_orden || 0;
-    const esUltimoTurno = turnoActual.turno_ultimo === 1 || turnoActual.turno_ultimo === '1';
+    const ordenUltimoTurno = turnoActual.order || 0;
+    const esUltimoTurno = turnoActual.last === 1 || turnoActual.last === '1';
 
     if (esUltimoTurno) {
       // Si era el último turno del día, empezar de nuevo mostrando todos los turnos
@@ -250,7 +250,7 @@ export class InventarioEfectivoStore extends SignalStore<IState> {
     // Retornar el siguiente turno Y todos los posteriores
     // (turnos con orden mayor o igual al siguiente)
     const siguienteOrden = ordenUltimoTurno + 1;
-    return turnosData.filter((t: any) => (t.turno_orden || 0) >= siguienteOrden);
+    return turnosData.filter((t: any) => (t.order || 0) >= siguienteOrden);
   });
 
   /**

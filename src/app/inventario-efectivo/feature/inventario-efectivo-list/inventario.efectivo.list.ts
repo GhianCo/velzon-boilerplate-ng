@@ -871,7 +871,7 @@ export class InventarioEfectivoList {
   // Método para cambiar turno desde el modal (NO aplica filtros automáticamente)
   onTurnoChangeFromModal(event: any) {
     const value = event?.value;
-    const turnoId = value === 'null' || value === '' ? -1 : parseInt(value);
+    const turnoId = value === 'null' || value === '' ? -1 : value;
     this.inventarioEfectivoStore.setFilters({ turno_id: turnoId });
     // NO aplicar filtros aquí - solo actualizar el estado
   }

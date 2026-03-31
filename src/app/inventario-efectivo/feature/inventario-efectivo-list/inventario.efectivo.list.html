@@ -58,11 +58,11 @@
                           <!-- Filtro de Turno (removible) -->
                           @if (vm.filtersToApply?.turno_id &&
                                vm.filtersToApply.turno_id !== -1) {
-                            @for (turno of vm.turnosData; track turno.turno_id) {
-                              @if (turno.turno_id === vm.filtersToApply.turno_id) {
+                            @for (turno of vm.turnosData; track turno.id) {
+                              @if (turno.id === vm.filtersToApply.turno_id) {
                                 <span class="badge bg-primary-subtle text-primary border border-primary d-flex align-items-center gap-2 py-2 px-3">
                                   <i class="ri-time-line"></i>
-                                  <span><strong>Turno:</strong> {{ turno.turno_nombre }}</span>
+                                  <span><strong>Turno:</strong> {{ turno.name }}</span>
                                   <button type="button"
                                           class="btn-close btn-close-sm"
                                           style="font-size: 0.65rem; padding: 0; margin: 0;"
@@ -303,8 +303,8 @@
                 [ngModelOptions]="{standalone: true}"
                 (ngModelChange)="onTurnoChangeFromModal({value: $event})">
           <option [value]="-1">Todos los turnos</option>
-          @for (turno of vm.turnosData; track turno.turno_id) {
-            <option [value]="turno.turno_id">{{ turno.turno_nombre }}</option>
+          @for (turno of vm.turnosData; track turno.id) {
+            <option [value]="turno.id">{{ turno.name }}</option>
           }
         </select>
       </div>
