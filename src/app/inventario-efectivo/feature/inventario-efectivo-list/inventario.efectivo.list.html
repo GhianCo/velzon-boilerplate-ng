@@ -344,10 +344,8 @@
         <label class="form-label fw-medium">Caja destino <span class="text-danger">*</span></label>
         <select class="form-select" formControlName="cajaId">
           <option [value]="null">Seleccionar caja...</option>
-          @for (caja of vm.cajasData; track caja.caja_id) {
-            @if (caja.caja_operativa == 1) {
-              <option [value]="caja.caja_id">{{ caja.caja_nombre }}</option>
-            }
+          @for (caja of vm.cajasData; track caja.id) {
+            <option [value]="caja.id">{{ caja.name }}</option>
           }
         </select>
         @if (transferenciaForm.get('cajaId')?.invalid && transferenciaForm.get('cajaId')?.touched) {

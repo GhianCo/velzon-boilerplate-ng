@@ -197,7 +197,7 @@ export class InventarioCajaStore extends SignalStore<IState> {
     // (No se puede aperturar otra mientras una esté abierta)
     if (lastOperacionCaja.abierta === 1 || lastOperacionCaja.abierta === '1') {
       const cajaAbierta = cajasData.find(
-        (c: any) => c.caja_id === lastOperacionCaja.caja_id
+        (c: any) => c.id == lastOperacionCaja.caja_id
       );
       return cajaAbierta ? [cajaAbierta] : [];
     }
@@ -459,7 +459,7 @@ export class InventarioCajaStore extends SignalStore<IState> {
 
     // Obtener la caja seleccionada actual
     const cajaSeleccionada = state.cajasData?.find(
-      (caja: any) => caja.caja_id == state.selectedCajaId
+      (caja: any) => caja.id == state.selectedCajaId
     );
 
     if (!cajaSeleccionada) {

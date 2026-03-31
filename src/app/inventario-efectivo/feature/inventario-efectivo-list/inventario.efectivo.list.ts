@@ -742,7 +742,7 @@ export class InventarioEfectivoList {
     
     // Encontrar el nombre de la caja seleccionada
     const vm = this.inventarioEfectivoStore.vm();
-    const cajaSeleccionada = vm.cajasData?.find((c: any) => c.caja_id === Number(formValue.cajaId));
+    const cajaSeleccionada = vm.cajasData?.find((c: any) => c.id == formValue.cajaId);
 
     if (!cajaSeleccionada) {
       this.confirmationService.error(
@@ -755,7 +755,7 @@ export class InventarioEfectivoList {
     const payload = {
       operacionturno_id: Number(this.selectedInventarioTransferencia.operacionturno_id),
       caja_id: Number(formValue.cajaId),
-      caja_nombre: cajaSeleccionada.caja_nombre,
+      caja_nombre: cajaSeleccionada.name,
       monto: Number(formValue.monto),
       observacion: formValue.observacion.trim()
     };
