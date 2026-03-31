@@ -23,6 +23,7 @@ export const environment = {
   },
   apiControlActivos: 'http://localhost/dev_masaris/control-activos-masaris',
   apiWorkers: 'https://10.45.1.171/workers',
+  apiMasarisCore: 'http://localhost/masaris-core-api',
   keycloak: {
     url: 'http://10.45.1.80:8080',
     realm: 'master',

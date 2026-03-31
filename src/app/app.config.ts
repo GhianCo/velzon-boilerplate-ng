@@ -49,6 +49,7 @@ import {AlertService, alertServiceFactory} from "@sothy/services/alert.service";
 import {provideAuth} from "@sothy/providers/auth.provider";
 import {ExternalAuthInitializerService} from "@app/account/services/external-auth-initializer.service";
 import {KeycloakInitializerService} from "@app/account/services/keycloak-initializer.service";
+import {SalaInitializerService} from "@app/account/services/sala-initializer.service";
 
 registerLanguageDictionary(deDE);
 
@@ -81,6 +82,17 @@ export function initializeKeycloak(
   return () => keycloakInitializerService.initialize();
 }
 
+/**
+ * Factory para cargar los datos de sala desde el backend de salas.
+ * Corre en paralelo con el initializer de KC pero awaita authReady internamente,
+ * por lo que siempre se ejecuta DESPUÉS de que el token está disponible.
+ */
+export function initializeSala(
+  salaInitializerService: SalaInitializerService
+): () => Promise<void> {
+  return () => salaInitializerService.initialize();
+}
+
 if (environment.defaultauth === 'firebase') {
   initFirebaseBackend(environment.firebaseConfig);
 } else {
@@ -108,6 +120,14 @@ export const appConfig: ApplicationConfig = {
       provide: APP_INITIALIZER,
       useFactory: initializeKeycloak,
       deps: [KeycloakInitializerService],
+      multi: true
+    },
+    // APP_INITIALIZER para cargar datos de sala (sala_id, gerente, supervisores).
+    // Awaita internamente que KC haya guardado el token antes de llamar al backend de salas.
+    {
+      provide: APP_INITIALIZER,
+      useFactory: initializeSala,
+      deps: [SalaInitializerService],
       multi: true
     },
     // Configuración de HttpClient con interceptores funcionales

@@ -23,4 +23,10 @@ export const environment = {
   },
   apiControlActivos: 'http://masaris.pe/control-activos-masaris',
   apiWorkers: 'http://masaris.pe/workers',
+  apiMasarisCore: 'http://masaris.pe/core-api',
+  keycloak: {
+    url: 'http://10.45.1.80:8080',
+    realm: 'master',
+    clientId: 'sumadiaria',
+  },
 };

@@ -19,19 +19,19 @@ export const appRoutes: Route[] = [
       {
         path: "inventario-efectivo",
         canActivate: [RoleGuard],
-        data: { roles: ['turno.module'] },
+        data: { roles: ['modulo.turno.acceso'] },
         loadChildren: () => import('@app/inventario-efectivo/feature/inventario-efectivo-shell/inventario.efectivo.route')
       },
       {
         path: "inventario-caja",
         canActivate: [RoleGuard],
-        data: { roles: ['caja.module'] },
+        data: { roles: ['modulo.caja.acceso'] },
         loadChildren: () => import('@app/inventario-caja/feature/inventario-caja-shell/inventario.caja.route')
       },
       {
         path: "cuadre-suma-diaria",
         canActivate: [RoleGuard],
-        data: { roles: ['turno.module'] },
+        data: { roles: ['modulo.control_interno.acceso'] },
         loadChildren: () => import('@app/control-interno/cuadre-suma-diaria/feature/cuadre-suma-diaria-shell/cuadre.suma.diaria.route')
       },
     ]
