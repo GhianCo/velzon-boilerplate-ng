@@ -9,6 +9,7 @@ import {ConfirmationService} from "@sothy/services/confirmation.service";
 import {EmptyStateComponent} from "@shared/components/empty-state/empty-state.component";
 import {NgbOffcanvas} from "@ng-bootstrap/ng-bootstrap";
 import {CajaGlobalService} from "@sothy/services/caja-global.service";
+import {PersistenceService} from "@sothy/services/persistence.service";
 
 @Component({
     selector: 'app-inventario-caja-new',
@@ -145,6 +146,10 @@ export class InventarioCajaNew implements OnInit {
     private confirmationService = inject(ConfirmationService);
     private offcanvasService = inject(NgbOffcanvas);
     public cajaGlobalService = inject(CajaGlobalService);
+    private persistenceService = inject(PersistenceService);
+
+    get cajaSession() { return this.persistenceService.get('session')?.cajaSession ?? null; }
+    get turnoSession() { return this.persistenceService.get('session')?.turnoSession ?? null; }
 
     // ViewChild para el template del modal
     @ViewChild('diferenciaModal', { static: false }) diferenciaModal!: TemplateRef<any>;

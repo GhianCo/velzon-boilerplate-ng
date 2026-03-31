@@ -207,9 +207,9 @@
                           <small class="text-muted fw-medium">
                             <i class="ri-wallet-3-line me-1"></i>Caja
                           </small>
-                          @if (cajaGlobalService.hasSelectedCaja()) {
+                          @if (cajaSession) {
                             <span class="badge bg-primary-subtle text-primary fs-11 px-2 py-1">
-                              {{ cajaGlobalService.selectedCaja()?.name }}
+                              {{ cajaSession.name }}
                             </span>
                           } @else {
                             <span class="badge bg-warning-subtle text-warning fs-10 px-2 py-1">
@@ -225,9 +225,9 @@
                           <small class="text-muted fw-medium">
                             <i class="ri-time-line me-1"></i>Turno
                           </small>
-                          @if (cajaGlobalService.hasSelectedTurno()) {
+                          @if (turnoSession) {
                             <span class="badge bg-success-subtle text-success fs-11 px-2 py-1">
-                              {{ cajaGlobalService.selectedTurno()?.name }}
+                              {{ turnoSession.name }}
                             </span>
                           } @else {
                             <span class="badge bg-warning-subtle text-warning fs-10 px-2 py-1">
@@ -243,9 +243,9 @@
                           <small class="text-muted fw-medium">
                             <i class="ri-user-star-line me-1"></i>Supervisor
                           </small>
-                          @if (cajaGlobalService.hasSelectedSupervisor()) {
+                          @if (turnoSession?.supervisor) {
                             <span class="badge bg-info-subtle text-info fs-11 px-2 py-1">
-                              {{ cajaGlobalService.selectedSupervisor() }}
+                              {{ turnoSession.supervisor }}
                             </span>
                           } @else {
                             <span class="badge bg-warning-subtle text-warning fs-10 px-2 py-1">
@@ -274,7 +274,7 @@
     <div class="col-xl-12">
       <!-- Tabla Unificada con colspan -->
       <div class="card">
-        @if(cajaGlobalService.hasSelectedCaja()){
+        @if(cajaSession){
           <div class="card-body p-0">
             <!-- Contenedor con dos tablas side-by-side -->
             <!-- Contenedor responsivo con Grid CSS -->
