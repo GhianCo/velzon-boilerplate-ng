@@ -16,7 +16,7 @@ export interface Turno {
   id: string;
   name: string;
   order: number;
-  firts: number;
+  first: number;
   last: number;
 }
 

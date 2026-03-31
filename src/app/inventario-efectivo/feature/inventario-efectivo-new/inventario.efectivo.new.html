@@ -234,8 +234,8 @@
                   <select class="form-select form-select-sm" [ngModel]="vm.selectedTurnoId"
                     (ngModelChange)="onTurnoChange($event)">
                     <option [value]="null" disabled selected>Selecciona turno</option>
-                    @for (turno of inventarioEfectivoStore.turnosDisponibles(); track turno.turno_id) {
-                    <option [value]="turno.turno_id">{{ turno.turno_nombre }}</option>
+                    @for (turno of inventarioEfectivoStore.turnosDisponibles(); track turno.id) {
+                    <option [value]="turno.id">{{ turno.name }}</option>
                     }
                   </select>
                 </div>

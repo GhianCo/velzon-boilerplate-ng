@@ -193,13 +193,13 @@ export class InventarioEfectivoNew implements OnInit {
 
             // Si hay exactamente un turno disponible y no hay ninguno seleccionado, seleccionarlo automáticamente
             if (turnosDisponibles.length === 1 && !selectedTurnoId) {
-                const turnoId = turnosDisponibles[0].turno_id;
+                const turnoId = turnosDisponibles[0].id;
                 this.inventarioEfectivoStore.setSelectedTurnoId(turnoId);
             }
 
             // Si el turno seleccionado ya no está disponible, limpiar la selección
             if (selectedTurnoId && turnosDisponibles.length > 0) {
-                const turnoExiste = turnosDisponibles.find((t: any) => t.turno_id == selectedTurnoId);
+                const turnoExiste = turnosDisponibles.find((t: any) => t.id == selectedTurnoId);
                 if (!turnoExiste) {
                     this.inventarioEfectivoStore.setSelectedTurnoId(null);
                 }
@@ -416,7 +416,7 @@ export class InventarioEfectivoNew implements OnInit {
 
         if (!vm.turnosData) return null;
 
-        return vm.turnosData.find((turno: any) => turno.turno_id.toString() === vm.selectedTurnoId);
+        return vm.turnosData.find((turno: any) => turno.id.toString() === vm.selectedTurnoId);
     }
 
     // Método para calcular diferencia entre total inventario y total suma diaria

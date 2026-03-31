@@ -336,11 +336,12 @@ export class InventarioEfectivoStore extends SignalStore<IState> {
             const importeConvertido = denom.cajas?.reduce((sum: number, c: any) => sum + (c.importeConvertido || 0), 0) || 0;
             const cantidadTotal = denom.cajas?.reduce((sum: number, c: any) => sum + (c.cantidad || 0), 0) || 0;
 
-            // Usar el valor de denominación directamente del backend (guardado como denominacion_valor)
-            // No recalcular desde importeLocal/cantidadTotal: en este sistema la cantidad ingresada
-            // ES el importe monetario, por lo que importeLocal === cantidadTotal → la división daría 1
-            // en lugar del valor real de la denominación (ej: 0.1, 0.01, etc.)
-            const valorUnitario = denom.valor || 1;
+            // Calcular el valor unitario real desde los datos del backend
+            // Si hay cantidad, dividir importeLocal / cantidadTotal para obtener el valor unitario real
+            let valorUnitario = denom.valor || 1;
+            if (cantidadTotal > 0 && importeLocal > 0) {
+              valorUnitario = importeLocal / cantidadTotal;
+            }
 
             acumuladoLocal += importeLocal;
             acumuladoConvertido += importeConvertido;
@@ -492,8 +493,12 @@ export class InventarioEfectivoStore extends SignalStore<IState> {
   };
 
   public async loadValoresWithDetails() {
+    const turnosSnapshot = this.vm().turnosData;
     this.patch({valoresWithDetailsLoading: true, valoresWithDetailsError: null});
     this.initialize(initialState);
+    if (turnosSnapshot?.length) {
+      this.patch({turnosData: turnosSnapshot});
+    }
     this._inventarioEfectivoRemoteReq.requestGetValoresWithDetails().pipe(
       tap(async ({data, pagination}) => {
         this.patch({
@@ -513,13 +518,17 @@ export class InventarioEfectivoStore extends SignalStore<IState> {
 
   public loadValoresWithDetailsByCaja(operacionTurnoId?: any): Observable<any> {
     const state = this.vm();
-    // Preservar cajasData antes del reset para no perder lo que cargó el resolver
+    // Preservar cajasData y turnosData antes del reset
     const cajasSnapshot = state.cajasData;
+    const turnosSnapshot = state.turnosData;
     this.patch({valoresWithDetailsLoading: true, valoresWithDetailsError: null});
     this.initialize(initialState);
     // Restaurar inmediatamente para que setSelectedTurnoId no vuelva a pedir cajas
     if (cajasSnapshot) {
       this.patch({cajasData: cajasSnapshot});
+    }
+    if (turnosSnapshot?.length) {
+      this.patch({turnosData: turnosSnapshot});
     }
     return this._inventarioEfectivoRemoteReq.requestGetValoresWithDetailsByCaja(cajasSnapshot, operacionTurnoId).pipe(
       tap(({data}) => {
@@ -613,7 +622,7 @@ export class InventarioEfectivoStore extends SignalStore<IState> {
     ).subscribe();
   };
 
-  public async saveInventarioEfectivoWithDetils(turnoId?: string, operacionTurnoId?: string | null, diferenciaCajasAbiertas?: number | null) {
+  public async saveInventarioEfectivoWithDetils(turnoId?: string, operacionTurnoId?: string | null) {
     this.patch({saveInventarioEfectivoLoading: true, saveInventarioEfectivoError: null});
     const state = this.vm();
 
@@ -660,13 +669,15 @@ export class InventarioEfectivoStore extends SignalStore<IState> {
     });
 
     const turno = state.turnosData.find(
-      (turno: any) => turno.turno_id == state.selectedTurnoId
+      (turno: any) => turno.id == state.selectedTurnoId
     );
+
+    const sessionData = this._persistenceService.get('data');
 
     // Construir el payload con turno y tipo de operación
     const inventario = {
       turno_id: state.selectedTurnoId,
-      turno: turno.turno_nombre,
+      turno: turno.name,
       operacionturno_id: operacionTurnoId || null,
       tipo_operacion: state.selectedOperacion,
       total: state.valoresSummary.totalConvertido,
@@ -678,9 +689,10 @@ export class InventarioEfectivoStore extends SignalStore<IState> {
       suma_diaria_detalle: state.catMovWithDetailsData,
       cajas: state.cajasData,
       supervisor: state.selectedSupervisorId || turno.supervisor || '',
-      ultimo_turno: turno.turno_ultimo || 0,
-      diff_inv_sumdia: diferenciaCajasAbiertas ?? null,
-      obs_diff_inv_sumdia: diferenciaCajasAbiertas ? 'DIFERENCIA CAJAS EN TRANSITO' : null
+      ultimo_turno: turno.last || 0,
+      gerente: sessionData?.gerente ?? '',
+      sala_id: sessionData?.sala?.id ?? null,
+      sala: sessionData?.sala?.name ?? ''
     };
 
     this._inventarioEfectivoRemoteReq.requestSaveInventario(inventario).pipe(
@@ -992,7 +1004,7 @@ export class InventarioEfectivoStore extends SignalStore<IState> {
     this.patch({selectedTurnoId: turnoId});
     const state = this.vm();
     const turno = state.turnosData.find(
-      (turno: any) => turno.turno_id == turnoId
+      (turno: any) => turno.id == turnoId
     );
     
     // Establecer automáticamente el supervisor del turno seleccionado
