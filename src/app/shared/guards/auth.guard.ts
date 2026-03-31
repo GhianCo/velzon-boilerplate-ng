@@ -1,27 +1,19 @@
 import {inject} from '@angular/core';
-import {CanActivateChildFn, CanActivateFn, Router} from '@angular/router';
-import {of, switchMap} from 'rxjs';
-import {AuthService} from "@sothy/services/auth.service";
+import {CanActivateChildFn, CanActivateFn} from '@angular/router';
+import {KeycloakService} from '@app/account/services/keycloak.service';
 
-export const AuthGuard: CanActivateFn | CanActivateChildFn = (route, state) => {
-    const router: Router = inject(Router);
+export const AuthGuard: CanActivateFn | CanActivateChildFn = async () => {
+    const keycloak = inject(KeycloakService);
 
-    // Check the authentication status
-    return inject(AuthService)
-        .check()
-        .pipe(
-            switchMap((authenticated) => {
-                // If the user is not authenticated...
-                if (!authenticated) {
-                    // Redirect to the sign-in page with a redirectUrl param
-                    const redirectURL = state.url === '/sign-out' ? '' : `redirectURL=${state.url}`;
-                    const urlTree = router.parseUrl(`auth/login?${redirectURL}`);
+    // Token válido y sesión activa → permitir acceso
+    if (keycloak.authenticated) {
+        // Refrescar proactivamente si expira en menos de 30 s
+        await keycloak.updateToken(30);
+        return true;
+    }
 
-                    return of(urlTree);
-                }
-
-                // Allow the access
-                return of(true);
-            })
-        );
+    // Sin sesión → redirigir a Keycloak (nunca debería ocurrir con login-required,
+    // pero cubre casos de pérdida de sesión en caliente)
+    await keycloak.login(window.location.href);
+    return false;
 };

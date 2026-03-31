@@ -457,10 +457,8 @@ export class InventarioCajaStore extends SignalStore<IState> {
     this.patch({saveInventarioCajaLoading: true, saveInventarioCajaError: null});
     const state = this.vm();
 
-    // Obtener la caja seleccionada actual
-    const cajaSeleccionada = state.cajasData?.find(
-      (caja: any) => caja.id == state.selectedCajaId
-    );
+    // Obtener la caja seleccionada desde LS session
+    const cajaSeleccionada = this._persistenceService.get('session')?.cajaSession;
 
     if (!cajaSeleccionada) {
       console.error('No hay caja seleccionada');
@@ -471,7 +469,7 @@ export class InventarioCajaStore extends SignalStore<IState> {
       return;
     }
 
-    const cajaNombre = cajaSeleccionada.caja_nombre;
+    const cajaNombre = cajaSeleccionada.name;
 
     // Transformar inventario_efectivo_detalle - solo con la cantidad de la caja actual
     const inventarioDetallePorDenominacion: any[] = [];
@@ -494,7 +492,8 @@ export class InventarioCajaStore extends SignalStore<IState> {
 
     const usdValorDetail = state.valoresWithDetailsData?.find((v: any) => v.codigo === 'USD');
     const tipocambio = state.valoresSummary.tipocambio || usdValorDetail?.current_tc || 1;
-    const sessionData = this._persistenceService.get('core');
+    const coreData = this._persistenceService.get('core');
+    const sessionData = this._persistenceService.get('session');
 
     const inventario = {
       operacioncaja_id: operacionCajaId || null,
@@ -508,7 +507,15 @@ export class InventarioCajaStore extends SignalStore<IState> {
       inventario_efectivo_detalle: inventarioDetallePorDenominacion,
       suma_diaria_detalle: state.catMovWithDetailsData,
       total_transferencias: state.valoresSummary.totalTransferencias,
-      sala_id: sessionData?.sala?.id ?? null,
+      caja_id: sessionData?.cajaSession?.id ?? null,
+      caja_nombre: sessionData?.cajaSession?.name ?? null,
+      turno_id: sessionData?.turnoSession?.id ?? null,
+      turno: sessionData?.turnoSession?.name ?? null,
+      supervisor: sessionData?.turnoSession?.supervisor ?? null,
+      gerente: coreData?.gerente ?? null,
+      usuario: coreData?.usuario ?? null,
+      sala_id: coreData?.sala?.id ?? null,
+      sala: coreData?.sala?.name ?? null,
     };
 
     this._inventarioCajaRemoteReq.requestSaveInventario(inventario).pipe(

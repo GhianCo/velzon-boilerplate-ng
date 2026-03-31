@@ -268,7 +268,7 @@ export class InventarioCajaNew implements OnInit {
         const vm = this.inventarioCajaStore.vm();
 
         // Validar que se haya seleccionado caja y operación
-        if (!vm.selectedCajaId || !vm.selectedOperacion) {
+        if (!this.cajaSession || !vm.selectedOperacion) {
             this.confirmationService.warning(
                 '⚠️ Faltan datos',
                 'Por favor selecciona una caja y el tipo de operación antes de guardar.'
@@ -386,7 +386,7 @@ export class InventarioCajaNew implements OnInit {
     // Método privado para proceder con el guardado
     private proceedToSave() {
         const vm = this.inventarioCajaStore.vm();
-        const cajaInfo = this.isCerrarMode ? vm.cajaData : this.getSelectedCaja();
+        const cajaInfo = this.isCerrarMode ? vm.cajaData : this.cajaSession;
         
         if (!cajaInfo) {
             this.confirmationService.warning(
@@ -402,7 +402,7 @@ export class InventarioCajaNew implements OnInit {
                 <div class="text-start">
                     <p>He revisado que los datos sean los correctos!</p>
                     <div class="mt-3 p-3 bg-light rounded">
-                        <strong>Caja:</strong> ${cajaInfo?.caja_nombre || 'No especificado'}<br>
+                        <strong>Caja:</strong> ${cajaInfo?.name || 'No especificado'}<br>
                         <strong>Operación:</strong> <span class="badge ${vm.selectedOperacion === 'apertura' ? 'bg-success' : 'bg-danger'}">${vm.selectedOperacion}</span><br>
                     </div>
                 </div>
@@ -449,13 +449,12 @@ export class InventarioCajaNew implements OnInit {
      * Maneja el cambio de cantidad para la caja actual
      */
     onCantidadChange(denominacion: any, event: any) {
-        const cajaActual = this.cajaGlobalService.selectedCaja();
-        if (!cajaActual) return;
+        if (!this.cajaSession) return;
         
         // Extraer el valor del input
         const valor = event.target?.value ?? event;
         
-        this.inventarioCajaStore.onCantidadCajaChange(denominacion, cajaActual.name, valor);
+        this.inventarioCajaStore.onCantidadCajaChange(denominacion, this.cajaSession.name, valor);
     }
 
     // ===== MÉTODOS DELEGADOS AL STORE - MOVIMIENTOS =====
