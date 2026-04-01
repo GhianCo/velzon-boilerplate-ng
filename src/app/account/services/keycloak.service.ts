@@ -25,18 +25,19 @@ export class KeycloakService {
   }
 
   /**
-   * Inicializa el adaptador con login-required.
-   * Si no hay sesión activa, redirige automáticamente al servidor Keycloak.
-   * El redirectUri apunta al origin (puerto 4200) sin hash ni index.html.
+   * Inicializa el adaptador con check-sso (iframe silencioso).
+   * Si ya hay sesión SSO activa, KC la valida en un iframe oculto sin mover
+   * el browser → el hash de Angular se preserva (F5 funciona correctamente).
+   * Si no hay sesión, init() devuelve false y se llama a login() manualmente.
    */
   async init(): Promise<boolean> {
     try {
       return await this._keycloak.init({
-        onLoad: 'login-required',
+        onLoad: 'check-sso',
+        silentCheckSsoRedirectUri: window.location.origin + '/assets/silent-check-sso.html',
         checkLoginIframe: false,
         pkceMethod: 'S256',
         responseMode: 'query',
-        redirectUri: window.location.origin + '/',
       });
     } catch (error) {
       console.error('[Keycloak] Error al inicializar el adaptador:', error);

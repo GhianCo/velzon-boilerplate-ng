@@ -6,9 +6,9 @@ import { KeycloakService } from '@app/account/services/keycloak.service';
 /**
  * Inicializador que corre en APP_INITIALIZER.
  *
- * Con onLoad: 'login-required', keycloak.init() bloquea hasta que el usuario
- * está autenticado (redirigiendo a Keycloak si es necesario). Cuando llega aquí
- * authenticated siempre es true.
+ * Con onLoad: 'check-sso', keycloak.init() valida la sesión SSO activa via
+ * un iframe silencioso sin redirigir el browser principal. Esto preserva el
+ * hash de Angular al hacer F5. Si no hay sesión activa, se redirige a KC login.
  *
  * Expone `authReady`: una Promise que resuelve una vez que el token Bearer
  * ha sido guardado. SalaInitializerService la awaita para garantizar orden.
@@ -30,8 +30,11 @@ export class KeycloakInitializerService {
     const authenticated = await this._keycloakService.init();
 
     if (!authenticated || !this._keycloakService.token) {
-      // Resolver igualmente para que SalaInitializerService no quede bloqueado.
+      // Sin sesión activa → redirigir a KC login.
+      // redirectUri apunta al origin para que KC vuelva a la raíz de la app.
+      // SalaInitializerService no debe bloquearse — resolver antes de salir.
       this._authReadyResolve();
+      await this._keycloakService.login(window.location.origin + '/');
       return;
     }
 
@@ -42,8 +45,5 @@ export class KeycloakInitializerService {
 
     // Notificar a SalaInitializerService que el token ya está disponible.
     this._authReadyResolve();
-
-    // El router aún no ha arrancado; esperamos un tick.
-    setTimeout(() => this._router.navigate(['/inventario-efectivo']), 0);
   }
 }
