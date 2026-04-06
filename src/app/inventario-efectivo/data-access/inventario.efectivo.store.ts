@@ -607,7 +607,7 @@ export class InventarioEfectivoStore extends SignalStore<IState> {
     ).subscribe();
   };
 
-  public async saveInventarioEfectivoWithDetils(turnoId?: string, operacionTurnoId?: string | null) {
+  public async saveInventarioEfectivoWithDetils(turnoId?: string, operacionTurnoId?: string | null, diferenciaCajasAbiertas?: number | null) {
     this.patch({saveInventarioEfectivoLoading: true, saveInventarioEfectivoError: null});
     const state = this.vm();
 
@@ -677,7 +677,9 @@ export class InventarioEfectivoStore extends SignalStore<IState> {
       ultimo_turno: turno.last || 0,
       gerente: sessionData?.gerente ?? '',
       sala_id: sessionData?.sala?.id ?? null,
-      sala: sessionData?.sala?.name ?? ''
+      sala: sessionData?.sala?.name ?? '',
+      diff_inv_sumdia: diferenciaCajasAbiertas ?? null,
+      obs_diff_inv_sumdia: diferenciaCajasAbiertas ? 'DIFERENCIA CAJAS EN TRANSITO' : null
     };
 
     this._inventarioEfectivoRemoteReq.requestSaveInventario(inventario).pipe(
