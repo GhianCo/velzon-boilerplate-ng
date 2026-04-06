@@ -8,4 +8,6 @@ export interface MenuItem {
     badge?: any;
     parentId?: number;
     isLayout?: boolean;
+    /** KC roles required to display this item (any single match is enough). Omit to show always. */
+    roles?: string[];
   }

@@ -10,6 +10,7 @@ export const MENU: MenuItem[] = [
     id: 2,
     label: 'Turno',
     icon: 'ri-number-1',
+    roles: ['modulo.turno.acceso'],
     subItems: [
       {
         id: 1,
@@ -23,6 +24,7 @@ export const MENU: MenuItem[] = [
     id: 3,
     label: 'Caja',
     icon: 'ri-safe-2-line',
+    roles: ['modulo.caja.acceso'],
     subItems: [
       {
         id: 1,
@@ -36,6 +38,7 @@ export const MENU: MenuItem[] = [
     id: 4,
     label: 'Control interno',
     icon: 'ri-number-2',
+    roles: ['modulo.control-interno.acceso'],
     subItems: [
       {
         id: 1,
@@ -49,6 +52,7 @@ export const MENU: MenuItem[] = [
     id: 5,
     label: 'Maestras',
     icon: 'ri-number-3',
+    roles: ['modulo.maestras.acceso'],
     subItems: [
       {
         id: 1,
