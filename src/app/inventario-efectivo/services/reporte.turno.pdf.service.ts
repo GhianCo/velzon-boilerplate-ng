@@ -208,12 +208,19 @@ export class ReporteTurnoPdfService {
           !soloNullCajaId || d.cajas?.some((x: any) => x.caja_id === null)
         );
         denominaciones.forEach((d: any) => {
-          const row: any[] = [{ content: '  ' + d.descripcion, styles: { cellPadding: { left: 1, top: 1.1, right: 1.1, bottom: 1.1 } } }];
+          const esTotal = d.descripcion?.toString().toUpperCase() === 'TOTAL';
+          const totalFill = [220, 220, 220];
+          const row: any[] = [{
+            content: esTotal ? d.descripcion : '  ' + d.descripcion,
+            styles: esTotal
+              ? { fontStyle: 'bold', fillColor: totalFill, textColor: 0, cellPadding: { left: 1.1, top: 1.1, right: 1.1, bottom: 1.1 } }
+              : { cellPadding: { left: 1, top: 1.1, right: 1.1, bottom: 1.1 } }
+          }];
           cajas.forEach((c: any) => {
             const cantidad = d.cajas?.find((x: any) => x.caja_id === c.caja_id)?.cantidad ?? '-';
-            row.push({ content: `${cantidad}`, styles: { halign: 'right' } });
+            row.push({ content: `${valor.simbolo} ${cantidad}`, styles: esTotal ? { halign: 'right', fontStyle: 'bold', fillColor: totalFill, textColor: 0 } : { halign: 'right' } });
           });
-          row.push({ content: `${simbolo} ${d.total_importe ?? '0.00'}`, styles: { fontStyle: 'bold', fillColor: [220, 220, 220], halign: 'right' } });
+          row.push({ content: `${simbolo} ${d.total_importe ?? '0.00'}`, styles: { fontStyle: 'bold', fillColor: esTotal ? totalFill : [220, 220, 220], textColor: 0, halign: 'right' } });
           rows.push(row);
         });
       });
