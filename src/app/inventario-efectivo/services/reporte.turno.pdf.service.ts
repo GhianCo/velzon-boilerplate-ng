@@ -259,7 +259,40 @@ export class ReporteTurnoPdfService {
         finDer = (doc as any).lastAutoTable.finalY;
       }
 
-      (doc as any).lastAutoTable.finalY = Math.max(finIzq, finDer);
+      const finTablas = Math.max(finIzq, finDer);
+      (doc as any).lastAutoTable.finalY = finTablas;
+
+      // Resumen de Inventario debajo de la tabla MSC
+      const valores: any[] = inventario?.valores || [];
+
+      const bodyResumen: any[] = valores.map((v: any) => [
+        `TOTAL ${v.nombre?.toUpperCase()}`,
+        { content: simbolo + ' ' + v.subtotal_importe, styles: { halign: 'right' } }
+      ]);
+
+      bodyResumen.push([
+        { content: 'TOTAL ESTE INVENTARIO', styles: { fontStyle: 'bold', fillColor: [200, 200, 200] } },
+        { content: `${simbolo} ${inventario.total}`, styles: { fontStyle: 'bold', fillColor: [200, 200, 200], halign: 'right' } }
+      ]);
+
+      autoTable(doc, {
+        startY: finDer + 4,
+        head: [[{
+          content: 'Resumen de inventario',
+          colSpan: 2,
+          styles: { halign: 'left', fillColor: [169, 169, 169], textColor: 255, fontStyle: 'bold', fontSize: 8 }
+        }]],
+        body: bodyResumen,
+        theme: 'striped',
+        styles: { fontSize: 7, cellPadding: 1.2 },
+        headStyles: { fillColor: [128, 128, 128], textColor: 255, fontStyle: 'bold', fontSize: 7 },
+        columnStyles: {
+          0: { cellWidth: anchoDer * 0.65 },
+          1: { cellWidth: anchoDer * 0.35, halign: 'right' }
+        },
+        margin: { left: xDer, right: pageWidth - xDer - anchoDer }
+      });
+
       this.agregarFooter(doc);
     };
 
