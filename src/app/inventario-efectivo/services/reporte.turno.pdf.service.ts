@@ -114,7 +114,7 @@ export class ReporteTurnoPdfService {
       ]],
       theme: 'grid',
       styles: { fontSize: 7, cellPadding: 1, halign: 'center', valign: 'middle' },
-      headStyles: { fillColor: [128, 128, 128], textColor: 255, fontStyle: 'bold', fontSize: 7, halign: 'center' },
+      headStyles: { fillColor: [75, 75, 75], textColor: 255, fontStyle: 'bold', fontSize: 7, halign: 'center' },
       margin: { left: 10, right: 10 }
     });
 
@@ -208,7 +208,7 @@ export class ReporteTurnoPdfService {
           !soloNullCajaId || d.cajas?.some((x: any) => x.caja_id === null)
         );
         denominaciones.forEach((d: any) => {
-          const row: any[] = [d.descripcion];
+          const row: any[] = [{ content: '  ' + d.descripcion, styles: { cellPadding: { left: 1, top: 1.1, right: 1.1, bottom: 1.1 } } }];
           cajas.forEach((c: any) => {
             const cantidad = d.cajas?.find((x: any) => x.caja_id === c.caja_id)?.cantidad ?? '-';
             row.push({ content: `${cantidad}`, styles: { halign: 'right' } });
@@ -222,9 +222,9 @@ export class ReporteTurnoPdfService {
 
     const renderTablaLado = (cajas: any[], valores: any[], x: number, width: number, y: number, soloNullCajaId = false, col0Width = 23): void => {
       const headers: any[] = [
-        { content: 'Descripción', styles: { fillColor: [211, 211, 211] } },
-        ...cajas.map((c: any) => ({ content: c.caja_nombre, styles: { halign: 'right', fillColor: [211, 211, 211] } })),
-        { content: 'Total', styles: { halign: 'right', fillColor: [211, 211, 211] } }
+        { content: 'Descripción', styles: { fillColor: [75, 75, 75] } },
+        ...cajas.map((c: any) => ({ content: c.caja_nombre, styles: { halign: 'right', fillColor: [75, 75, 75] } })),
+        { content: 'Total', styles: { halign: 'right', fillColor: [75, 75, 75] } }
       ];
 
       autoTable(doc, {
@@ -276,8 +276,8 @@ export class ReporteTurnoPdfService {
       ]);
 
       bodyResumen.push([
-        { content: 'TOTAL ESTE INVENTARIO', styles: { fontStyle: 'bold', fillColor: [200, 200, 200] } },
-        { content: `${simbolo} ${inventario.total}`, styles: { fontStyle: 'bold', fillColor: [200, 200, 200], halign: 'right' } }
+        { content: 'TOTAL ESTE INVENTARIO', styles: { fontStyle: 'bold', fillColor: [75, 75, 75], textColor: 255 } },
+        { content: `${simbolo} ${inventario.total}`, styles: { fontStyle: 'bold', fillColor: [75, 75, 75], textColor: 255, halign: 'right' } }
       ]);
 
       autoTable(doc, {
@@ -285,12 +285,12 @@ export class ReporteTurnoPdfService {
         head: [[{
           content: 'Resumen de inventario',
           colSpan: 2,
-          styles: { halign: 'left', fillColor: [169, 169, 169], textColor: 255, fontStyle: 'bold', fontSize: 8 }
+          styles: { halign: 'left', fillColor: [75, 75, 75], textColor: 255, fontStyle: 'bold'}
         }]],
         body: bodyResumen,
         theme: 'striped',
         styles: { fontSize: 7, cellPadding: 1.2 },
-        headStyles: { fillColor: [128, 128, 128], textColor: 255, fontStyle: 'bold', fontSize: 7 },
+        headStyles: { fillColor: [128, 128, 128], textColor: 255, fontStyle: 'bold'},
         columnStyles: {
           0: { cellWidth: anchoDer * 0.65 },
           1: { cellWidth: anchoDer * 0.35, halign: 'right' }
