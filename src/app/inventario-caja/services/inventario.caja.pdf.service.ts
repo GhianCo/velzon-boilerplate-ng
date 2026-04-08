@@ -267,7 +267,7 @@ export class InventarioCajaPdfService {
       colSpan: totalColumnas,
       styles: {
         halign: 'center',
-        fillColor: [169, 169, 169],
+        fillColor: [75, 75, 75],
         textColor: 255,
         fontStyle: 'bold',
         fontSize: 8
@@ -278,14 +278,14 @@ export class InventarioCajaPdfService {
     headers.push({
       content: 'Descripción',
       colSpan: 1,
-      styles: {fillColor: [211, 211, 211] }
+      styles: {fillColor: [120, 120, 120] }
     });
 
     // Encabezado de Apertura
     headers.push({
       content: 'Apertura',
       colSpan: cajasApertura.length + 2,
-      styles: { halign: 'center', fillColor: [211, 211, 211] }
+      styles: { halign: 'center', fillColor: [120, 120, 120] }
     });
 
     cajasApertura.forEach((caja: any) => {
@@ -298,7 +298,7 @@ export class InventarioCajaPdfService {
     headers.push({
       content: 'Cierre',
       colSpan: cajasCierre.length + 2,
-      styles: { halign: 'center', fillColor: [211, 211, 211] }
+      styles: { halign: 'center', fillColor: [120, 120, 120] }
     });
 
     cajasCierre.forEach((caja: any) => {
@@ -488,7 +488,7 @@ export class InventarioCajaPdfService {
       colSpan: 2,
       styles: {
         halign: 'center',
-        fillColor: [169, 169, 169],
+        fillColor: [75, 75, 75],
         textColor: 255,
         fontStyle: 'bold',
         fontSize: 8
@@ -512,9 +512,7 @@ export class InventarioCajaPdfService {
       }
 
       // Fila de categoría con colores grises según tipo
-      const colorFondo = categoria.tipo_operacion === 'ingreso' ? [200, 200, 200] :
-                         categoria.tipo_operacion === 'egreso' ? [180, 180, 180] :
-                         [220, 220, 220];
+      const colorFondo = [220, 220, 220];
       let subtotalCat = simbolo + ' ';
       let nombreCat = categoria.nombre;
       if (categoria.tipo_operacion == 'ingreso') {
