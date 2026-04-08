@@ -337,10 +337,9 @@ export class ReporteTurnoPdfService {
 
     const rows: any[] = [];
     categorias.forEach((cat: any) => {
-      const colorFondo = cat.tipo_operacion === 'ingreso' ? [200, 200, 200] :
-                         cat.tipo_operacion === 'egreso'  ? [180, 180, 180] : [220, 220, 220];
-      rows.push([{ content: cat.nombre, styles: { fontStyle: 'bold', fillColor: colorFondo, halign: 'left' } },
-                { content: `${simbolo} ${cat.total}`, styles: { fontStyle: 'bold', fillColor: colorFondo} }
+      const colorFondo = [200, 200, 200];
+      rows.push([{ content: cat.nombre, styles: { fontStyle: 'bold', fillColor: colorFondo, textColor: 0, halign: 'left' } },
+                { content: `${simbolo} ${cat.total}`, styles: { fontStyle: 'bold', fillColor: colorFondo, textColor: 0} }
       ]);
       cat.items?.forEach((item: any) => rows.push([item.nombre, `${simbolo} ${item.importe}`]));
     });
