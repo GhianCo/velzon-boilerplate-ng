@@ -220,7 +220,7 @@ export class ReporteTurnoPdfService {
       return rows;
     };
 
-    const renderTablaLado = (cajas: any[], valores: any[], x: number, width: number, y: number, soloNullCajaId = false): void => {
+    const renderTablaLado = (cajas: any[], valores: any[], x: number, width: number, y: number, soloNullCajaId = false, col0Width = 23): void => {
       const headers: any[] = [
         { content: 'Descripción', styles: { fillColor: [211, 211, 211] } },
         ...cajas.map((c: any) => ({ content: c.caja_nombre, styles: { halign: 'right', fillColor: [211, 211, 211] } })),
@@ -234,7 +234,7 @@ export class ReporteTurnoPdfService {
         theme: 'striped',
         styles: { fontSize: 6, cellPadding: 1.1 },
         headStyles: { fillColor: [128, 128, 128], textColor: 255, fontStyle: 'bold', fontSize: 6 },
-        columnStyles: { 0: { cellWidth: 23 } },
+        columnStyles: { 0: { cellWidth: col0Width } },
         margin: { left: x, right: pageWidth - x - width }
       });
     };
@@ -260,7 +260,7 @@ export class ReporteTurnoPdfService {
       const cajasMsc: any[] = [];
       let finDer = finIzq;
       if (valoresDer.length > 0) {
-        renderTablaLado(cajasMsc, valoresDer, xDer, anchoDer, y, true);
+        renderTablaLado(cajasMsc, valoresDer, xDer, anchoDer, y, true, anchoDer * 0.65);
         finDer = (doc as any).lastAutoTable.finalY;
       }
 
