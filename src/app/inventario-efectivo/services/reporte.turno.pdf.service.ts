@@ -82,7 +82,7 @@ export class ReporteTurnoPdfService {
 
     let yPosition = this.agregarEncabezadoTurno(
       doc,
-      'DETALLE DE MOVIMIENTOS - TURNO ' + resumenData.turno_nombre?.toUpperCase(),
+      'SUMA DIARIA - TURNO ' + resumenData.turno_nombre?.toUpperCase(),
       resumenData
     );
 
