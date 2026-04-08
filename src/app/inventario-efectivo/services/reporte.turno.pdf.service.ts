@@ -184,8 +184,19 @@ export class ReporteTurnoPdfService {
     tableWidth: number
   ): void {
     const pageWidth = doc.internal.pageSize.getWidth();
+    const gap = 4;
+    const anchoIzq = tableWidth * 0.58;
+    const anchoDer = tableWidth - anchoIzq - gap;
+    const xDer = xStart + anchoIzq + gap;
 
-    const buildRows = (cajas: any[], valores: any[], totalesColumnas: any[], totalGeneral: string): any[] => {
+    const calcTotal = (valores: any[]): string => {
+      const t = (valores || []).reduce((sum: number, v: any) =>
+        sum + (v.denominaciones || []).reduce((s: number, d: any) =>
+          s + parseFloat(d.total_importe || '0'), 0), 0);
+      return t.toFixed(2);
+    };
+
+    const buildRows = (cajas: any[], valores: any[], soloNullCajaId = false): any[] => {
       const totalColumnas = 1 + cajas.length + 1;
       const rows: any[] = [];
 
@@ -203,7 +214,10 @@ export class ReporteTurnoPdfService {
           ]);
         }
 
-        (valor.denominaciones || []).forEach((d: any) => {
+        const denominaciones = (valor.denominaciones || []).filter((d: any) =>
+          !soloNullCajaId || d.cajas?.some((x: any) => x.caja_id === null)
+        );
+        denominaciones.forEach((d: any) => {
           const row: any[] = [d.descripcion];
           cajas.forEach((c: any) => {
             const cantidad = d.cajas?.find((x: any) => x.caja_id === c.caja_id)?.cantidad ?? '-';
@@ -214,23 +228,15 @@ export class ReporteTurnoPdfService {
         });
       });
 
-      const rowTotal: any[] = [{ content: 'TOTAL GENERAL', styles: { fontStyle: 'bold' } }];
-      cajas.forEach((_: any, i: number) => {
-        rowTotal.push({ content: `${simbolo} ${totalesColumnas?.[i] ?? '0.00'}`, styles: { fontStyle: 'bold', fillColor: [200, 200, 200], halign: 'right' } });
-      });
-      rowTotal.push({ content: `${simbolo} ${totalGeneral}`, styles: { fontStyle: 'bold', fillColor: [200, 200, 200], halign: 'right' } });
+      const rowTotal: any[] = [{ content: 'TOTAL', styles: { fontStyle: 'bold' } }];
+      cajas.forEach(() => rowTotal.push(''));
+      rowTotal.push({ content: `${simbolo} ${calcTotal(valores)}`, styles: { fontStyle: 'bold', fillColor: [200, 200, 200], halign: 'right' } });
       rows.push(rowTotal);
 
       return rows;
     };
 
-    const renderTabla = (titulo: string, cajas: any[], valores: any[], totalesColumnas: any[], totalGeneral: string, y: number): void => {
-      const totalColumnas = 1 + cajas.length + 1;
-      const titleRow = [{
-        content: titulo,
-        colSpan: totalColumnas,
-        styles: { halign: 'center', fillColor: [169, 169, 169], textColor: 255, fontStyle: 'bold', fontSize: 8 }
-      }];
+    const renderTablaLado = (cajas: any[], valores: any[], x: number, width: number, y: number, soloNullCajaId = false): void => {
       const headers: any[] = [
         { content: 'Descripción', styles: { fillColor: [211, 211, 211] } },
         ...cajas.map((c: any) => ({ content: c.caja_nombre, styles: { halign: 'right', fillColor: [211, 211, 211] } })),
@@ -239,39 +245,46 @@ export class ReporteTurnoPdfService {
 
       autoTable(doc, {
         startY: y,
-        head: [titleRow, headers],
-        body: buildRows(cajas, valores, totalesColumnas, totalGeneral),
+        head: [headers],
+        body: buildRows(cajas, valores, soloNullCajaId),
         theme: 'striped',
         styles: { fontSize: 6, cellPadding: 1.1 },
         headStyles: { fillColor: [128, 128, 128], textColor: 255, fontStyle: 'bold', fontSize: 6 },
         columnStyles: { 0: { cellWidth: 23 } },
-        margin: { left: xStart, right: pageWidth - xStart - tableWidth }
+        margin: { left: x, right: pageWidth - x - width }
       });
     };
 
+    const renderPagina = (inventario: any, y: number): void => {
+      const cajas = inventario?.cajas || [];
+      const valoresIzq = (inventario?.valores || []).filter((v: any) => v.codigo !== 'MSC');
+      const valoresDer = (inventario?.valores || []).filter((v: any) => v.codigo === 'MSC');
+
+      // Tabla izquierda: fichas, soles, dólares
+      renderTablaLado(cajas, valoresIzq, xStart, anchoIzq, y);
+      const finIzq = (doc as any).lastAutoTable.finalY;
+
+      // Tabla derecha: misceláneos (sin columnas de cajas)
+      const cajasMsc: any[] = [];
+      let finDer = finIzq;
+      if (valoresDer.length > 0) {
+        renderTablaLado(cajasMsc, valoresDer, xDer, anchoDer, y, true);
+        finDer = (doc as any).lastAutoTable.finalY;
+      }
+
+      (doc as any).lastAutoTable.finalY = Math.max(finIzq, finDer);
+    };
+
     // --- HOJA 1: APERTURA ---
-    renderTabla(
-      'Inventario de efectivo - APERTURA',
-      inventarioApertura?.cajas || [],
-      inventarioApertura?.valores || [],
-      inventarioApertura?.totales_columnas || [],
-      inventarioApertura?.total || '0.00',
-      startY
-    );
+    renderPagina(inventarioApertura, startY);
 
     // --- HOJA 2: CIERRE (solo si hay datos) ---
     const tieneCierre = (inventarioCierre?.cajas?.length > 0) || (inventarioCierre?.valores?.length > 0);
     if (tieneCierre) {
       doc.addPage();
-      renderTabla(
-        'Inventario de efectivo - CIERRE',
-        inventarioCierre?.cajas || [],
-        inventarioCierre?.valores || [],
-        inventarioCierre?.totales_columnas || [],
-        inventarioCierre?.total || '0.00',
-        15
-      );
+      renderPagina(inventarioCierre, 15);
     }
+
   }
 
   private generarTablaSumaDiaria(
