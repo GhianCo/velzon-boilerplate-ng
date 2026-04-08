@@ -17,9 +17,8 @@ export class ReporteTurnoPdfService {
     const pageHeight = doc.internal.pageSize.getHeight();
     const turnoAbierto = resumenData.abierta;
 
-    // Página 1: Inventario de Efectivo
+    // Página 1: Inventario de Efectivo (header y footer incluidos dentro)
     this.agregarPaginaInventario(doc, resumenData, turnoAbierto);
-    this.agregarFooter(doc);
 
     // Página 2: Suma Diaria — solo si el turno está cerrado
     if (!turnoAbierto) {
@@ -51,24 +50,15 @@ export class ReporteTurnoPdfService {
 
   private agregarPaginaInventario(doc: jsPDF, resumenData: any, turnoAbierto: boolean): void {
     const pageWidth = doc.internal.pageSize.getWidth();
-    const pageHeight = doc.internal.pageSize.getHeight();
-
-    let yPosition = this.agregarEncabezadoTurno(
-      doc,
-      'INVENTARIO DE EFECTIVO - TURNO ' + resumenData.turno_nombre?.toUpperCase() + ' - ' + resumenData.correlativo,
-      resumenData
-    );
-
     const tieneInventario = resumenData.inventario_apertura?.valores?.length > 0 ||
       (!turnoAbierto && resumenData.inventario_cierre?.valores?.length > 0);
 
     if (tieneInventario) {
-      if (yPosition > pageHeight - 60) { doc.addPage(); yPosition = 15; }
       this.generarTablaInventario(
         doc,
         resumenData.inventario_apertura,
         turnoAbierto ? null : resumenData.inventario_cierre,
-        yPosition,
+        resumenData,
         resumenData.simbolo_moneda,
         10,
         pageWidth - 20
@@ -178,7 +168,7 @@ export class ReporteTurnoPdfService {
     doc: jsPDF,
     inventarioApertura: any,
     inventarioCierre: any,
-    startY: number,
+    resumenData: any,
     simbolo: string,
     xStart: number,
     tableWidth: number
@@ -227,12 +217,6 @@ export class ReporteTurnoPdfService {
           rows.push(row);
         });
       });
-
-      const rowTotal: any[] = [{ content: 'TOTAL', styles: { fontStyle: 'bold' } }];
-      cajas.forEach(() => rowTotal.push(''));
-      rowTotal.push({ content: `${simbolo} ${calcTotal(valores)}`, styles: { fontStyle: 'bold', fillColor: [200, 200, 200], halign: 'right' } });
-      rows.push(rowTotal);
-
       return rows;
     };
 
@@ -255,7 +239,10 @@ export class ReporteTurnoPdfService {
       });
     };
 
-    const renderPagina = (inventario: any, y: number): void => {
+    const renderPagina = (label: string, inventario: any): void => {
+      const titulo = 'INVENTARIO DE EFECTIVO - ' + label + ' | TURNO: ' + resumenData.turno_nombre?.toUpperCase() + ' | ' + resumenData.correlativo;
+      const y = this.agregarEncabezadoTurno(doc, titulo, resumenData);
+
       const cajas = inventario?.cajas || [];
       const valoresIzq = (inventario?.valores || []).filter((v: any) => v.codigo !== 'MSC');
       const valoresDer = (inventario?.valores || []).filter((v: any) => v.codigo === 'MSC');
@@ -273,16 +260,17 @@ export class ReporteTurnoPdfService {
       }
 
       (doc as any).lastAutoTable.finalY = Math.max(finIzq, finDer);
+      this.agregarFooter(doc);
     };
 
     // --- HOJA 1: APERTURA ---
-    renderPagina(inventarioApertura, startY);
+    renderPagina('APERTURA', inventarioApertura);
 
     // --- HOJA 2: CIERRE (solo si hay datos) ---
     const tieneCierre = (inventarioCierre?.cajas?.length > 0) || (inventarioCierre?.valores?.length > 0);
     if (tieneCierre) {
       doc.addPage();
-      renderPagina(inventarioCierre, 15);
+      renderPagina('CIERRE', inventarioCierre);
     }
 
   }
