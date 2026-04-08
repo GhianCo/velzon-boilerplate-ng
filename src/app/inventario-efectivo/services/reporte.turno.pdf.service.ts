@@ -183,118 +183,95 @@ export class ReporteTurnoPdfService {
     xStart: number,
     tableWidth: number
   ): void {
-    const cajasApertura = inventarioApertura?.cajas || [];
-    const cajasCierre = inventarioCierre?.cajas || [];
-    const tieneCierre = cajasCierre.length > 0 || (inventarioCierre?.valores?.length > 0);
-    const totalColumnas = 1 + cajasApertura.length + 1 + (tieneCierre ? cajasCierre.length + 1 : 0);
+    const pageWidth = doc.internal.pageSize.getWidth();
 
-    const titleRow: any[] = [{
-      content: 'Inventario de efectivo',
-      colSpan: totalColumnas,
-      styles: { halign: 'center', fillColor: [169, 169, 169], textColor: 255, fontStyle: 'bold', fontSize: 8 }
-    }];
+    const buildRows = (cajas: any[], valores: any[], totalesColumnas: any[], totalGeneral: string): any[] => {
+      const totalColumnas = 1 + cajas.length + 1;
+      const rows: any[] = [];
 
-    const headers: any[] = [
-      { content: 'Descripción', colSpan: 1, styles: { fillColor: [211, 211, 211] } },
-      { content: 'Apertura', colSpan: cajasApertura.length + 1, styles: { halign: 'center', fillColor: [211, 211, 211] } },
-      ...(tieneCierre ? [{ content: 'Cierre', colSpan: cajasCierre.length + 1, styles: { halign: 'center', fillColor: [211, 211, 211] } }] : [])
-    ];
+      (valores || []).forEach((valor: any) => {
+        rows.push([{
+          content: valor.nombre,
+          colSpan: totalColumnas,
+          styles: { fontStyle: 'bold', fillColor: [248, 249, 250], halign: 'left' }
+        }]);
 
-    const subHeaders: any[] = [''];
-    cajasApertura.forEach((c: any) => subHeaders.push({content:c.caja_nombre,   styles:{halign: 'right'}}));
-    subHeaders.push({ content: 'Total', styles: { halign: 'right' } });
-    if (tieneCierre) {
-      cajasCierre.forEach((c: any) => subHeaders.push({content:c.caja_nombre,   styles:{halign: 'right'}}));
-      subHeaders.push({ content: 'Total', styles: { halign: 'right' } });
-    }
+        if (valor.codigo === 'USD') {
+          rows.push([
+            { content: 'Tipo de cambio', styles: { fontStyle: 'italic', fillColor: [255, 243, 205] } },
+            { content: `S/. ${valor.tc || '0.00'}`, colSpan: cajas.length + 1, styles: { fontStyle: 'bold', fillColor: [255, 243, 205], halign: 'center' } }
+          ]);
+        }
 
-    const rows: any[] = [];
-    const todosLosValores = new Map<number, any>();
+        (valor.denominaciones || []).forEach((d: any) => {
+          const row: any[] = [d.descripcion];
+          cajas.forEach((c: any) => {
+            const cantidad = d.cajas?.find((x: any) => x.caja_id === c.caja_id)?.cantidad ?? '-';
+            row.push({ content: `${cantidad}`, styles: { halign: 'right' } });
+          });
+          row.push({ content: `${simbolo} ${d.total_importe ?? '0.00'}`, styles: { fontStyle: 'bold', fillColor: [220, 220, 220], halign: 'right' } });
+          rows.push(row);
+        });
+      });
 
-    (inventarioApertura?.valores || []).forEach((v: any) =>
-      todosLosValores.set(v.valor_id, { nombre: v.nombre, apertura: v, cierre: null })
-    );
-    (inventarioCierre?.valores || []).forEach((v: any) => {
-      if (todosLosValores.has(v.valor_id)) {
-        todosLosValores.get(v.valor_id).cierre = v;
-      } else {
-        todosLosValores.set(v.valor_id, { nombre: v.nombre, apertura: null, cierre: v });
-      }
-    });
+      const rowTotal: any[] = [{ content: 'TOTAL GENERAL', styles: { fontStyle: 'bold' } }];
+      cajas.forEach((_: any, i: number) => {
+        rowTotal.push({ content: `${simbolo} ${totalesColumnas?.[i] ?? '0.00'}`, styles: { fontStyle: 'bold', fillColor: [200, 200, 200], halign: 'right' } });
+      });
+      rowTotal.push({ content: `${simbolo} ${totalGeneral}`, styles: { fontStyle: 'bold', fillColor: [200, 200, 200], halign: 'right' } });
+      rows.push(rowTotal);
 
-    todosLosValores.forEach((valorData) => {
-      rows.push([{
-        content: valorData.nombre,
+      return rows;
+    };
+
+    const renderTabla = (titulo: string, cajas: any[], valores: any[], totalesColumnas: any[], totalGeneral: string, y: number): void => {
+      const totalColumnas = 1 + cajas.length + 1;
+      const titleRow = [{
+        content: titulo,
         colSpan: totalColumnas,
-        styles: { fontStyle: 'bold', fillColor: [248, 249, 250], halign: 'left' }
-      }]);
+        styles: { halign: 'center', fillColor: [169, 169, 169], textColor: 255, fontStyle: 'bold', fontSize: 8 }
+      }];
+      const headers: any[] = [
+        { content: 'Descripción', styles: { fillColor: [211, 211, 211] } },
+        ...cajas.map((c: any) => ({ content: c.caja_nombre, styles: { halign: 'right', fillColor: [211, 211, 211] } })),
+        { content: 'Total', styles: { halign: 'right', fillColor: [211, 211, 211] } }
+      ];
 
-      const codigo = valorData.apertura?.codigo || valorData.cierre?.codigo;
-      const tc = valorData.apertura?.tc || valorData.cierre?.tc || '0.00';
-      if (codigo === 'USD') {
-        rows.push([
-          { content: 'Tipo de cambio', styles: { fontStyle: 'italic', fillColor: [255, 243, 205] } },
-          { content: `S/. ${tc}`, colSpan: totalColumnas - 1, styles: { fontStyle: 'bold', fillColor: [255, 243, 205], halign: 'center' } }
-        ]);
-      }
-
-      const denomMap = new Map<number, any>();
-      (valorData.apertura?.denominaciones || []).forEach((d: any) =>
-        denomMap.set(d.denominacion_id, { descripcion: d.descripcion, total_importe: d.total_importe, apertura: d, cierre: null })
-      );
-      (valorData.cierre?.denominaciones || []).forEach((d: any) => {
-        if (denomMap.has(d.denominacion_id)) {
-          denomMap.get(d.denominacion_id).cierre = d;
-        } else {
-          denomMap.set(d.denominacion_id, { descripcion: d.descripcion, total_importe: d.total_importe, apertura: null, cierre: d });
-        }
+      autoTable(doc, {
+        startY: y,
+        head: [titleRow, headers],
+        body: buildRows(cajas, valores, totalesColumnas, totalGeneral),
+        theme: 'striped',
+        styles: { fontSize: 6, cellPadding: 1.1 },
+        headStyles: { fillColor: [128, 128, 128], textColor: 255, fontStyle: 'bold', fontSize: 6 },
+        columnStyles: { 0: { cellWidth: 23 } },
+        margin: { left: xStart, right: pageWidth - xStart - tableWidth }
       });
+    };
 
-      denomMap.forEach((dd) => {
-        const row: any[] = [dd.descripcion];
-        if (dd.apertura) {
-          cajasApertura.forEach((c: any) => row.push({ content: `${dd.apertura.cajas?.find((x: any) => x.caja_id === c.caja_id)?.cantidad ?? '-'}`, styles:{halign: 'right'} }));
-        } else {
-          cajasApertura.forEach(() => row.push('-'));
-        }
-        row.push({ content: `${simbolo} ${dd.apertura?.total_importe ?? '0.00'}`, styles: { fontStyle: 'bold', fillColor: [220, 220, 220], halign: 'right' } });
-        if (tieneCierre) {
-          if (dd.cierre) {
-            cajasCierre.forEach((c: any) => row.push({ content: `${dd.cierre.cajas?.find((x: any) => x.caja_id === c.caja_id)?.cantidad ?? '-'}`, styles:{halign: 'right'} }));
-          } else {
-            cajasCierre.forEach(() => row.push('-'));
-          }
-          row.push({ content: `${simbolo} ${dd.cierre?.total_importe ?? '0.00'}`, styles: { fontStyle: 'bold', fillColor: [220, 220, 220], halign: 'right' } });
-        }
-        rows.push(row);
-      });
-    });
+    // --- HOJA 1: APERTURA ---
+    renderTabla(
+      'Inventario de efectivo - APERTURA',
+      inventarioApertura?.cajas || [],
+      inventarioApertura?.valores || [],
+      inventarioApertura?.totales_columnas || [],
+      inventarioApertura?.total || '0.00',
+      startY
+    );
 
-    const rowTotal: any[] = [{ content: 'TOTAL GENERAL', styles: { fontStyle: 'bold' } }];
-    cajasApertura.forEach((_: any, i: number) => {
-      const colTotal = inventarioApertura?.totales_columnas?.[i] ?? '0.00';
-      rowTotal.push({ content: `${simbolo} ${colTotal}`, styles: { fontStyle: 'bold', fillColor: [200, 200, 200], halign: 'right' } });
-    });
-    rowTotal.push({ content: `${simbolo} ${inventarioApertura?.total || '0.00'}`, styles: { fontStyle: 'bold', fillColor: [200, 200, 200], halign: 'right' } });
+    // --- HOJA 2: CIERRE (solo si hay datos) ---
+    const tieneCierre = (inventarioCierre?.cajas?.length > 0) || (inventarioCierre?.valores?.length > 0);
     if (tieneCierre) {
-      cajasCierre.forEach((_: any, i: number) => {
-        const colTotal = inventarioCierre?.totales_columnas?.[i] ?? '0.00';
-        rowTotal.push({ content: `${simbolo} ${colTotal}`, styles: { fontStyle: 'bold', fillColor: [200, 200, 200], halign: 'right' } });
-      });
-      rowTotal.push({ content: `${simbolo} ${inventarioCierre?.total || '0.00'}`, styles: { fontStyle: 'bold', fillColor: [200, 200, 200], halign: 'right' } });
+      doc.addPage();
+      renderTabla(
+        'Inventario de efectivo - CIERRE',
+        inventarioCierre?.cajas || [],
+        inventarioCierre?.valores || [],
+        inventarioCierre?.totales_columnas || [],
+        inventarioCierre?.total || '0.00',
+        15
+      );
     }
-    rows.push(rowTotal);
-
-    autoTable(doc, {
-      startY,
-      head: [titleRow, headers, subHeaders],
-      body: rows,
-      theme: 'striped',
-      styles: { fontSize: 6, cellPadding: 1.1 },
-      headStyles: { fillColor: [128, 128, 128], textColor: 255, fontStyle: 'bold', fontSize: 6 },
-      columnStyles: { 0: { cellWidth: 23 } },
-      margin: { left: xStart, right: doc.internal.pageSize.getWidth() - xStart - tableWidth }
-    });
   }
 
   private generarTablaSumaDiaria(
