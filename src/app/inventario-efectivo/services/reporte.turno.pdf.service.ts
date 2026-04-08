@@ -296,7 +296,7 @@ export class ReporteTurnoPdfService {
         }]],
         body: bodyResumen,
         theme: 'striped',
-        styles: { fontSize: 7, cellPadding: 1.2 },
+        styles: { fontSize: 6, cellPadding: 1.2 },
         headStyles: { fillColor: [128, 128, 128], textColor: 255, fontStyle: 'bold'},
         columnStyles: {
           0: { cellWidth: anchoDer * 0.65 },
@@ -355,7 +355,7 @@ export class ReporteTurnoPdfService {
       body: rows,
       theme: 'striped',
       styles: { fontSize: 6, cellPadding: 0.9 },
-      headStyles: { fillColor: [128, 128, 128], textColor: 255, fontStyle: 'bold', fontSize: 6 },
+      headStyles: { fillColor: [75, 75, 75], textColor: 255, fontStyle: 'bold', fontSize: 6 },
       columnStyles: {
         0: { cellWidth: tableWidth * 0.7, halign: 'left' },
         1: { cellWidth: tableWidth * 0.3, halign: 'right', fontStyle: 'bold' }
