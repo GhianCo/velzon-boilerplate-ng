@@ -201,10 +201,10 @@ export class ReporteTurnoPdfService {
     ];
 
     const subHeaders: any[] = [''];
-    cajasApertura.forEach((c: any) => subHeaders.push(c.caja_nombre));
+    cajasApertura.forEach((c: any) => subHeaders.push({content:c.caja_nombre,   styles:{halign: 'right'}}));
     subHeaders.push({ content: 'Total', styles: { halign: 'right' } });
     if (tieneCierre) {
-      cajasCierre.forEach((c: any) => subHeaders.push(c.caja_nombre));
+      cajasCierre.forEach((c: any) => subHeaders.push({content:c.caja_nombre,   styles:{halign: 'right'}}));
       subHeaders.push({ content: 'Total', styles: { halign: 'right' } });
     }
 
@@ -253,14 +253,14 @@ export class ReporteTurnoPdfService {
       denomMap.forEach((dd) => {
         const row: any[] = [dd.descripcion];
         if (dd.apertura) {
-          cajasApertura.forEach((c: any) => row.push(`${dd.apertura.cajas?.find((x: any) => x.caja_id === c.caja_id)?.cantidad ?? '-'}`));
+          cajasApertura.forEach((c: any) => row.push({ content: `${dd.apertura.cajas?.find((x: any) => x.caja_id === c.caja_id)?.cantidad ?? '-'}`, styles:{halign: 'right'} }));
         } else {
           cajasApertura.forEach(() => row.push('-'));
         }
         row.push({ content: `${simbolo} ${dd.apertura?.total_importe ?? '0.00'}`, styles: { fontStyle: 'bold', fillColor: [220, 220, 220], halign: 'right' } });
         if (tieneCierre) {
           if (dd.cierre) {
-            cajasCierre.forEach((c: any) => row.push(`${dd.cierre.cajas?.find((x: any) => x.caja_id === c.caja_id)?.cantidad ?? '-'}`));
+            cajasCierre.forEach((c: any) => row.push({ content: `${dd.cierre.cajas?.find((x: any) => x.caja_id === c.caja_id)?.cantidad ?? '-'}`, styles:{halign: 'right'} }));
           } else {
             cajasCierre.forEach(() => row.push('-'));
           }
@@ -270,16 +270,16 @@ export class ReporteTurnoPdfService {
       });
     });
 
-    const rowTotal: any[] = [{ content: 'TOTAL', styles: { fontStyle: 'bold' } }];
+    const rowTotal: any[] = [{ content: 'TOTAL GENERAL', styles: { fontStyle: 'bold' } }];
     cajasApertura.forEach((_: any, i: number) => {
       const colTotal = inventarioApertura?.totales_columnas?.[i] ?? '0.00';
-      rowTotal.push({ content: `${simbolo} ${colTotal}`, styles: { fontStyle: 'bold', fillColor: [200, 200, 200], halign: 'left' } });
+      rowTotal.push({ content: `${simbolo} ${colTotal}`, styles: { fontStyle: 'bold', fillColor: [200, 200, 200], halign: 'right' } });
     });
     rowTotal.push({ content: `${simbolo} ${inventarioApertura?.total || '0.00'}`, styles: { fontStyle: 'bold', fillColor: [200, 200, 200], halign: 'right' } });
     if (tieneCierre) {
       cajasCierre.forEach((_: any, i: number) => {
         const colTotal = inventarioCierre?.totales_columnas?.[i] ?? '0.00';
-        rowTotal.push({ content: `${simbolo} ${colTotal}`, styles: { fontStyle: 'bold', fillColor: [200, 200, 200], halign: 'left' } });
+        rowTotal.push({ content: `${simbolo} ${colTotal}`, styles: { fontStyle: 'bold', fillColor: [200, 200, 200], halign: 'right' } });
       });
       rowTotal.push({ content: `${simbolo} ${inventarioCierre?.total || '0.00'}`, styles: { fontStyle: 'bold', fillColor: [200, 200, 200], halign: 'right' } });
     }
