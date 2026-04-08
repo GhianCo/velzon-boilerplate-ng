@@ -55,7 +55,7 @@ export class ReporteTurnoPdfService {
 
     let yPosition = this.agregarEncabezadoTurno(
       doc,
-      'INVENTARIO DE EFECTIVO - TURNO ' + resumenData.turno_nombre?.toUpperCase(),
+      'INVENTARIO DE EFECTIVO - TURNO ' + resumenData.turno_nombre?.toUpperCase() + ' - ' + resumenData.correlativo,
       resumenData
     );
 

@@ -22,7 +22,7 @@ export class InventarioCajaPdfService {
     // Logo y encabezado
     doc.setFontSize(11);
     doc.setFont('helvetica', 'bold');
-    doc.text('RESUMEN DE OPERACIONES ' + resumenData.caja_nombre?.toUpperCase() + ' | TURNO: ' + resumenData.turno_nombre?.toUpperCase(), pageWidth / 2, yPosition, { align: 'center' });
+    doc.text('RESUMEN DE OPERACIONES ' + resumenData.caja_nombre?.toUpperCase() + ' | TURNO: ' + resumenData.turno_nombre?.toUpperCase() + ' | ' + resumenData.correlativo, pageWidth / 2, yPosition, { align: 'center' });
     yPosition += 6;
 
     // Información de la caja en formato horizontal (una sola fila)
