@@ -329,11 +329,6 @@ export class ReporteTurnoPdfService {
     xStart: number,
     tableWidth: number
   ): void {
-    const titleRow = [{
-      content: 'Detalle de movimientos',
-      colSpan: 2,
-      styles: { halign: 'center', fillColor: [169, 169, 169], textColor: 255, fontStyle: 'bold', fontSize: 8 }
-    }];
 
     const headers: any[] = [
       { content: 'Descripción', styles: { halign: 'left' } },
@@ -356,7 +351,7 @@ export class ReporteTurnoPdfService {
 
     autoTable(doc, {
       startY,
-      head: [titleRow, headers],
+      head: [headers],
       body: rows,
       theme: 'striped',
       styles: { fontSize: 6, cellPadding: 0.9 },
