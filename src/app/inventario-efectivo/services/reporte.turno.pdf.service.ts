@@ -240,8 +240,13 @@ export class ReporteTurnoPdfService {
     };
 
     const renderPagina = (label: string, inventario: any): void => {
-      const titulo = 'INVENTARIO DE EFECTIVO - ' + label + ' | TURNO: ' + resumenData.turno_nombre?.toUpperCase() + ' | ' + resumenData.correlativo;
+      const titulo = 'INVENTARIO DE EFECTIVO - ' + label + ' | TURNO: ' + resumenData.turno_nombre?.toUpperCase();
       const y = this.agregarEncabezadoTurno(doc, titulo, resumenData);
+      // Correlativo alineado a la derecha en la misma línea del título
+      doc.setFontSize(11);
+      doc.setFont('helvetica', 'bold');
+      doc.setTextColor(0, 0, 0);
+      doc.text('Nº '+resumenData.correlativo || '', pageWidth - 10, 15, { align: 'right' });
 
       const cajas = inventario?.cajas || [];
       const valoresIzq = (inventario?.valores || []).filter((v: any) => v.codigo !== 'MSC');
