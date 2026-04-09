@@ -21,7 +21,6 @@ export const environment = {
       signIn: 'auth/sign-in',
     }
   },
-  apiControlActivos: 'http://masaris.pe/control-activos-masaris',
   apiWorkers: 'http://masaris.pe/workers',
   apiMasarisCore: 'http://masaris.pe/core-api',
   keycloak: {

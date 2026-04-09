@@ -54,22 +54,6 @@ export class AuthLoginStore extends SignalStore<IState> {
   }
 
   public async loadSalas() {
-    this.patch({salasLoading: true, salasError: null});
-    this._authLoginRemoteReq.requestSalas().pipe(
-      tap(async ({data, pagination}) => {
-        this.patch({
-          salasData: data,
-        })
-      }),
-      finalize(async () => {
-        this.patch({salasLoading: false});
-      }),
-      catchError((error) => {
-        return of(this.patch({
-          salasError: error
-        }));
-      }),
-    ).subscribe();
   };
 
   public async loadLogin(login: any) {

@@ -43,7 +43,6 @@ import {
   NON_COMMERCIAL_LICENSE,
 } from "@handsontable/angular-wrapper";
 import { registerLanguageDictionary, deDE } from 'handsontable/i18n';
-import {controlActivosAPiCreator, ControlActivosApiService} from "@sothy/services/control.activos.api.service";
 import {workersAPiCreator, WorkersApiService} from "@sothy/services/workers.api.service";
 import {AlertService, alertServiceFactory} from "@sothy/services/alert.service";
 import {provideAuth} from "@sothy/providers/auth.provider";
@@ -139,7 +138,6 @@ export const appConfig: ApplicationConfig = {
     {provide: 'HTTP_INTERCEPTORS', useClass: ErrorInterceptor, multi: true},
     {provide: 'HTTP_INTERCEPTORS', useClass: FakeBackendInterceptor, multi: true},
     {provide: HttpService,useFactory: httpServiceCreator,deps: [HttpClient]},
-    {provide: ControlActivosApiService, useFactory: controlActivosAPiCreator, deps: [HttpClient]},
     {provide: WorkersApiService, useFactory: workersAPiCreator, deps: [HttpClient]},
     {provide: AlertService, useFactory: alertServiceFactory, deps: []},
     DatePipe,

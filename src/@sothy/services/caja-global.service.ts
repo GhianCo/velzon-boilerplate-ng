@@ -3,8 +3,6 @@ import { PersistenceService } from '@sothy/services/persistence.service';
 import { HttpService } from '@sothy/services/http.service';
 import { environment } from '@environments/environment';
 import { Observable, of } from 'rxjs';
-import { tap, catchError } from 'rxjs/operators';
-import { ControlActivosApiService } from '@sothy/services/control.activos.api.service';
 
 export interface Caja {
   id: string | number;
@@ -33,9 +31,6 @@ export interface Turno {
 @Injectable({ providedIn: 'root' })
 export class CajaGlobalService {
   private persistenceService = inject(PersistenceService);
-  private http = inject(HttpService);
-  private controlActivosApiService = inject(ControlActivosApiService);
-  private REMOTE_API_URI = environment.apiRest;
   
   // Señales reactivas para cajas
   private _cajas = signal<Caja[]>([]);
