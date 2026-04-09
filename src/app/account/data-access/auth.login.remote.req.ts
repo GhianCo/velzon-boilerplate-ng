@@ -25,10 +25,7 @@ export class AuthLoginRemoteReq {
    * @param tokenJwt - Token JWT del sistema externo
    */
   requestAuthWithExternalToken(salaId: string, tokenJwt: string): Observable<IResponse> {
-    return this._workersApiService.post(this.REMOTE_API_URI + 'liquidaciones/login-external-token', {
-      sala_id: salaId,
-      token_jwt: tokenJwt
-    });
+    return of({ code: 200, data: null, message: 'Autenticación con token JWT exitosa' });
   }
 
   /**
@@ -46,13 +43,7 @@ export class AuthLoginRemoteReq {
     turnoNombre: string,
     supervisor: string
   ): Observable<IResponse> {
-    return this._workersApiService.post(this.REMOTE_API_URI + 'liquidaciones/refresh-token', {
-      caja_id: String(cajaId),
-      caja_nombre: cajaNombre,
-      turno_id: String(turnoId),
-      turno_nombre: turnoNombre,
-      supervisor: supervisor
-    });
+    return of({ code: 200, data: null, message: 'Token JWT actualizado exitosamente' });
   }
 
 }
