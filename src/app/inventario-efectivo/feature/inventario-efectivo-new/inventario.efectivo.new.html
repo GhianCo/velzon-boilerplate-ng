@@ -351,7 +351,7 @@
                       }
                     </div>
                   </td>
-                  <!-- Bóveda: input fijo siempre visible -->
+                  <!-- Bóveda: editable en apertura, readonly en cierre (se calcula desde Total) -->
                   <td class="text-center">
                     <div class="input-group input-group-sm">
                       <input type="number" class="form-control text-center" min="0" step="1"
@@ -359,6 +359,8 @@
                         (ngModelChange)="onCantidadCajaChange(denominacion, 'Boveda', $event)"
                         (click)="$event.stopPropagation()" (wheel)="$event.preventDefault()"
                         [class.is-invalid]="isInputInvalido(denominacion, 'Boveda')"
+                        [class.bg-light]="isCerrarMode"
+                        [disabled]="isCerrarMode"
                         [title]="getTooltipMultiplos(denominacion)"
                         style="max-width: 200px;">
                     </div>
@@ -380,11 +382,21 @@
                   }
 
 
-                  <!-- Total -->
+                  <!-- Total: display en apertura, editable en cierre -->
                   <td class="text-end">
-                    <span class="fw-bold">
-                      {{ valorDetail.simbolo }} {{ denominacion.importeLocal?.toFixed(2) || '0.00' }}
-                    </span>
+                    @if (isCerrarMode) {
+                      <div class="input-group input-group-sm justify-content-end">
+                        <input type="number" class="form-control text-center" min="0" step="0.01"
+                          [ngModel]="denominacion.importeLocal"
+                          (ngModelChange)="onTotalCierreChange(denominacion, $event, vm.cajasData)"
+                          (click)="$event.stopPropagation()" (wheel)="$event.preventDefault()"
+                          style="max-width: 200px;">
+                      </div>
+                    } @else {
+                      <span class="fw-bold">
+                        {{ valorDetail.simbolo }} {{ denominacion.importeLocal?.toFixed(2) || '0.00' }}
+                      </span>
+                    }
                   </td>
                 </tr>
                 }

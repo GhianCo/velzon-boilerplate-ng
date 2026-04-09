@@ -381,6 +381,20 @@ export class InventarioEfectivoNew implements OnInit {
         this.inventarioEfectivoStore.onCantidadCajaChange(denominacion, caja, event);
     }
 
+    /**
+     * Modo cierre: el usuario edita el Total por fila.
+     * Bóveda = Total ingresado − suma de todas las cajas operativas de esa denominación.
+     */
+    onTotalCierreChange(denominacion: any, totalIngresado: number, cajasData: any[]) {
+        const total = parseFloat(totalIngresado as any);
+        if (isNaN(total) || total < 0) return;
+        const sumaCajas = (cajasData || []).reduce((sum: number, caja: any) => {
+            return sum + (parseFloat(this.getCajas(denominacion)[caja.caja_nombre]) || 0);
+        }, 0);
+        const bovedaCalculada = Math.max(0, total - sumaCajas);
+        this.onCantidadCajaChange(denominacion, 'Boveda', bovedaCalculada);
+    }
+
     // ===== MÉTODOS DELEGADOS AL STORE - MOVIMIENTOS =====
 
     onCantidadMovimientoChange(detail: any, event: any) {
