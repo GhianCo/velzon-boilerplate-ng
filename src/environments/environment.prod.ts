@@ -21,7 +21,6 @@ export const environment = {
       signIn: 'auth/sign-in',
     }
   },
-  apiWorkers: 'http://masaris.pe/workers',
   apiMasarisCore: 'http://masaris.pe/core-api',
   keycloak: {
     url: 'http://10.45.1.80:8080',

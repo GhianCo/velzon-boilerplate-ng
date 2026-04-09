@@ -1,8 +1,7 @@
 import {Injectable} from '@angular/core';
 import {environment} from "@environments/environment";
-import {Observable} from "rxjs";
+import {Observable, of} from "rxjs";
 import {IResponse} from "@sothy/interfaces/IResponse";
-import {WorkersApiService} from "@sothy/services/workers.api.service";
 
 @Injectable({
   providedIn: 'root'
@@ -13,12 +12,11 @@ export class AuthLoginRemoteReq {
   private REMOTE_API_URI = environment.publicRest;
 
   constructor(
-    private _workersApiService: WorkersApiService,
   ) {
   }
 
   requestLogin(login: any): Observable<IResponse> {
-    return this._workersApiService.post(this.REMOTE_API_URI + 'liquidaciones/login', login);
+    return of({ code: 200, data: null, message: 'Login exitoso' });
   }
 
   /**
