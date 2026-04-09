@@ -32,7 +32,45 @@
               <div class="row g-3">
                 <!-- Columna izquierda: Totales verticales -->
                 <div class="col-12">
-                  <!-- Total este inventario -->
+                  @if (operacionTurnoId && vm.lastOperacionTurno && vm.lastOperacionTurno.diff_inv_sumdia > 0 && !isCerrarMode) {
+                  <div class="row g-3 mb-3">
+                    <div class="col-6">
+                      <div class="p-3 rounded bg-light border">
+                        <p class="text-muted text-uppercase fw-semibold fs-12 mb-2">Total este inventario</p>
+                        <div class="d-flex align-items-baseline gap-2">
+                          <span class="fs-5 text-muted">S/.</span>
+                          <h3 class="mb-0 fw-bold">
+                            <span [countUp]="vm.valoresSummary?.totalConvertido" class="counter-value" [options]="option"></span>
+                          </h3>
+                        </div>
+                      </div>
+                    </div>
+                    <div class="col-6">
+                      <div class="p-3 rounded bg-warning-subtle border border-warning-subtle">
+                        <p class="text-muted text-uppercase fw-semibold fs-12 mb-2">Cajas en tránsito</p>
+                        <div class="d-flex align-items-baseline gap-2">
+                          <span class="fs-5 text-muted">S/.</span>
+                          <h3 class="mb-0 fw-bold text-warning">
+                            <span [countUp]="vm.lastOperacionTurno.diff_inv_sumdia" class="counter-value" [options]="option"></span>
+                          </h3>
+                        </div>
+                      </div>
+                    </div>
+                    <div class="col-12">
+                      <div class="p-3 rounded border border-success-subtle bg-success-subtle">
+                        <p class="text-muted text-uppercase fw-semibold fs-12 mb-2">Total general</p>
+                        <div class="d-flex align-items-baseline gap-2">
+                          <span class="fs-5 text-muted">S/.</span>
+                          <h3 class="mb-0 fw-bold text-success">
+                            <span [countUp]="vm.valoresSummary?.totalConvertido + vm.lastOperacionTurno?.diff_inv_sumdia * 1"
+                                class="counter-value" [options]="option"></span>
+                          </h3>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                  } @else {
+                  <!-- Total este inventario (modo normal/cierre) -->
                   <div class="mb-3">
                     <h5 class="text-muted text-uppercase fs-13">Total este inventario</h5>
                     <div class="d-flex align-items-center">
@@ -45,6 +83,7 @@
                       </div>
                     </div>
                   </div>
+                  }
 
                   <!-- Total suma diaria (solo en modo cierre) -->
                   @if (isCerrarMode) {
