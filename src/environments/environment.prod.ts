@@ -23,7 +23,7 @@ export const environment = {
   },
   apiMasarisCore: 'http://10.45.124.80/core',
   keycloak: {
-    url: 'http://10.45.1.80:8080',
+    url: 'http://10.45.124.80:8080',
     realm: 'master',
     clientId: 'sumadiaria',
   },
