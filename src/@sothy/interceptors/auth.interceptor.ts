@@ -33,10 +33,16 @@ export const authInterceptor = (
     // Clone the request object
     let newReq = req.clone();
 
-    if (
-        authService.accessToken &&
-        !AuthUtils.isTokenExpired(authService.accessToken)
-    ) {
+    // AuthUtils.isTokenExpired puede lanzar con tokens de Keycloak;
+    // en ese caso asumimos que el token es válido (el backend lo rechazará si no).
+    let tokenValid = false;
+    try {
+        tokenValid = !!authService.accessToken && !AuthUtils.isTokenExpired(authService.accessToken);
+    } catch {
+        tokenValid = !!authService.accessToken;
+    }
+
+    if (tokenValid) {
         newReq = req.clone({
             headers: req.headers.set(
                 'Authorization',

@@ -27,23 +27,43 @@ export class KeycloakInitializerService {
   isAuthenticated = false;
 
   async initialize(): Promise<void> {
+    // Tokens provenientes del redirect PHP (ROPC server-side)
+    const params = new URLSearchParams(window.location.search);
+    const externalToken = params.get('access_token');
+
+    if (externalToken) {
+      // Limpiar la URL antes de que el router lea el hash
+      window.history.replaceState(
+        {},
+        '',
+        window.location.origin + window.location.pathname + window.location.hash
+      );
+
+      this._authService.accessToken = externalToken;
+      this.isAuthenticated = true;
+      this._authReadyResolve(); // desbloquea SalaInitializerService
+      return;                   // ← no llama a keycloak.init(), no hay redirect
+    }
+
+    // F5 / reload: si ya hay token en storage (proveniente de sesión externa previa),
+    // reutilizarlo sin pasar por KC para evitar redirect a la pantalla de login.
+    if (this._authService.accessToken) {
+      this.isAuthenticated = true;
+      this._authReadyResolve();
+      return;
+    }
+
+    // Flujo KC normal (acceso directo sin token externo)
     const authenticated = await this._keycloakService.init();
 
     if (!authenticated || !this._keycloakService.token) {
-      // Sin sesión activa → redirigir a KC login.
-      // redirectUri apunta al origin para que KC vuelva a la raíz de la app.
-      // SalaInitializerService no debe bloquearse — resolver antes de salir.
       this._authReadyResolve();
       await this._keycloakService.login(window.location.origin + '/');
       return;
     }
 
-    // Guardar el token Keycloak como accessToken de la app.
-    // Esto ocurre ANTES de que el router Angular evalúe cualquier guard.
     this._authService.accessToken = this._keycloakService.token;
     this.isAuthenticated = true;
-
-    // Notificar a SalaInitializerService que el token ya está disponible.
     this._authReadyResolve();
   }
 }

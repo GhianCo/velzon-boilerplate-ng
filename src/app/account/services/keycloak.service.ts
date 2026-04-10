@@ -15,6 +15,7 @@ import { environment } from '@environments/environment';
 @Injectable({ providedIn: 'root' })
 export class KeycloakService {
   private _keycloak: Keycloak;
+  private _isInitialized = false;
 
   constructor() {
     this._keycloak = new Keycloak({
@@ -54,7 +55,9 @@ export class KeycloakService {
             pkceMethod: false as const,
             responseMode: 'query' as const,
           };
-      return await this._keycloak.init(initOptions);
+      const result = await this._keycloak.init(initOptions);
+      this._isInitialized = true;
+      return result;
     } catch (error) {
       console.error('[Keycloak] Error al inicializar el adaptador:', error);
       return false;
@@ -74,6 +77,11 @@ export class KeycloakService {
   /** Devuelve el token de acceso actual (string bruto, base64) */
   get token(): string | undefined {
     return this._keycloak.token;
+  }
+
+  /** True cuando keycloak.init() fue llamado al menos una vez con éxito */
+  get isInitialized(): boolean {
+    return this._isInitialized;
   }
 
   /** Devuelve true si hay una sesión Keycloak activa */
