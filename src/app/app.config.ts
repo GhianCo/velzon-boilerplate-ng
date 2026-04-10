@@ -45,7 +45,6 @@ import {
 import { registerLanguageDictionary, deDE } from 'handsontable/i18n';
 import {AlertService, alertServiceFactory} from "@sothy/services/alert.service";
 import {provideAuth} from "@sothy/providers/auth.provider";
-import {ExternalAuthInitializerService} from "@app/account/services/external-auth-initializer.service";
 import {KeycloakInitializerService} from "@app/account/services/keycloak-initializer.service";
 import {SalaInitializerService} from "@app/account/services/sala-initializer.service";
 
@@ -60,15 +59,6 @@ const globalHotConfig: HotGlobalConfig = {
 
 export function createTranslateLoader(http: HttpClient): any {
   return new TranslateHttpLoader(http, 'assets/i18n/', '.json');
-}
-
-/**
- * Factory para inicializar la autenticación con token externo
- */
-export function initializeExternalAuth(
-  externalAuthService: ExternalAuthInitializerService
-): () => Promise<void> {
-  return () => externalAuthService.initialize();
 }
 
 /**
@@ -106,13 +96,6 @@ export const appConfig: ApplicationConfig = {
       withInMemoryScrolling({scrollPositionRestoration: 'enabled'})
     ),
     {provide: HOT_GLOBAL_CONFIG, useValue: globalHotConfig},
-    // APP_INITIALIZER para autenticación con token externo
-    {
-      provide: APP_INITIALIZER,
-      useFactory: initializeExternalAuth,
-      deps: [ExternalAuthInitializerService],
-      multi: true
-    },
     // APP_INITIALIZER para SSO con Keycloak
     {
       provide: APP_INITIALIZER,
