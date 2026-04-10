@@ -8,6 +8,22 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <link rel="icon" type="image/x-icon" href="assets/images/favicon.ico">
   <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyAbvyBxmMbFhrzP9Z8moyYr6dCr-pzjhBE"></script>
+  <!-- Polyfill: crypto.randomUUID no está disponible en contextos HTTP (no seguros).
+       crypto.getRandomValues sí está disponible en HTTP y genera UUIDs igualmente seguros. -->
+  <script>
+    (function () {
+      if (typeof crypto !== 'undefined' && typeof crypto.randomUUID === 'undefined') {
+        crypto.randomUUID = function () {
+          var bytes = new Uint8Array(16);
+          crypto.getRandomValues(bytes);
+          bytes[6] = (bytes[6] & 0x0f) | 0x40; // versión 4
+          bytes[8] = (bytes[8] & 0x3f) | 0x80; // variante RFC4122
+          var hex = Array.from(bytes, function (b) { return b.toString(16).padStart(2, '0'); }).join('');
+          return hex.slice(0, 8) + '-' + hex.slice(8, 12) + '-' + hex.slice(12, 16) + '-' + hex.slice(16, 20) + '-' + hex.slice(20);
+        };
+      }
+    })();
+  </script>
 </head>
 
 <body>

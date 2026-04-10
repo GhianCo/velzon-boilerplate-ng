@@ -93,6 +93,7 @@
           },
           "configurations": {
             "production": {
+              "baseHref": "/cashcontrol/",
               "fileReplacements": [
                 {
                   "replace": "src/environments/environment.ts",

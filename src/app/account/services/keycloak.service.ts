@@ -31,14 +31,30 @@ export class KeycloakService {
    * Si no hay sesión, init() devuelve false y se llama a login() manualmente.
    */
   async init(): Promise<boolean> {
+    const isSecureContext = window.isSecureContext;
+    // silentCheckSso debe usar la URL real del origen + ruta base de la app
+    const baseHref = (document.querySelector('base')?.getAttribute('href') || '/').replace(/\/$/, '');
+    const silentCheckSsoUri = window.location.origin + baseHref + '/assets/silent-check-sso.html';
+
     try {
-      return await this._keycloak.init({
-        onLoad: 'check-sso',
-        silentCheckSsoRedirectUri: window.location.origin + '/assets/silent-check-sso.html',
-        checkLoginIframe: false,
-        pkceMethod: 'S256',
-        responseMode: 'query',
-      });
+      // En HTTP (isSecureContext=false) no hay Web Crypto API.
+      // check-sso genera una URL de login para el iframe → createLoginUrl exige Web Crypto
+      // aunque pkceMethod sea false. Se usa login-required en HTTP para evitar ese flujo.
+      const initOptions = isSecureContext
+        ? {
+            onLoad: 'check-sso' as const,
+            silentCheckSsoRedirectUri: silentCheckSsoUri,
+            checkLoginIframe: false,
+            pkceMethod: 'S256' as const,
+            responseMode: 'query' as const,
+          }
+        : {
+            onLoad: 'login-required' as const,
+            checkLoginIframe: false,
+            pkceMethod: false as const,
+            responseMode: 'query' as const,
+          };
+      return await this._keycloak.init(initOptions);
     } catch (error) {
       console.error('[Keycloak] Error al inicializar el adaptador:', error);
       return false;
