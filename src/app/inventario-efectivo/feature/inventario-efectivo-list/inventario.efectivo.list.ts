@@ -26,6 +26,7 @@ import {AperturaTurnoValidatorService} from "@app/inventario-efectivo/services/a
 import {ReporteTurnoPdfService} from "@app/inventario-efectivo/services/reporte.turno.pdf.service";
 import {InventarioEfectivoRemoteReq} from "@app/inventario-efectivo/data-access/inventario.efectivo.remote.req";
 import {ConfirmationService} from "@sothy/services/confirmation.service";
+import { PersistenceService } from '@sothy/services/persistence.service';
 
 @Component({
   standalone: true,
@@ -186,6 +187,7 @@ export class InventarioEfectivoList {
               private reporteTurnoPdfService: ReporteTurnoPdfService,
               private inventarioRemoteReq: InventarioEfectivoRemoteReq,
               private confirmationService: ConfirmationService,
+              private _persistenceService: PersistenceService
   ) {
     // Inicializar FormControl con el rango de fechas del store
     this.dateRangeControl = new FormControl(this.inventarioEfectivoStore.getDateRangeForComponent());
@@ -743,6 +745,7 @@ export class InventarioEfectivoList {
     // Encontrar el nombre de la caja seleccionada
     const vm = this.inventarioEfectivoStore.vm();
     const cajaSeleccionada = vm.cajasData?.find((c: any) => c.id == formValue.cajaId);
+    const sessionData = this._persistenceService.get('core');
 
     if (!cajaSeleccionada) {
       this.confirmationService.error(
@@ -756,6 +759,8 @@ export class InventarioEfectivoList {
       operacionturno_id: Number(this.selectedInventarioTransferencia.operacionturno_id),
       caja_id: formValue.cajaId,
       caja_nombre: cajaSeleccionada.name,
+      sala_id: sessionData?.sala?.id ?? null,
+      sala_nombre: sessionData?.sala?.name ?? '',
       monto: Number(formValue.monto),
       observacion: formValue.observacion.trim()
     };
