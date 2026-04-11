@@ -754,7 +754,7 @@ export class InventarioEfectivoList {
 
     const payload = {
       operacionturno_id: Number(this.selectedInventarioTransferencia.operacionturno_id),
-      caja_id: Number(formValue.cajaId),
+      caja_id: formValue.cajaId,
       caja_nombre: cajaSeleccionada.name,
       monto: Number(formValue.monto),
       observacion: formValue.observacion.trim()
