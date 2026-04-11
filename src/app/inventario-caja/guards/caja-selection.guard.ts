@@ -31,6 +31,10 @@ export const CajaSelectionGuard: CanActivateFn = async (route, state) => {
     // Verificar si hay una caja seleccionada en LS
     const cajaSession = persistenceService.get('session')?.cajaSession;
     if (cajaSession?.id) {
+        // Sincronizar el signal del servicio si aún no tiene valor
+        if (!cajaGlobalService.selectedCajaId()) {
+            await cajaGlobalService.setSelectedCaja(cajaSession.id);
+        }
         return true;
     }
 

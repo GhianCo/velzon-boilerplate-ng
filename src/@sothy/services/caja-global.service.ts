@@ -225,9 +225,16 @@ export class CajaGlobalService {
    */
   private loadSelectedCajaFromStorage(): void {
     try {
-      const savedCajaId = this.persistenceService.getTokenProperty('caja_id');
-      const savedCajaNombre = this.persistenceService.getTokenProperty('caja_nombre');
-      
+      let savedCajaId = this.persistenceService.getTokenProperty('caja_id');
+      let savedCajaNombre = this.persistenceService.getTokenProperty('caja_nombre');
+
+      // Fallback: leer desde session storage si el JWT no tiene caja_id
+      if (!savedCajaId) {
+        const cajaSession = this.persistenceService.get('session')?.cajaSession;
+        savedCajaId = cajaSession?.id ?? null;
+        savedCajaNombre = cajaSession?.name ?? null;
+      }
+
       if (savedCajaId) {
         this._selectedCajaId.set(savedCajaId);
         
