@@ -39,6 +39,9 @@ export class KeycloakInitializerService {
         window.location.origin + window.location.pathname + window.location.hash
       );
 
+      // Borrar sesión previa al recibir un token externo nuevo
+      localStorage.removeItem('cash_control_st_session');
+
       this._authService.accessToken = externalToken;
       this.isAuthenticated = true;
       this._authReadyResolve(); // desbloquea SalaInitializerService
