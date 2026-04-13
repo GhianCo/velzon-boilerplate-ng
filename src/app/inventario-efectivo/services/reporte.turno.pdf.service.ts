@@ -76,6 +76,11 @@ export class ReporteTurnoPdfService {
       resumenData
     );
 
+    doc.setFontSize(11);
+    doc.setFont('helvetica', 'bold');
+    doc.setTextColor(0, 0, 0);
+    doc.text('Nº ' + resumenData.correlativo || '', pageWidth - 10, 15, { align: 'right' });
+
     if (resumenData.suma_diaria?.categorias?.length > 0) {
       if (yPosition > pageHeight - 60) { doc.addPage(); yPosition = 15; }
       this.generarTablaSumaDiaria(
